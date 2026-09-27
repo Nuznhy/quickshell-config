@@ -17,6 +17,7 @@ Item {
     property bool sizeToContent: false
     property bool widthToContent: false
     property bool focusGrabEnabled: true
+    property bool popupDismissEnabled: true
     property bool showStem: true
     property bool showHoverIndicator: true
     property int popupXOffset: 200
@@ -38,7 +39,7 @@ Item {
     Connections {
         target: barWindow
         function onCloseAllPopups() {
-            dropdownOpen = false;
+            if (root.popupDismissEnabled) dropdownOpen = false;
         }
     }
 
@@ -102,10 +103,10 @@ Item {
             popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
         }
         implicitWidth: root.widthToContent
-            ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + 16
+            ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + Settings.popupPadding * 2
             : root.popupWidth
         implicitHeight: root.sizeToContent
-            ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + 16
+            ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + Settings.popupPadding * 2
             : root.popupHeight
         color: "transparent"
 
@@ -199,10 +200,10 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: root.sizeToContent ? undefined : parent.bottom
                 height: root.sizeToContent && item ? item.implicitHeight : 0
-                anchors.topMargin: cardRect.stemHeight + 8
-                anchors.leftMargin: 8
-                anchors.rightMargin: 8
-                anchors.bottomMargin: 8
+                anchors.topMargin: cardRect.stemHeight + Settings.popupPadding
+                anchors.leftMargin: Settings.popupPadding
+                anchors.rightMargin: Settings.popupPadding
+                anchors.bottomMargin: Settings.popupPadding
             }
         }
 

@@ -3,6 +3,9 @@
 A Hyprland bar with selectable dark/light palettes, one panel per screen, and shared
 system state. `shell.qml` is the entry point.
 
+See [Dependencies and Arch installation](DEPENDENCIES.md) for the complete
+dependency list, a copyable install script, and service setup instructions.
+
 ## Layout
 
 ```text
@@ -90,6 +93,15 @@ audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
   default to enabled. One connected bar stays available for restoring others.
   If unplugging monitors leaves only disabled outputs, the first remaining
   output temporarily shows a bar without changing the saved preferences.
+- In Appearance → Wallpapers, choose a local image for each connected monitor.
+  Each monitor has its own preview and Clear button. Images fill the screen
+  without distortion, cropping where necessary. Paths are saved by output name
+  and restored after restart or reconnect; keep the selected files on disk.
+  Wallpaper rendering runs directly in Quickshell's background layer, independently
+  of bar visibility, and does not require Noctalia or another wallpaper daemon.
+  Clear removes Quickshell's wallpaper for that output without deleting the image.
+- Dropdowns share the same outer padding, controlled by `popupPadding` in
+  `config/Settings.qml` (12 px by default).
 - Workspace icons come from application desktop entries and the system icon theme,
   displayed in their original colors at full opacity. All distinct apps on each
   workspace are shown. Lookup matches desktop IDs, StartupWMClass, and the initial

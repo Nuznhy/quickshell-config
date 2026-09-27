@@ -9,7 +9,7 @@ FocusScope {
     id: root
     property bool active: false
     property int maximumHeight: 600
-    implicitHeight: Math.min(maximumHeight, content.implicitHeight + 24)
+    implicitHeight: Math.min(maximumHeight, content.implicitHeight)
     signal dismissed
     onActiveChanged: {
         Brightness.openPanels += active ? 1 : -1;
@@ -26,7 +26,7 @@ FocusScope {
     }
     ScrollView {
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: 0
         contentWidth: availableWidth
         clip: true
         ColumnLayout {

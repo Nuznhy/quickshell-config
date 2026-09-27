@@ -17,6 +17,9 @@ DropdownWidget {
     widthToContent: true
     showStem: false
     focusGrabEnabled: currentMenu === null
+    // Native menus take focus away from the tray. Keep their parent popup
+    // alive when that focus change triggers the bar's closeAllPopups signal.
+    popupDismissEnabled: currentMenu === null
     property var currentMenu: null
     readonly property int itemCount: SystemTray.items.values.length
 

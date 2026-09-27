@@ -9,7 +9,7 @@ FocusScope {
     id: root
     property bool active: false
     property int maximumHeight: 540
-    implicitHeight: content.implicitHeight + 24
+    implicitHeight: content.implicitHeight
     signal dismissed
     onActiveChanged: {
         Notifications.openPanels += active ? 1 : -1;
@@ -27,8 +27,8 @@ FocusScope {
     }
     ColumnLayout {
         id: content
-        x: 12; y: 12
-        width: parent.width - 24
+        x: 0; y: 0
+        width: parent.width
         spacing: 12
         RowLayout {
             Layout.fillWidth: true

@@ -12,6 +12,9 @@ DropdownWidget {
     sizeToContent: true
     showStem: false
     stemAlignment: "right"
+    property bool choosingWallpaper: false
+    focusGrabEnabled: !choosingWallpaper
+    popupDismissEnabled: !choosingWallpaper
 
     Text {
         height: parent.height
@@ -32,6 +35,7 @@ DropdownWidget {
         ThemePicker {
             id: picker
             width: scroll.availableWidth
+            onChoosingWallpaperChanged: root.choosingWallpaper = choosingWallpaper
             onDismissed: root.dropdownOpen = false
         }
     }

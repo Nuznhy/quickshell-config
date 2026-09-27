@@ -12,7 +12,7 @@ FocusScope {
     property date displayedMonth: new Date(today.getFullYear(), today.getMonth(), 1)
     readonly property int firstWeekday: Qt.locale().firstDayOfWeek % 7
     readonly property int leadingDays: (displayedMonth.getDay() - firstWeekday + 7) % 7
-    implicitHeight: content.implicitHeight + 24
+    implicitHeight: content.implicitHeight
     signal dismissed
 
     function sameDay(a, b) {
@@ -104,9 +104,9 @@ FocusScope {
 
     Column {
         id: content
-        x: 12
-        y: 12
-        width: parent.width - 24
+        x: 0
+        y: 0
+        width: parent.width
         spacing: 14
 
         Item {

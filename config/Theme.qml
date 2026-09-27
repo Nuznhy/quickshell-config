@@ -19,6 +19,7 @@ Singleton {
     readonly property bool verticalBar: barPosition === "left" || barPosition === "right"
     readonly property int sideBarWidth: Math.max(64, Math.ceil(fontSize * 2.5) + 16)
     property var disabledBarScreens: []
+    property var wallpapers: ({})
     readonly property var connectedScreens: Quickshell.screens
     readonly property var enabledBarScreens: {
         const names = connectedScreens.map(screen => screen.name);
@@ -53,7 +54,19 @@ Singleton {
         errorMessage = "";
         stateFile.setText(JSON.stringify({ preset: preset, mode: mode, barOpacity: barOpacity,
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
-            disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition }, null, 2) + "\n");
+            disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition,
+            wallpapers: wallpapers }, null, 2) + "\n");
+    }
+
+    function wallpaperFor(name) { return Object.prototype.hasOwnProperty.call(wallpapers, name) ? wallpapers[name] : ""; }
+
+    function setWallpaper(name, source) {
+        if (!ready || !name || (source !== "" && !source.startsWith("file:///"))) return;
+        const next = Object.assign({}, wallpapers);
+        if (source) next[name] = source;
+        else delete next[name];
+        wallpapers = next;
+        appearanceSaveTimer.restart();
     }
 
     function setFontSize(value) {
@@ -128,6 +141,15 @@ Singleton {
                 root.barRadius = root.geometryValue(saved.barRadius, root.maximumBarRadius);
                 root.disabledBarScreens = Array.isArray(saved.disabledBarScreens)
                     ? [...new Set(saved.disabledBarScreens.filter(name => typeof name === "string" && name.length > 0))] : [];
+                const wallpapers = saved.wallpapers;
+                const restoredWallpapers = {};
+                if (wallpapers && typeof wallpapers === "object" && !Array.isArray(wallpapers)) {
+                    for (const name of Object.keys(wallpapers)) {
+                        const source = wallpapers[name];
+                        if (name.length > 0 && typeof source === "string" && source.startsWith("file:///")) restoredWallpapers[name] = source;
+                    }
+                }
+                root.wallpapers = restoredWallpapers;
             } catch (error) {
                 root.errorMessage = "Could not read saved theme. Choose a theme to reset it.";
             }

@@ -86,7 +86,7 @@ Item {
             }
         }
         implicitWidth: 350
-        implicitHeight: content.implicitHeight + 28
+        implicitHeight: content.implicitHeight + Settings.popupPadding * 2
         visible: popupReveal.presented
         color: "transparent"
 
@@ -109,7 +109,7 @@ Item {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    anchors.margins: 14
+                    anchors.margins: Settings.popupPadding
                     spacing: 10
 
                     AudioDeviceDropdown {
