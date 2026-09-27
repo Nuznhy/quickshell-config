@@ -1,11 +1,17 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell.Io
-import ".."
+import "../../../config"
 
 Item {
     width: 30
     height: 30
+
+    Rectangle {
+        anchors.fill: parent
+        radius: 6
+        color: Theme.overlay
+        visible: mouseArea.containsMouse
+    }
 
     // 1. The Icon
     Text {
@@ -22,18 +28,19 @@ Item {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true // Required for the ToolTip to show on hover
+        cursorShape: Qt.PointingHandCursor
         onClicked: {
-            logoutCommand.running = true
+            logoutCommand.running = true;
         }
-        
+
         // Optional: Add visual feedback when pressed
-        opacity: pressed ? 0.7 : 1.0 
+        opacity: pressed ? 0.7 : 1.0
     }
 
     // 4. The Execution Process
     Process {
         id: logoutCommand
         // Wrapping in sh -c ensures the tilde (~) expands to your home directory properly
-        command: ["sh", "-c", "~/.config/hypr/scripts/logoutlaunch.sh 2"]
+        command: Settings.logoutCommand
     }
 }

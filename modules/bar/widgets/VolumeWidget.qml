@@ -1,0 +1,169 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+import "../../../config"
+import "../../../services"
+import "../../../components"
+
+Item {
+    id: volumeWidget
+    implicitWidth: volumeText.implicitWidth + 16
+    implicitHeight: Settings.barHeight
+    property bool popupOpen: false
+    onPopupOpenChanged: {
+        outputDropdown.expanded = false;
+        microphoneDropdown.expanded = false;
+    }
+
+    Connections {
+        target: volumeWidget.QsWindow.window
+        function onCloseAllPopups() { volumeWidget.popupOpen = false; }
+    }
+
+    HyprlandFocusGrab {
+        windows: [popup]
+        active: volumeWidget.popupOpen
+        onCleared: volumeWidget.popupOpen = false
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 3
+        radius: 6
+        color: Theme.overlay
+        visible: mouseArea.containsMouse || volumeWidget.popupOpen
+    }
+
+    Text {
+        id: volumeText
+        anchors.centerIn: parent
+        text: (Audio.volumeMuted ? "󰖁 " : "󰕾 ") + Audio.volumeLevel
+        color: Audio.volumeMuted ? Theme.muted : Theme.text
+        font.pixelSize: Theme.fontSize
+        font.family: Theme.fontFamily
+        font.bold: true
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onWheel: wheel => Audio.adjustVolume(wheel.angleDelta.y > 0 ? "+5%" : "-5%")
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                Audio.openControl();
+                return;
+            }
+            const shouldOpen = !volumeWidget.popupOpen;
+            volumeWidget.QsWindow.window?.closeAllPopups();
+            volumeWidget.popupOpen = shouldOpen;
+            if (shouldOpen) Audio.refresh();
+        }
+    }
+
+    PopupWindow {
+        id: popup
+        anchor.window: volumeWidget.QsWindow.window
+        anchor.edges: Edges.Bottom
+        anchor.gravity: Edges.Bottom
+        anchor.adjustment: PopupAdjustment.SlideX
+        anchor.onAnchoring: {
+            const window = volumeWidget.QsWindow.window;
+            if (window && window.contentItem) {
+                const point = volumeWidget.mapToItem(window.contentItem, volumeWidget.width / 2, 0);
+                popup.anchor.rect = Qt.rect(point.x, window.height + 4, 1, 1);
+            }
+        }
+        implicitWidth: 350
+        implicitHeight: content.implicitHeight + 28
+        visible: popupReveal.presented
+        color: "transparent"
+
+        PopupReveal {
+            id: popupReveal
+            anchors.fill: parent
+            opened: volumeWidget.popupOpen
+
+            Rectangle {
+                anchors.fill: parent
+                color: Theme.bg
+                radius: 12
+                border.color: Theme.highlightMed
+
+                focus: true
+                Keys.onEscapePressed: volumeWidget.popupOpen = false
+
+                ColumnLayout {
+                    id: content
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 14
+                    spacing: 10
+
+                    AudioDeviceDropdown {
+                        id: outputDropdown
+                        Layout.fillWidth: true
+                        title: "OUTPUT"
+                        devices: Audio.outputs
+                        selectedName: Audio.defaultOutput
+                        busy: Audio.switching
+                        onSelected: name => Audio.selectOutput(name)
+                        onExpandedChanged: { if (expanded) microphoneDropdown.expanded = false; }
+                    }
+
+                    AudioLevelControl {
+                        Layout.fillWidth: true
+                        level: Audio.volumeLevel
+                        muted: Audio.volumeMuted
+                        enabled: Audio.available && !Audio.switching
+                        onVolumeRequested: value => Audio.setOutputVolume(value)
+                        onMuteRequested: Audio.toggleMute()
+                    }
+
+                    AudioDeviceDropdown {
+                        id: microphoneDropdown
+                        Layout.fillWidth: true
+                        title: "MICROPHONE"
+                        devices: Audio.microphones
+                        selectedName: Audio.defaultMicrophone
+                        busy: Audio.switchingMicrophone
+                        onSelected: name => Audio.selectMicrophone(name)
+                        onExpandedChanged: { if (expanded) outputDropdown.expanded = false; }
+                    }
+
+                    AudioLevelControl {
+                        Layout.fillWidth: true
+                        microphone: true
+                        level: Audio.microphoneVolume
+                        muted: Audio.microphoneMuted
+                        enabled: Audio.microphoneAvailable && !Audio.switchingMicrophone
+                        onVolumeRequested: value => Audio.setMicrophoneVolume(value)
+                        onMuteRequested: Audio.toggleMicrophoneMute()
+                    }
+
+                    ApplicationMixer {
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: text.length > 0
+                        text: Audio.errorMessage || (Audio.switching ? "Switching output…" : (Audio.switchingMicrophone ? "Switching microphone…" : ""))
+                        color: Audio.errorMessage ? Theme.love : Theme.subtle
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
+        }
+
+    }
+
+}

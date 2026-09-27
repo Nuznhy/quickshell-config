@@ -1,7 +1,9 @@
+import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import ".."
+import "../../config"
+import "../../components"
 
 DropdownWidget {
     id: wifiWidget
@@ -21,9 +23,11 @@ DropdownWidget {
     property real lastTxBytes: 0
 
     function formatSpeed(bytesPerSec) {
-        if (bytesPerSec < 1024) return bytesPerSec.toFixed(0) + " B/s"
-        if (bytesPerSec < 1024 * 1024) return (bytesPerSec / 1024).toFixed(0) + " K/s"
-        return (bytesPerSec / 1024 / 1024).toFixed(1) + " M/s"
+        if (bytesPerSec < 1024)
+            return bytesPerSec.toFixed(0) + " B/s";
+        if (bytesPerSec < 1024 * 1024)
+            return (bytesPerSec / 1024).toFixed(0) + " K/s";
+        return (bytesPerSec / 1024 / 1024).toFixed(1) + " M/s";
     }
 
     onOpened: wifiScanProc.running = true
@@ -35,16 +39,16 @@ DropdownWidget {
         stdout: SplitParser {
             onRead: data => {
                 if (!data || !data.trim()) {
-                    wifiWidget.wifiConnected = false
-                    wifiWidget.wifiSSID = ""
-                    wifiWidget.wifiSignal = 0
-                    return
+                    wifiWidget.wifiConnected = false;
+                    wifiWidget.wifiSSID = "";
+                    wifiWidget.wifiSignal = 0;
+                    return;
                 }
-                var parts = data.trim().split(':')
+                var parts = data.trim().split(':');
                 if (parts.length >= 3) {
-                    wifiWidget.wifiConnected = true
-                    wifiWidget.wifiSSID = parts[1]
-                    wifiWidget.wifiSignal = parseInt(parts[2]) || 0
+                    wifiWidget.wifiConnected = true;
+                    wifiWidget.wifiSSID = parts[1];
+                    wifiWidget.wifiSignal = parseInt(parts[2]) || 0;
                 }
             }
         }
@@ -58,28 +62,29 @@ DropdownWidget {
         command: ["sh", "-c", "nmcli -t -f SSID,SIGNAL,SECURITY device wifi list | grep -v '^:' | sort -t: -k2 -nr | head -15"]
         stdout: SplitParser {
             onRead: data => {
-                if (data) wifiScanProc.output += data + "\n"
+                if (data)
+                    wifiScanProc.output += data + "\n";
             }
         }
         onRunningChanged: {
             if (running) {
-                output = ""
+                output = "";
             } else if (output) {
-                var lines = output.trim().split('\n')
-                var networks = []
-                var seen = {}
+                var lines = output.trim().split('\n');
+                var networks = [];
+                var seen = {};
                 for (var i = 0; i < lines.length; i++) {
-                    var parts = lines[i].split(':')
+                    var parts = lines[i].split(':');
                     if (parts.length >= 2 && parts[0] && !seen[parts[0]]) {
-                        seen[parts[0]] = true
+                        seen[parts[0]] = true;
                         networks.push({
                             ssid: parts[0],
                             signal: parseInt(parts[1]) || 0,
                             security: parts[2] || ""
-                        })
+                        });
                     }
                 }
-                wifiWidget.wifiNetworks = networks
+                wifiWidget.wifiNetworks = networks;
             }
         }
     }
@@ -97,18 +102,19 @@ DropdownWidget {
         command: ["sh", "-c", "cat /proc/net/dev | grep -E 'wl|en' | head -1"]
         stdout: SplitParser {
             onRead: data => {
-                if (!data) return
-                var parts = data.trim().split(/\s+/)
+                if (!data)
+                    return;
+                var parts = data.trim().split(/\s+/);
                 if (parts.length >= 10) {
-                    var rxBytes = parseFloat(parts[1]) || 0
-                    var txBytes = parseFloat(parts[9]) || 0
+                    var rxBytes = parseFloat(parts[1]) || 0;
+                    var txBytes = parseFloat(parts[9]) || 0;
 
                     if (wifiWidget.lastRxBytes > 0) {
-                        wifiWidget.downloadSpeed = rxBytes - wifiWidget.lastRxBytes
-                        wifiWidget.uploadSpeed = txBytes - wifiWidget.lastTxBytes
+                        wifiWidget.downloadSpeed = rxBytes - wifiWidget.lastRxBytes;
+                        wifiWidget.uploadSpeed = txBytes - wifiWidget.lastTxBytes;
                     }
-                    wifiWidget.lastRxBytes = rxBytes
-                    wifiWidget.lastTxBytes = txBytes
+                    wifiWidget.lastRxBytes = rxBytes;
+                    wifiWidget.lastTxBytes = txBytes;
                 }
             }
         }
@@ -121,8 +127,8 @@ DropdownWidget {
         running: true
         repeat: true
         onTriggered: {
-            wifiCurrentProc.running = true
-            netSpeedProc.running = true
+            wifiCurrentProc.running = true;
+            netSpeedProc.running = true;
         }
     }
 
@@ -134,11 +140,7 @@ DropdownWidget {
         Text {
             id: wifiText
             anchors.verticalCenter: parent.verticalCenter
-            text: !wifiConnected ? "󰤭" :
-                  wifiSignal >= 80 ? "󰤨" :
-                  wifiSignal >= 60 ? "󰤥" :
-                  wifiSignal >= 40 ? "󰤢" :
-                  wifiSignal >= 20 ? "󰤟" : "󰤯"
+            text: !wifiConnected ? "󰤭" : wifiSignal >= 80 ? "󰤨" : wifiSignal >= 60 ? "󰤥" : wifiSignal >= 40 ? "󰤢" : wifiSignal >= 20 ? "󰤟" : "󰤯"
             color: wifiConnected ? Theme.text : Theme.muted
             font.pixelSize: Theme.fontSize + 4
             font.family: Theme.fontFamily
@@ -207,10 +209,7 @@ DropdownWidget {
                         spacing: 8
 
                         Text {
-                            text: modelData.signal >= 80 ? "󰤨" :
-                                  modelData.signal >= 60 ? "󰤥" :
-                                  modelData.signal >= 40 ? "󰤢" :
-                                  modelData.signal >= 20 ? "󰤟" : "󰤯"
+                            text: modelData.signal >= 80 ? "󰤨" : modelData.signal >= 60 ? "󰤥" : modelData.signal >= 40 ? "󰤢" : modelData.signal >= 20 ? "󰤟" : "󰤯"
                             color: Theme.text
                             font.pixelSize: Theme.fontSize
                             font.family: Theme.fontFamily
@@ -240,9 +239,9 @@ DropdownWidget {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            wifiConnectProc.targetSSID = modelData.ssid
-                            wifiConnectProc.running = true
-                            wifiWidget.dropdownOpen = false
+                            wifiConnectProc.targetSSID = modelData.ssid;
+                            wifiConnectProc.running = true;
+                            wifiWidget.dropdownOpen = false;
                         }
                     }
                 }

@@ -1,7 +1,6 @@
 import QtQuick
-import Quickshell
-import QtQuick.Layouts
-import ".."
+import "../../../config"
+import "../../../services"
 
 Text {
     text: Time.time
@@ -10,4 +9,3 @@ Text {
     font.family: Theme.fontFamily
     font.bold: true
 }
-

@@ -1,22 +1,20 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Services.SystemTray 
-import Quickshell.Widgets 
-import QtQuick.Controls 
-import ".."
-import "."
+import Quickshell.Services.SystemTray
+import Quickshell.Widgets
+import "../../../config"
 
 Rectangle {
     id: trayContainer
     color: Theme.overlay
-    radius: 8 
+    radius: 8
     border.color: Theme.iris
     border.width: 1
 
-    implicitWidth: trayRoot.implicitWidth + 24 
+    implicitWidth: trayRoot.implicitWidth + 24
     implicitHeight: 32
-    
+
     RowLayout {
         id: trayRoot
         anchors.centerIn: parent
@@ -27,7 +25,7 @@ Rectangle {
 
             delegate: MouseArea {
                 id: trayItem
-                required property var modelData 
+                required property var modelData
                 readonly property string cleanIcon: {
                     let path = modelData.icon ? modelData.icon.toString() : "";
                     if (path.includes("?path=")) {
@@ -40,18 +38,26 @@ Rectangle {
                 scale: 0.5
 
                 Component.onCompleted: {
-                    appearAnim.start()
+                    appearAnim.start();
                 }
 
                 ParallelAnimation {
                     id: appearAnim
-                    NumberAnimation { 
-                        target: trayItem; property: "opacity"
-                        from: 0; to: 1; duration: 250; easing.type: Easing.OutCubic 
+                    NumberAnimation {
+                        target: trayItem
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: 250
+                        easing.type: Easing.OutCubic
                     }
-                    NumberAnimation { 
-                        target: trayItem; property: "scale"
-                        from: 0.5; to: 1; duration: 300; easing.type: Easing.OutBack 
+                    NumberAnimation {
+                        target: trayItem
+                        property: "scale"
+                        from: 0.5
+                        to: 1
+                        duration: 300
+                        easing.type: Easing.OutBack
                     }
                 }
 
@@ -61,13 +67,23 @@ Rectangle {
                 width: 18
                 height: 18
                 hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    radius: 4
+                    color: Theme.highlightMed
+                    visible: trayItem.containsMouse
+                }
 
                 IconImage {
                     anchors.fill: parent
                     source: trayItem.cleanIcon
 
                     onStatusChanged: {
-                        if (status === Image.Error) trayItem.visible = false
+                        if (status === Image.Error)
+                            trayItem.visible = false;
                     }
                 }
 
