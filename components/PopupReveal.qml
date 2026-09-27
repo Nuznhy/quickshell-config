@@ -1,4 +1,5 @@
 import QtQuick
+import "../config"
 
 Item {
     id: root
@@ -8,7 +9,10 @@ Item {
     property real progress: opened ? 1 : 0
     enabled: opened
     opacity: progress
-    transform: Translate { y: -12 * (1 - root.progress) }
+    transform: Translate {
+        x: Theme.verticalBar ? (Theme.barPosition === "left" ? -12 : 12) * (1 - root.progress) : 0
+        y: Theme.verticalBar ? 0 : (Theme.barPosition === "bottom" ? 12 : -12) * (1 - root.progress)
+    }
     // Fade the card and its children as one surface.
     layer.enabled: progress > 0 && progress < 1
 

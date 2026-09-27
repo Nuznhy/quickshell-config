@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import "../../../config"
 import "../../../components"
@@ -23,7 +24,15 @@ DropdownWidget {
         verticalAlignment: Text.AlignVCenter
     }
 
-    popupContent: ThemePicker {
-        onDismissed: root.dropdownOpen = false
+    popupContent: ScrollView {
+        id: scroll
+        implicitHeight: Math.min(picker.implicitHeight, Math.max(120, (root.barWindow?.screen?.height || 800) - 110))
+        contentWidth: availableWidth
+        clip: true
+        ThemePicker {
+            id: picker
+            width: scroll.availableWidth
+            onDismissed: root.dropdownOpen = false
+        }
     }
 }

@@ -1,116 +1,156 @@
+pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import "../../../config"
+import "../../../components"
 
-Rectangle {
-    id: trayContainer
-    color: Theme.overlay
-    radius: 8
-    border.color: Theme.iris
-    border.width: 1
+DropdownWidget {
+    id: root
+    barWindow: root.QsWindow.window
+    Layout.preferredHeight: Settings.barHeight
+    Layout.rightMargin: 0
+    sizeToContent: true
+    widthToContent: true
+    showStem: false
+    focusGrabEnabled: currentMenu === null
+    property var currentMenu: null
+    readonly property int itemCount: SystemTray.items.values.length
 
-    implicitWidth: trayRoot.implicitWidth + 24
-    implicitHeight: 32
+    onDropdownOpenChanged: {
+        if (!dropdownOpen && currentMenu)
+            currentMenu.close();
+    }
 
-    RowLayout {
-        id: trayRoot
-        anchors.centerIn: parent
-        spacing: 12
+    Text {
+        width: 30
+        height: parent.height
+        text: "󰅀"
+        color: root.dropdownOpen ? Theme.iris : Theme.text
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSize + 2
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        rotation: (Theme.barPosition === "left" ? -90 : Theme.barPosition === "right" ? 90 : Theme.barPosition === "bottom" ? 180 : 0)
+            + (root.dropdownOpen ? 180 : 0)
+        Behavior on rotation {
+            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+        }
+    }
 
-        Repeater {
-            model: SystemTray.items
+    popupContent: FocusScope {
+        implicitWidth: root.itemCount > 0 ? grid.implicitWidth : emptyLabel.implicitWidth + 16
+        implicitHeight: root.itemCount > 0 ? grid.implicitHeight : 32
+        focus: root.dropdownOpen
+        Keys.onEscapePressed: root.dropdownOpen = false
 
-            delegate: MouseArea {
-                id: trayItem
-                required property var modelData
-                readonly property string cleanIcon: {
-                    let path = modelData.icon ? modelData.icon.toString() : "";
-                    if (path.includes("?path=")) {
-                        path = path.split("?path=")[1];
-                    }
-                    return path;
-                }
-                property alias item: trayItem.modelData
-                opacity: 0
-                scale: 0.5
+        Text {
+            id: emptyLabel
+            anchors.centerIn: parent
+            visible: root.itemCount === 0
+            text: "No tray applications"
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(Theme.fontSize * 0.6)
+            color: Theme.subtle
+        }
 
-                Component.onCompleted: {
-                    appearAnim.start();
-                }
+        Grid {
+            id: grid
+            columns: Math.max(1, Math.min(6, root.itemCount))
+            spacing: 6
 
-                ParallelAnimation {
-                    id: appearAnim
-                    NumberAnimation {
-                        target: trayItem
-                        property: "opacity"
-                        from: 0
-                        to: 1
-                        duration: 250
-                        easing.type: Easing.OutCubic
-                    }
-                    NumberAnimation {
-                        target: trayItem
-                        property: "scale"
-                        from: 0.5
-                        to: 1
-                        duration: 300
-                        easing.type: Easing.OutBack
-                    }
-                }
+            Repeater {
+                model: SystemTray.items
 
-                visible: cleanIcon !== ""
-                Layout.preferredWidth: visible ? 18 : 0
-                Layout.preferredHeight: visible ? 18 : 0
-                width: 18
-                height: 18
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+                delegate: MouseArea {
+                    id: trayItem
+                    required property var modelData
+                    width: 32
+                    height: 32
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    ToolTip.visible: containsMouse && root.currentMenu === null
+                    ToolTip.delay: 600
+                    ToolTip.text: modelData.tooltipTitle || modelData.title || modelData.id
 
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    radius: 4
-                    color: Theme.highlightMed
-                    visible: trayItem.containsMouse
-                }
-
-                IconImage {
-                    anchors.fill: parent
-                    source: trayItem.cleanIcon
-
-                    onStatusChanged: {
-                        if (status === Image.Error)
-                            trayItem.visible = false;
-                    }
-                }
-
-                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-
-                onClicked: event => {
-                    if (event.button == Qt.LeftButton) {
-                        item.activate();
-                    } else if (event.button == Qt.MiddleButton) {
-                        item.secondaryActivate();
-                    } else if (event.button == Qt.RightButton) {
+                    function openMenu() {
+                        if (!modelData.hasMenu) return;
+                        if (root.currentMenu && root.currentMenu !== menuAnchor)
+                            root.currentMenu.close();
+                        root.currentMenu = menuAnchor;
                         menuAnchor.open();
                     }
-                }
 
-                QsMenuAnchor {
-                    id: menuAnchor
-                    menu: item.menu
+                    Component.onDestruction: {
+                        if (root.currentMenu === menuAnchor)
+                            root.currentMenu = null;
+                    }
 
-                    anchor.window: trayItem.QsWindow.window
-                    anchor.adjustment: PopupAdjustment.Flip
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: 6
+                        color: Theme.highlightMed
+                        opacity: trayItem.containsMouse ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                    }
 
-                    anchor.onAnchoring: {
-                        const window = trayItem.QsWindow.window;
-                        const widgetRect = window.contentItem.mapFromItem(trayItem, 0, trayItem.height, trayItem.width, trayItem.height);
+                    IconImage {
+                        id: trayIcon
+                        anchors.centerIn: parent
+                        width: 20
+                        height: 20
+                        // Preserve the complete image-provider URL and its search path.
+                        source: trayItem.modelData.icon
+                        visible: status === Image.Ready
+                        scale: trayItem.containsMouse ? 1.15 : 1
+                        Behavior on scale {
+                            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                        }
+                    }
 
-                        menuAnchor.anchor.rect = widgetRect;
+                    Text {
+                        anchors.centerIn: parent
+                        visible: trayIcon.status !== Image.Ready
+                        text: "󰏗"
+                        color: Theme.text
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Math.round(Theme.fontSize * 1.0)
+                    }
+
+                    onClicked: event => {
+                        if (event.button === Qt.RightButton || (event.button === Qt.LeftButton && modelData.onlyMenu)) {
+                            openMenu();
+                        } else if (event.button === Qt.MiddleButton) {
+                            modelData.secondaryActivate();
+                        } else if (event.button === Qt.LeftButton) {
+                            modelData.activate();
+                            root.dropdownOpen = false;
+                        }
+                    }
+
+                    onWheel: event => {
+                        const horizontal = event.angleDelta.y === 0;
+                        modelData.scroll(horizontal ? event.angleDelta.x : event.angleDelta.y, horizontal);
+                    }
+
+                    QsMenuAnchor {
+                        id: menuAnchor
+                        menu: trayItem.modelData.menu
+                        anchor.window: trayItem.QsWindow.window
+                        anchor.adjustment: PopupAdjustment.Flip
+                        anchor.onAnchoring: {
+                            const window = trayItem.QsWindow.window;
+                            if (window && window.contentItem)
+                                menuAnchor.anchor.rect = window.contentItem.mapFromItem(trayItem, 0, trayItem.height, trayItem.width, 1);
+                        }
+                        onClosed: {
+                            if (root.currentMenu === menuAnchor)
+                                root.currentMenu = null;
+                        }
                     }
                 }
             }

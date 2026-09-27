@@ -7,11 +7,12 @@ import Quickshell.Hyprland
 import "../../../config"
 import "../../../services"
 import "../../../components"
+import "../../../components/PopupPlacement.js" as PopupPlacement
 
 Item {
     id: volumeWidget
-    implicitWidth: volumeText.implicitWidth + 16
-    implicitHeight: Settings.barHeight
+    implicitWidth: volumeText.implicitWidth
+    implicitHeight: Theme.verticalBar ? Math.max(Settings.barHeight, volumeText.implicitHeight + 8) : Settings.barHeight
     property bool popupOpen: false
     onPopupOpenChanged: {
         outputDropdown.expanded = false;
@@ -29,18 +30,17 @@ Item {
         onCleared: volumeWidget.popupOpen = false
     }
 
-    Rectangle {
+    BarHoverIndicator {
         anchors.fill: parent
-        anchors.margins: 3
-        radius: 6
-        color: Theme.overlay
-        visible: mouseArea.containsMouse || volumeWidget.popupOpen
+        hovered: mouseArea.containsMouse
+        active: volumeWidget.popupOpen
     }
 
     Text {
         id: volumeText
         anchors.centerIn: parent
-        text: (Audio.volumeMuted ? "󰖁 " : "󰕾 ") + Audio.volumeLevel
+        text: (Audio.volumeMuted ? "󰖁" : "󰕾") + (Theme.verticalBar ? "\n" : " ") + Audio.volumeLevel
+        horizontalAlignment: Text.AlignHCenter
         color: Audio.volumeMuted ? Theme.muted : Theme.text
         font.pixelSize: Theme.fontSize
         font.family: Theme.fontFamily
@@ -53,10 +53,15 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onWheel: wheel => Audio.adjustVolume(wheel.angleDelta.y > 0 ? "+5%" : "-5%")
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
         onClicked: mouse => {
-            if (mouse.button === Qt.RightButton) {
+            if (mouse.button === Qt.MiddleButton) {
+                volumeWidget.popupOpen = false;
                 Audio.openControl();
+                return;
+            }
+            if (mouse.button === Qt.RightButton) {
+                Audio.toggleMute();
                 return;
             }
             const shouldOpen = !volumeWidget.popupOpen;
@@ -69,14 +74,15 @@ Item {
     PopupWindow {
         id: popup
         anchor.window: volumeWidget.QsWindow.window
-        anchor.edges: Edges.Bottom
-        anchor.gravity: Edges.Bottom
-        anchor.adjustment: PopupAdjustment.SlideX
+        anchor.adjustment: PopupAdjustment.SlideX | PopupAdjustment.SlideY
         anchor.onAnchoring: {
             const window = volumeWidget.QsWindow.window;
             if (window && window.contentItem) {
-                const point = volumeWidget.mapToItem(window.contentItem, volumeWidget.width / 2, 0);
-                popup.anchor.rect = Qt.rect(point.x, window.height + 4, 1, 1);
+                const point = volumeWidget.mapToItem(window.contentItem, 0, 0);
+                const placement = PopupPlacement.position(Theme.barPosition, point.x, point.y,
+                    volumeWidget.width, volumeWidget.height, window.width, window.height,
+                    popup.width, popup.height, "center", 0, false);
+                popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
             }
         }
         implicitWidth: 350

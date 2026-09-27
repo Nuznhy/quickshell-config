@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    readonly property int barHeight: 42
+    readonly property int barHeight: Math.max(42, Theme.fontSize + 22)
     readonly property int widgetSpacing: 12
     readonly property int leftPadding: 34
     readonly property int rightPadding: 40
@@ -13,5 +13,4 @@ QtObject {
     readonly property int keyboardInterval: 2000
     readonly property int workspaceInterval: 500
     readonly property var volumeControlCommand: ["pavucontrol"]
-    readonly property var logoutCommand: ["sh", "-c", "~/.config/hypr/scripts/logoutlaunch.sh 2"]
 }

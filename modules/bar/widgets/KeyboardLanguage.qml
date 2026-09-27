@@ -1,22 +1,32 @@
 import QtQuick
 import "../../../config"
 import "../../../services"
+import "../../../components"
 
 Item {
     id: langWidget
-    implicitWidth: content.implicitWidth + 8
-    implicitHeight: Settings.barHeight
+    implicitWidth: Theme.verticalBar ? verticalLabel.implicitWidth : content.implicitWidth
+    implicitHeight: Theme.verticalBar ? Math.max(Settings.barHeight, verticalLabel.implicitHeight + 8) : Settings.barHeight
 
-    Rectangle {
+    BarHoverIndicator {
         anchors.fill: parent
-        anchors.margins: 3
-        radius: 6
-        color: Theme.overlay
-        visible: keyboardMouse.containsMouse
+        hovered: keyboardMouse.containsMouse
     }
 
+    Text {
+        id: verticalLabel
+        anchors.centerIn: parent
+        visible: Theme.verticalBar
+        text: "󰌌\n" + Keyboard.layoutName.toUpperCase()
+        color: Theme.text
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSize
+        font.bold: true
+        horizontalAlignment: Text.AlignHCenter
+    }
     Row {
         id: content
+        visible: !Theme.verticalBar
         anchors.centerIn: parent
         height: parent.height
         spacing: 8

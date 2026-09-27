@@ -1,111 +1,40 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 
 QtObject {
-    property var windowIcons: ({
-            // Browsers
-            "firefox": "",
-            "org.mozilla.firefox": "",
-            "librewolf": "",
-            "floorp": "",
-            "cachy-browser": "",
-            "zen": "󰰷",
-            "zen-browser": "󰰷",
-            "zen-alpha": "󰰷",
-            "microsoft-edge": "",
-            "chromium": "",
-            "google-chrome": "",
-            "brave-browser": "󰖟",
-            "vivaldi": "",
+    function resolveWindow(windowClass, initialClass) {
+        const names = [...new Set([windowClass, initialClass].filter(name => !!name))];
+        const apps = DesktopEntries.applications.values;
+        const entries = [];
 
-            // Terminals
-            "kitty": "󰞷",
-            "konsole": "󰞷",
-            "alacritty": "󰞷",
-            "com.mitchellh.ghostty": "󰊠",
-            "ghostty": "󰊠",
-            "org.wezfurlong.wezterm": "󰞷",
-            "foot": "󰞷",
-            "xterm": "󰞷",
-            "urxvt": "󰞷",
-
-            // Communication
-            "telegram-desktop": "",
-            "org.telegram.desktop": "",
-            "discord": "󰙯",
-            "webcord": "󰙯",
-            "vesktop": "󰙯",
-            "slack": "󰒱",
-            "Slack": "󰒱",
-            "whatsapp": "󰖣",
-            "wasistlos": "󰖣",
-            "zapzap": "󰖣",
-            "thunderbird": "󰇮",
-            "teamspeak": "",
-
-            // Code editors
-            "code": "󰨞",
-            "code-oss": "󰨞",
-            "vscodium": "󰨞",
-            "codium": "󰨞",
-            "dev.zed.zed": "󰵁",
-            "zed": "󰵁",
-            "subl": "󰅳",
-            "sublime_text": "󰅳",
-            "jetbrains-idea": "",
-            "neovide": "",
-
-            // Media
-            "mpv": "",
-            "vlc": "󰕼",
-            "spotify": "",
-            "cider": "󰎆",
-            "celluloid": "",
-
-            // File managers
-            "thunar": "󰝰",
-            "nemo": "󰝰",
-            "nautilus": "󰝰",
-            "dolphin": "󰝰",
-            "pcmanfm": "󰝰",
-
-            // System
-            "pavucontrol": "󱡫",
-            "org.pulseaudio.pavucontrol": "󱡫",
-            "nwg-look": "",
-            "steam": "",
-            "obs": "",
-            "com.obsproject.studio": "",
-            "gimp": "",
-            "virt-manager": "",
-
-            // Office
-            "libreoffice-writer": "",
-            "libreoffice-calc": "",
-            "libreoffice-startcenter": "󰏆",
-
-            // Claude Code / AI
-            "claude": "󰚩"
-        })
-
-    function getIcon(className) {
-        return windowIcons[className.toLowerCase()] || "󰣆"; // Fallback to a default icon
-    }
-
-    function getWindowIcon(windowClass) {
-        if (!windowClass)
-            return "";
-        if (windowIcons[windowClass])
-            return windowIcons[windowClass];
-        var lowerClass = windowClass.toLowerCase();
-        if (windowIcons[lowerClass])
-            return windowIcons[lowerClass];
-        for (var key in windowIcons) {
-            var lowerKey = key.toLowerCase();
-            if (lowerClass.includes(lowerKey) || lowerKey.includes(lowerClass)) {
-                return windowIcons[key];
-            }
+        for (const name of names) {
+            const lower = name.toLowerCase().replace(/\.desktop$/, "");
+            const entry = DesktopEntries.byId(name)
+                || apps.find(app => app.id.toLowerCase() === lower
+                    || app.startupClass.toLowerCase() === lower);
+            if (entry && !entries.includes(entry)) entries.push(entry);
         }
-        return "󰏗"; // default window icon
+
+        for (const name of names) {
+            const entry = DesktopEntries.heuristicLookup(name);
+            if (entry && !entries.includes(entry)) entries.push(entry);
+        }
+
+        const appId = entries[0]?.id || (initialClass || windowClass || "unknown").toLowerCase();
+
+        const candidates = entries.map(entry => entry.icon)
+            .concat(names, names.map(name => name.toLowerCase()));
+
+        for (const name of candidates) {
+            if (!name) continue;
+            const source = Quickshell.iconPath(name, true);
+            if (source) return { appId: appId, source: source };
+        }
+
+        const generic = Quickshell.iconPath("application-x-executable", true)
+            || Quickshell.iconPath("application-default-icon", true);
+
+        return { appId: appId, source: generic };
     }
 }

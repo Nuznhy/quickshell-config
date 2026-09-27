@@ -1,0 +1,3 @@
+# Let Quickshell own org.freedesktop.Notifications.
+[notification]
+enable_daemon = false

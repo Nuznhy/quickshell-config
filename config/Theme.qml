@@ -14,6 +14,18 @@ Singleton {
     property int barTopMargin: 0
     property int barSideMargin: 0
     property int barRadius: 0
+    property int fontSize: 20
+    property string barPosition: "top"
+    readonly property bool verticalBar: barPosition === "left" || barPosition === "right"
+    readonly property int sideBarWidth: Math.max(64, Math.ceil(fontSize * 2.5) + 16)
+    property var disabledBarScreens: []
+    readonly property var connectedScreens: Quickshell.screens
+    readonly property var enabledBarScreens: {
+        const names = connectedScreens.map(screen => screen.name);
+        const enabled = names.filter(name => !disabledBarScreens.includes(name));
+        // A monitor change must not leave the appearance controls inaccessible.
+        return enabled.length ? enabled : names.slice(0, 1);
+    }
     readonly property int maximumBarRadius: Math.floor(Settings.barHeight / 2)
     property bool ready: false
     property string errorMessage: ""
@@ -40,7 +52,33 @@ Singleton {
         appearanceSaveTimer.stop();
         errorMessage = "";
         stateFile.setText(JSON.stringify({ preset: preset, mode: mode, barOpacity: barOpacity,
-            barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius }, null, 2) + "\n");
+            barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
+            disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition }, null, 2) + "\n");
+    }
+
+    function setFontSize(value) {
+        if (!ready || !Number.isFinite(value)) return;
+        fontSize = Math.round(Math.max(12, Math.min(28, value)));
+        appearanceSaveTimer.restart();
+    }
+
+    function setBarPosition(value) {
+        if (!ready || !["top", "left", "bottom", "right"].includes(value)) return;
+        barPosition = value;
+        appearanceSaveTimer.restart();
+    }
+
+    function barEnabled(name) { return enabledBarScreens.includes(name); }
+
+    function setBarEnabled(name, enabled) {
+        if (!ready || !connectedScreens.some(screen => screen.name === name)) return;
+        if (!enabled && barEnabled(name) && enabledBarScreens.length <= 1) return;
+        // Preserve a temporary fallback bar when another display is switched off.
+        let disabled = disabledBarScreens.filter(item => !enabledBarScreens.includes(item));
+        disabled = disabled.filter(item => item !== name);
+        if (!enabled) disabled.push(name);
+        disabledBarScreens = disabled;
+        appearanceSaveTimer.restart();
     }
 
     function setBarOpacity(value) {
@@ -74,16 +112,22 @@ Singleton {
         path: Quickshell.statePath("theme.json")
         printErrors: false
         onLoaded: {
+            if (root.ready) return;
             try {
                 var saved = JSON.parse(text());
                 if (!saved || typeof saved !== "object") throw new Error("Invalid theme settings");
                 root.preset = Palettes.hasPreset(saved.preset) ? saved.preset : "rose-pine";
                 root.mode = saved.mode === "light" ? "light" : "dark";
+                root.fontSize = typeof saved.fontSize === "number" && Number.isFinite(saved.fontSize)
+                    ? Math.round(Math.max(12, Math.min(28, saved.fontSize))) : 20;
+                root.barPosition = ["top", "left", "bottom", "right"].includes(saved.barPosition) ? saved.barPosition : "top";
                 root.barOpacity = typeof saved.barOpacity === "number" && Number.isFinite(saved.barOpacity)
                     ? Math.max(0.2, Math.min(1, saved.barOpacity)) : 1;
                 root.barTopMargin = root.geometryValue(saved.barTopMargin, 40);
                 root.barSideMargin = root.geometryValue(saved.barSideMargin, 40);
                 root.barRadius = root.geometryValue(saved.barRadius, root.maximumBarRadius);
+                root.disabledBarScreens = Array.isArray(saved.disabledBarScreens)
+                    ? [...new Set(saved.disabledBarScreens.filter(name => typeof name === "string" && name.length > 0))] : [];
             } catch (error) {
                 root.errorMessage = "Could not read saved theme. Choose a theme to reset it.";
             }
@@ -117,5 +161,4 @@ Singleton {
     readonly property color highlightHigh: palette.highlightHigh
 
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
-    readonly property int fontSize: 20
 }

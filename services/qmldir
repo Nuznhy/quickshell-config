@@ -3,3 +3,8 @@ singleton SystemStats 1.0 SystemStats.qml
 singleton Audio 1.0 Audio.qml
 singleton Keyboard 1.0 Keyboard.qml
 singleton Workspaces 1.0 Workspaces.qml
+singleton Notifications 1.0 Notifications.qml
+singleton NetworkState 1.0 NetworkState.qml
+singleton BluetoothState 1.0 BluetoothState.qml
+singleton Brightness 1.0 Brightness.qml
+singleton Media 1.0 Media.qml

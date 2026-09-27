@@ -1,46 +1,49 @@
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import "../../../config"
+import "../../../components"
 
-Item {
-    width: 30
-    height: 30
-
-    Rectangle {
-        anchors.fill: parent
-        radius: 6
-        color: Theme.overlay
-        visible: mouseArea.containsMouse
-    }
-
-    // 1. The Icon
+DropdownWidget {
+    id: root
+    barWindow: root.QsWindow.window
+    popupWidth: 290
+    sizeToContent: true
+    showStem: false
+    stemAlignment: "right"
+    property string errorMessage: ""
     Text {
-        anchors.centerIn: parent
+        width: 30
+        height: Settings.barHeight
         text: ""
-        // Ensure you specify your Nerd Font so the icon renders correctly
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
         color: Theme.love
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
     }
-
-    // 3. The Click Handler
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true // Required for the ToolTip to show on hover
-        cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            logoutCommand.running = true;
+    popupContent: PowerMenu {
+        active: root.dropdownOpen
+        busy: action.running
+        errorMessage: root.errorMessage
+        onActionRequested: requested => {
+            if (action.running) return;
+            root.errorMessage = "";
+            root.dropdownOpen = false;
+            action.command = ["python3", decodeURIComponent(Qt.resolvedUrl("../../../scripts/power-action.py").toString().replace(/^file:\/\//, "")), requested];
+            action.running = true;
         }
-
-        // Optional: Add visual feedback when pressed
-        opacity: pressed ? 0.7 : 1.0
     }
-
-    // 4. The Execution Process
     Process {
-        id: logoutCommand
-        // Wrapping in sh -c ensures the tilde (~) expands to your home directory properly
-        command: Settings.logoutCommand
+        id: action
+        environment: ({ QS_LOCK_BG: Theme.bg.toString(), QS_LOCK_TEXT: Theme.text.toString(), QS_LOCK_ACCENT: Theme.iris.toString() })
+        stdout: StdioCollector {}
+        stderr: StdioCollector { id: errors }
+        onExited: code => {
+            if (code !== 0) {
+                root.errorMessage = errors.text.trim() || "Power action failed.";
+                root.dropdownOpen = true;
+            }
+        }
     }
 }

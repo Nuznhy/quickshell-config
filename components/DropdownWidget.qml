@@ -4,26 +4,36 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../config"
+import "PopupPlacement.js" as PopupPlacement
 
 Item {
     id: root
     Layout.preferredWidth: iconContainer.width
-    Layout.preferredHeight: parent.height
-    Layout.rightMargin: 8
+    Layout.preferredHeight: Settings.barHeight
 
     required property var barWindow
     property int popupWidth: 200
     property int popupHeight: 150
     property bool sizeToContent: false
+    property bool widthToContent: false
+    property bool focusGrabEnabled: true
     property bool showStem: true
+    property bool showHoverIndicator: true
     property int popupXOffset: 200
     property bool dropdownOpen: false
+    property bool rightClickEnabled: false
+    property bool wheelEnabled: false
     property string stemAlignment: "center"  // "left", "center", or "right"
     property alias popupContent: popupLoader.sourceComponent
 
     signal opened
+    signal rightClicked
+    signal wheelScrolled(int delta)
 
     default property alias iconContent: iconContainer.data
+
+    onXChanged: { if (dropdownOpen) popup.anchor.updateAnchor(); }
+    onYChanged: { if (dropdownOpen) popup.anchor.updateAnchor(); }
 
     Connections {
         target: barWindow
@@ -32,12 +42,10 @@ Item {
         }
     }
 
-    Rectangle {
+    BarHoverIndicator {
         anchors.fill: parent
-        anchors.margins: 3
-        radius: 6
-        color: Theme.overlay
-        visible: triggerMouse.containsMouse || root.dropdownOpen
+        hovered: root.showHoverIndicator && triggerMouse.containsMouse
+        active: root.showHoverIndicator && root.dropdownOpen
     }
 
     Row {
@@ -50,8 +58,17 @@ Item {
         id: triggerMouse
         anchors.fill: parent
         hoverEnabled: true
+        acceptedButtons: root.rightClickEnabled ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
+        onWheel: wheel => {
+            if (!root.wheelEnabled) { wheel.accepted = false; return; }
+            root.wheelScrolled(wheel.angleDelta.y);
+        }
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                root.rightClicked();
+                return;
+            }
             var shouldOpen = !dropdownOpen;
             barWindow.closeAllPopups();
             dropdownOpen = shouldOpen;
@@ -64,28 +81,29 @@ Item {
     HyprlandFocusGrab {
         id: focusGrab
         windows: [popup]
-        active: dropdownOpen
-        onCleared: dropdownOpen = false
+        active: dropdownOpen && root.focusGrabEnabled
+        onCleared: {
+            if (root.focusGrabEnabled)
+                dropdownOpen = false;
+        }
     }
 
     PopupWindow {
         id: popup
         visible: popupReveal.presented
-        anchor.window: barWindow
-        anchor.rect.x: {
-            if (!barWindow || !barWindow.contentItem)
-                return 0;
-            var iconCenter = iconContainer.mapToItem(barWindow.contentItem, iconContainer.width / 2, 0).x;
-            if (stemAlignment === "right") {
-                return iconCenter - popupWidth + (root.showStem ? cardRect.stemWidth / 2 + 10 : iconContainer.width / 2 + 8);
-            } else if (stemAlignment === "left") {
-                return iconCenter - cardRect.stemWidth / 2 - 10;
-            } else {
-                return iconCenter - popupWidth / 2;
-            }
+        anchor.window: root.barWindow
+        anchor.adjustment: PopupAdjustment.SlideX | PopupAdjustment.SlideY
+        anchor.onAnchoring: {
+            if (!root.barWindow?.contentItem) return;
+            const point = iconContainer.mapToItem(root.barWindow.contentItem, 0, 0);
+            const placement = PopupPlacement.position(Theme.barPosition, point.x, point.y,
+                iconContainer.width, iconContainer.height, root.barWindow.width, root.barWindow.height,
+                popup.width, popup.height, root.stemAlignment, cardRect.stemWidth, root.showStem);
+            popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
         }
-        anchor.rect.y: root.showStem ? 32 : barWindow.height + 4
-        implicitWidth: popupWidth
+        implicitWidth: root.widthToContent
+            ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + 16
+            : root.popupWidth
         implicitHeight: root.sizeToContent
             ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + 16
             : root.popupHeight

@@ -1,0 +1,147 @@
+import QtQuick
+import Quickshell.Widgets
+import "../config"
+import "../services"
+
+Grid {
+    id: root
+    columns: Theme.verticalBar ? 1 : Math.max(1, iconModel.count)
+    required property var icons
+    required property bool activeWorkspace
+    readonly property int count: iconModel.count
+    spacing: 6
+
+    move: Transition {
+        NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic }
+    }
+
+    ListModel {
+        id: iconModel
+    }
+
+    function removeIcon(appId) {
+        for (let i = 0; i < iconModel.count; ++i) {
+            if (iconModel.get(i).appId === appId && !iconModel.get(i).present) {
+                iconModel.remove(i);
+                return;
+            }
+        }
+    }
+
+    function syncIcons() {
+        const incoming = icons || [];
+        const ids = new Set(incoming.map(icon => icon.appId));
+        for (let i = 0; i < iconModel.count; ++i)
+            iconModel.setProperty(i, "present", ids.has(iconModel.get(i).appId));
+        for (const icon of incoming) {
+            let index = -1;
+            for (let i = 0; i < iconModel.count; ++i) {
+                if (iconModel.get(i).appId === icon.appId) {
+                    index = i;
+                    break;
+                }
+            }
+            const payload = JSON.stringify(icon);
+            if (index < 0) {
+                iconModel.append({
+                    appId: icon.appId,
+                    iconJson: payload,
+                    present: true
+                });
+            } else {
+                if (iconModel.get(index).iconJson !== payload)
+                    iconModel.setProperty(index, "iconJson", payload);
+                iconModel.setProperty(index, "present", true);
+            }
+        }
+    }
+
+    onIconsChanged: syncIcons()
+    Component.onCompleted: syncIcons()
+
+    Repeater {
+        model: iconModel
+        Item {
+            id: appIcon
+            required property string appId
+            required property string iconJson
+            required property bool present
+            readonly property var modelData: JSON.parse(iconJson)
+            property bool appeared: false
+            Component.onCompleted: appeared = true
+            enabled: present
+            opacity: appeared && present ? 1 : 0
+            scale: appeared && present ? 1 : 0.5
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 160
+                }
+            }
+            Behavior on scale {
+                NumberAnimation {
+                    duration: appIcon.present ? 200 : 160
+                    easing.type: appIcon.present ? Easing.OutBack : Easing.InCubic
+                }
+            }
+            Timer {
+                interval: 180
+                running: !appIcon.present
+                onTriggered: root.removeIcon(appIcon.appId)
+            }
+            width: Theme.fontSize - 1
+            height: width
+            property real iconScale: iconMouse.containsMouse ? 1.25 : 1
+            readonly property string attentionAddress: Workspaces.attentionWindow(modelData.addresses)
+            readonly property bool needsAttention: Workspaces.needsAttention(modelData.appId, modelData.addresses)
+
+            Behavior on iconScale {
+                NumberAnimation {
+                    duration: 120
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            IconImage {
+                id: systemIcon
+                anchors.fill: parent
+                source: appIcon.modelData.source
+                visible: status === Image.Ready
+                scale: appIcon.iconScale
+            }
+
+            Text {
+                anchors.centerIn: parent
+                visible: systemIcon.status !== Image.Ready
+                text: "󰏗"
+                font.family: Theme.fontFamily
+                font.pixelSize: appIcon.height
+                color: root.activeWorkspace ? Theme.love : Theme.text
+                scale: appIcon.iconScale
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.topMargin: -3
+                anchors.rightMargin: -3
+                width: 9
+                height: 9
+                radius: width / 2
+                color: Theme.love
+                border.color: Theme.bg
+                border.width: 1
+                visible: appIcon.needsAttention
+            }
+
+            MouseArea {
+                id: iconMouse
+                anchors.fill: parent
+                anchors.margins: -3
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Workspaces.focusWindow(appIcon.attentionAddress || appIcon.modelData.address)
+            }
+        }
+    }
+}
