@@ -8,8 +8,8 @@ TestCase {
         const value = Data.defaults();
         compare(value.sections.start, ["workspaces", "tray", "media"]);
         compare(value.sections.center, ["clock"]);
-        compare(value.sections.end.length, 10);
-        compare(value.disabled, []);
+        compare(value.sections.end.length, 11);
+        compare(value.disabled, ["monitoring"]);
     }
     function test_normalize_repairs_ids() {
         const value = Data.defaults();
@@ -21,7 +21,7 @@ TestCase {
         compare(repaired.sections.center, []);
         compare(repaired.disabled, ["clock"]);
         const all = [].concat(repaired.sections.start, repaired.sections.center, repaired.sections.end);
-        compare(new Set(all).size, 14);
+        compare(new Set(all).size, 15);
     }
     function test_invalid_state() {
         for (const value of [null, {}, {version: 2}, {version: 1, sections: {start: []}}]) {
@@ -47,9 +47,19 @@ TestCase {
         value = Data.move(value, "clock", "start", 1);
         value = Data.normalize(JSON.parse(JSON.stringify(value)));
         compare(value.sections.start[1], "clock");
-        compare(value.disabled, ["clock"]);
+        compare(value.disabled, ["monitoring", "clock"]);
         value = Data.setEnabled(value, "clock", true);
         compare(value.sections.start[1], "clock");
-        compare(value.disabled, []);
+        compare(value.disabled, ["monitoring"]);
+    }
+    function test_monitoring_added_without_changing_existing_widgets() {
+        const old = Data.defaults();
+        old.sections.end = old.sections.end.filter(id => id !== "monitoring");
+        old.disabled = ["cpu"];
+        const migrated = Data.normalize(old);
+        compare(migrated.disabled, ["cpu", "monitoring"]);
+        compare(migrated.sections.end.slice(0, -1), old.sections.end);
+        const enabled = Data.setEnabled(migrated, "monitoring", true);
+        verify(!Data.normalize(enabled).disabled.includes("monitoring"));
     }
 }

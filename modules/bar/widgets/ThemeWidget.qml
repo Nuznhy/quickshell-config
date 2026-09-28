@@ -13,12 +13,9 @@ Item {
         hovered: mouse.containsMouse
         active: ShellSettings.opened
     }
-    Text {
+    SettingsIcon {
         anchors.centerIn: parent
-        text: "󰏘"
         color: ShellSettings.opened ? Theme.iris : Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
     }
     MouseArea {
         id: mouse

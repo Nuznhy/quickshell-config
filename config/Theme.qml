@@ -20,6 +20,10 @@ Singleton {
     readonly property int sideBarWidth: Math.max(64, Math.ceil(fontSize * 2.5) + 16)
     property var disabledBarScreens: []
     property var wallpapers: ({})
+    property string wallpaperFolder: ""
+    readonly property string defaultSettingsIcon: "󰒓"
+    property string settingsIcon: defaultSettingsIcon
+    property string settingsIconSource: ""
     readonly property var connectedScreens: Quickshell.screens
     readonly property var enabledBarScreens: {
         const names = connectedScreens.map(screen => screen.name);
@@ -55,7 +59,8 @@ Singleton {
         stateFile.setText(JSON.stringify({ preset: preset, mode: mode, barOpacity: barOpacity,
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
             disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition,
-            wallpapers: wallpapers }, null, 2) + "\n");
+            wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
+            settingsIcon: settingsIcon, settingsIconSource: settingsIconSource }, null, 2) + "\n");
     }
 
     function wallpaperFor(name) { return Object.prototype.hasOwnProperty.call(wallpapers, name) ? wallpapers[name] : ""; }
@@ -66,6 +71,20 @@ Singleton {
         if (source) next[name] = source;
         else delete next[name];
         wallpapers = next;
+        appearanceSaveTimer.restart();
+    }
+
+    function setWallpaperFolder(source) {
+        if (!ready || typeof source !== "string" || (source !== "" && !source.startsWith("file:///"))) return;
+        wallpaperFolder = source;
+        appearanceSaveTimer.restart();
+    }
+
+    function setSettingsIcon(glyph, source) {
+        if (!ready || typeof glyph !== "string" || typeof source !== "string"
+                || (source !== "" && !source.startsWith("file:///"))) return;
+        settingsIcon = glyph.trim().slice(0, 16) || defaultSettingsIcon;
+        settingsIconSource = source;
         appearanceSaveTimer.restart();
     }
 
@@ -150,6 +169,12 @@ Singleton {
                     }
                 }
                 root.wallpapers = restoredWallpapers;
+                root.wallpaperFolder = typeof saved.wallpaperFolder === "string" && saved.wallpaperFolder.startsWith("file:///")
+                    ? saved.wallpaperFolder : "";
+                root.settingsIcon = typeof saved.settingsIcon === "string" && saved.settingsIcon.trim()
+                    ? saved.settingsIcon.trim().slice(0, 16) : root.defaultSettingsIcon;
+                root.settingsIconSource = typeof saved.settingsIconSource === "string" && saved.settingsIconSource.startsWith("file:///")
+                    ? saved.settingsIconSource : "";
             } catch (error) {
                 root.errorMessage = "Could not read saved theme. Choose a theme to reset it.";
             }

@@ -19,7 +19,7 @@ config/
 services/
   Audio.qml               Output discovery, volume/mute state, and audio actions
   Keyboard.qml            Keyboard layout polling and switching
-  SystemStats.qml         CPU and memory sampling
+  SystemStats.qml         Shared hardware sampling and monitoring history
   Time.qml                Shared system clock
   Notifications.qml       Notification daemon, history, DND, and app actions
   NetworkState.qml        Shared Wi-Fi, Ethernet, VPN, and connection state
@@ -58,7 +58,7 @@ audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
 ## Settings window
 
-Click the palette button to open the separate Settings window. **Bar layout**
+Click the gear button to open the separate Settings window. **Bar layout**
 lets you drag widget cards within or between Start, Center, and End. The same
 sections become Top, Middle, and Bottom for a vertical bar. Each switch controls
 whether that widget appears; hidden cards retain their saved positions. Escape
@@ -69,8 +69,11 @@ restores the original widget order and visibility without changing appearance.
 The clock can also be moved or hidden. Sections scroll when their contents exceed
 the available space, and spacing is only inserted between displayed widgets.
 
-**Appearance** contains the existing palette, font, bar geometry, monitor, and
-wallpaper controls. Closing the settings window leaves the shell running.
+**Appearance** contains palette, font, bar geometry, monitor visibility, application
+themes, and the settings-button icon. Choose Gear, Sliders, Palette, Grid, Linux,
+or Arch from the icon catalog. Select Custom to reveal the glyph field and image
+picker; Reset restores the gear. **Wallpapers** contains monitor previews and a folder
+gallery. Closing the settings window leaves the shell running.
 To reopen it even if its bar button is hidden:
 
 ```sh
@@ -86,6 +89,31 @@ is temporarily absent.
 Run `python3 scripts/test-settings.py` for isolated layout, drag-and-drop,
 visibility, orientation, and persistence checks. It uses Qt 6's test runner and
 Quickshell with temporary state; it does not change your desktop layout.
+
+## PC monitoring
+
+Enable **PC monitoring** in Settings → Bar layout, then use the gear next to its
+switch to configure metrics. CPU and Memory remain available as separate widgets.
+Each metric supports **Off**, **Short** (icon and meter), and **Long** (meter and
+numbers). CPU load and RAM start in Long mode; the new widget starts disabled
+to preserve existing layouts. Preferences save separately in `monitoring.json`.
+
+Left-click opens graphs for all supported metrics, even those hidden from the
+bar. Samples are taken every two seconds and retained for ten minutes in memory
+while monitoring is enabled. Right-click opens `btop` in the default terminal:
+`xdg-terminal-exec`, `$TERMINAL`, the Hyprland terminal setting, then installed
+terminal fallbacks. Errors appear on hover and in the history popup.
+
+CPU/GPU load and temperature, RAM/VRAM usage, and exposed CPU/GPU/battery power
+sensors are discovered automatically. Settings offer a CPU temperature source
+override. Unavailable sensors show a reason; no driver or permission changes are
+made. Power readings describe individual sources, not whole-PC consumption.
+Meters use sensor limits where available; otherwise temperature uses 100°C and
+power graphs use their labelled recent peak. Vertical memory values use `G` for
+GiB. History resets when Quickshell restarts.
+
+Run `python3 scripts/test-monitoring.py` for isolated sensor, terminal, controls,
+history, and settings-persistence checks.
 
 ## Customize
 
@@ -115,7 +143,9 @@ Quickshell with temporary state; it does not change your desktop layout.
   the dotfiles. The initial theme is Rosé Pine Dark. Save failures appear in
   the picker; missing or invalid settings fall back to the default.
 - Edit palette definitions in `config/Palettes.js` and fonts in `config/Theme.qml`.
-  Theme selection affects this shell; application/GTK themes are configured separately.
+  Enable individual targets under Application themes to sync app colors with the
+  shell. See [Application themes](APP_THEMING.md) for supported apps, toolkit
+  setup, and restoration. All app switches start off.
 - Change the keyboard device, launcher commands, spacing, and refresh intervals
   in `config/Settings.qml`. Defaults retain the previous configuration.
 - Reorder and show/hide widgets in Settings → Bar layout. New widget types are
@@ -125,9 +155,15 @@ Quickshell with temporary state; it does not change your desktop layout.
   default to enabled. One connected bar stays available for restoring others.
   If unplugging monitors leaves only disabled outputs, the first remaining
   output temporarily shows a bar without changing the saved preferences.
-- In Appearance → Wallpapers, choose a local image for each connected monitor.
-  Each monitor has its own preview and Clear button. Images fill the screen
-  without distortion, cropping where necessary. Paths are saved by output name
+- In Settings → Wallpapers, monitor cards sit side by side and wrap on smaller
+  windows. Drop a local image onto a monitor's card, click its preview to browse,
+  or use the folder button. Images are checked before replacing the current
+  wallpaper; invalid files leave it unchanged. Each card has a Clear button.
+  Choose folder loads its images into a thumbnail gallery (without scanning
+  subfolders). Select a monitor under Apply to, then click a thumbnail. The folder
+  is remembered across restarts; removing it from the gallery keeps current
+  wallpapers. Images fill the screen without distortion, cropping where necessary.
+  Paths are saved by output name
   and restored after restart or reconnect; keep the selected files on disk.
   Wallpaper rendering runs directly in Quickshell's background layer, independently
   of bar visibility, and does not require Noctalia or another wallpaper daemon.

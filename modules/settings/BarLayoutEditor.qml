@@ -7,6 +7,7 @@ import "../../components"
 
 FocusScope {
     id: root
+    signal settingsRequested(string widgetId)
     property string dragId: ""
     property bool dragCanceled: false
     property point pointer: Qt.point(0, 0)
@@ -143,7 +144,7 @@ FocusScope {
                                     id: handle
                                     objectName: "drag-" + card.modelData
                                     anchors.fill: parent
-                                    anchors.rightMargin: 54
+                                    anchors.rightMargin: BarLayout.entry(card.modelData).settings ? 88 : 54
                                     hoverEnabled: true
                                     enabled: BarLayout.ready
                                     cursorShape: root.dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
@@ -173,6 +174,19 @@ FocusScope {
                                         verticalAlignment: Text.AlignVCenter
                                         elide: Text.ElideRight
                                     }
+                                }
+                                NotificationButton {
+                                    objectName: "settings-" + card.modelData
+                                    visible: !!BarLayout.entry(card.modelData).settings
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 54
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 28
+                                    height: 28
+                                    text: "󰒓"
+                                    enabled: BarLayout.ready && !root.dragging
+                                    Accessible.name: "Configure " + BarLayout.entry(card.modelData).label
+                                    onClicked: root.settingsRequested(card.modelData)
                                 }
                                 ControlSwitch {
                                     objectName: "toggle-" + card.modelData

@@ -9,6 +9,7 @@ import "../../components"
 
 FloatingWindow {
     id: root
+    property bool monitoringSettings: false
     title: "Quickshell Settings"
     implicitWidth: 900
     implicitHeight: 720
@@ -54,12 +55,18 @@ FloatingWindow {
             NotificationButton {
                 text: "Bar layout"
                 accent: pages.currentIndex === 0
-                onClicked: pages.currentIndex = 0
+                onClicked: { root.monitoringSettings = false; pages.currentIndex = 0; }
             }
             NotificationButton {
                 text: "Appearance"
                 accent: pages.currentIndex === 1
                 onClicked: pages.currentIndex = 1
+            }
+            NotificationButton {
+                objectName: "wallpapers-tab"
+                text: "Wallpapers"
+                accent: pages.currentIndex === 2
+                onClicked: pages.currentIndex = 2
             }
             Item { Layout.fillWidth: true }
         }
@@ -67,14 +74,53 @@ FloatingWindow {
             id: pages
             Layout.fillWidth: true
             Layout.fillHeight: true
-            BarLayoutEditor { id: editor }
+            StackLayout {
+                currentIndex: root.monitoringSettings ? 1 : 0
+                BarLayoutEditor {
+                    id: editor
+                    onSettingsRequested: widgetId => { if (widgetId === "monitoring") root.monitoringSettings = true; }
+                }
+                ScrollView {
+                    id: monitoringScroll
+                    clip: true
+                    leftPadding: 16
+                    rightPadding: 16
+                    topPadding: 4
+                    bottomPadding: 16
+                    contentWidth: availableWidth
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    MonitoringSettings {
+                        width: monitoringScroll.availableWidth
+                        active: root.visible && pages.currentIndex === 0 && root.monitoringSettings
+                        onBackRequested: root.monitoringSettings = false
+                    }
+                }
+            }
             ScrollView {
                 id: appearanceScroll
                 clip: true
+                leftPadding: 16
+                rightPadding: 16
+                topPadding: 4
+                bottomPadding: 16
                 contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 ThemePicker {
                     width: appearanceScroll.availableWidth
+                    onDismissed: ShellSettings.close()
+                }
+            }
+            ScrollView {
+                id: wallpaperScroll
+                clip: true
+                leftPadding: 16
+                rightPadding: 16
+                topPadding: 4
+                bottomPadding: 16
+                contentWidth: availableWidth
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                WallpaperPage {
+                    width: wallpaperScroll.availableWidth
                     onDismissed: ShellSettings.close()
                 }
             }

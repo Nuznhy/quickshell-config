@@ -41,7 +41,7 @@ ColumnLayout {
         stepSize: 1
         value: root.value
         enabled: Theme.ready
-        wheelEnabled: true
+        wheelEnabled: false
         Accessible.name: root.label
         onMoved: root.valueEdited(value)
         onPressedChanged: { if (!pressed && Theme.ready) root.editingFinished(); }

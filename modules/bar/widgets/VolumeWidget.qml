@@ -26,7 +26,7 @@ Item {
 
     HyprlandFocusGrab {
         windows: [popup]
-        active: volumeWidget.popupOpen
+        active: volumeWidget.popupOpen && popup.visible
         onCleared: volumeWidget.popupOpen = false
     }
 
@@ -88,6 +88,12 @@ Item {
         implicitWidth: 350
         implicitHeight: content.implicitHeight + Settings.popupPadding * 2
         visible: popupReveal.presented
+        onVisibleChanged: {
+            if (!visible) {
+                volumeWidget.popupOpen = false;
+                popupReveal.finishClosing();
+            }
+        }
         color: "transparent"
 
         PopupReveal {

@@ -39,6 +39,16 @@ Item {
             mouseClick(control("toggle-clock"));
             verify(BarLayout.isEnabled("clock"));
         }
+        SignalSpy { id: settingsSpy; target: editor; signalName: "settingsRequested" }
+        function test_monitoring_gear_does_not_drag_or_toggle() {
+            settingsSpy.clear();
+            verify(!BarLayout.isEnabled("monitoring"));
+            mouseClick(control("settings-monitoring"));
+            compare(settingsSpy.count, 1);
+            compare(settingsSpy.signalArguments[0][0], "monitoring");
+            verify(!editor.dragging);
+            verify(!BarLayout.isEnabled("monitoring"));
+        }
         function test_drag_between_sections_and_empty_target() {
             dragTo("clock", "start", 70);
             compare(BarLayout.ids("start"), ["workspaces", "clock", "tray", "media"]);

@@ -11,11 +11,12 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | --- | --- | --- |
 | Shell | `quickshell` | Bar, popups, tray, media, notifications, wallpaper layers, and lock screen. |
 | Desktop | `hyprland` | Running Wayland compositor and `hyprctl` for workspaces, window focus, pointer movement, and keyboard layouts. The focus helper uses Hyprland's Lua dispatch API. |
-| Qt UI | `qt6-base`, `qt6-declarative`, `qt6-wayland`, `qt6-svg` | Qt Quick, Controls, Layouts, Shapes, Dialogs, Wayland rendering, and SVG icons. These are also Quickshell package dependencies. |
+| Qt UI | `qt6-base`, `qt6-declarative`, `qt6-wayland`, `qt6-svg` | Qt Quick, Controls, Layouts, Shapes, Dialogs, FolderListModel for the wallpaper gallery, Wayland rendering, and SVG icons. These are also Quickshell package dependencies. |
 | Additional image formats | `qt6-imageformats` | Extra Qt image decoders for artwork and wallpapers; available formats depend on installed plugins. |
 | Fonts | `ttf-jetbrains-mono-nerd`, `fontconfig` | Configured text font and Nerd Font widget symbols. |
 | Application icons | `hicolor-icon-theme`, `adwaita-icon-theme` | Icon lookup infrastructure and a recommended fallback theme. Apps supply their own desktop entries and icons. |
 | Helpers and statistics | `bash`, `coreutils`, `grep`, `procps-ng`, `jq`, `python` | Shell scripts, `head`, `free`, JSON processing, and Python helpers. Linux `/proc` and `/sys` must be available. |
+| PC monitoring | `python`, `btop`, an installed terminal | Standard-library collector reads `/proc` and `/sys`; right-click launches `btop`. No extra Python libraries or Qt Charts module are required. |
 | Audio controls | `libpulse`, `pavucontrol` | `pactl` for device discovery, volume, mute, and moving streams; middle-click launches the mixer. |
 | Audio server | `pipewire`, `pipewire-pulse`, `wireplumber` **or an existing PulseAudio server** | A running PulseAudio-compatible server is required. PipeWire is the default choice in the script below. |
 | Network | `networkmanager`, `libnm`, `python-gobject`, `nm-connection-editor` | NetworkManager daemon, `nmcli`, NM introspection through Python GI, and the advanced/VPN profile editor. |
@@ -58,6 +59,9 @@ is also available in Extra; neither requires an AUR helper.
 | `libnotify` | `notify-send` for notification integration tests or sending notifications from scripts. |
 | `findutils` | `find` used by `scripts/check.sh`. |
 | `git` | Cloning/updating this repository or the parent dotfiles submodule. |
+| `nvidia-utils` | NVIDIA monitoring uses `nvidia-smi` from the matching installed driver stack. AMD monitoring uses kernel sysfs interfaces. Other GPUs expose only the metrics supported by their driver. |
+| `xdg-terminal-exec` | Optional default-terminal resolver. Without it, monitoring checks `$TERMINAL`, Hyprland's terminal setting, then supported installed terminals. |
+| `lm_sensors` | Optional sensor diagnostics; monitoring reads kernel hwmon files directly and does not run sensor detection or change permissions. |
 
 QML parsing, linting, and UI tests use `qmlformat`, `qmllint`, `qmltestrunner`,
 and `QtTest` from `qt6-declarative`. Python tests use the standard library and
@@ -68,6 +72,16 @@ Media controls use MPRIS and require a player exposing that interface. No
 `playerctl` package is needed. Wallpapers and locking are implemented in this
 config: Noctalia, `swww`, `hyprpaper`, `hyprlock`, and `swaylock` are not required.
 Codex/Ghostty notification integration is optional; neither is a shell dependency.
+
+Application color syncing is optional and starts disabled. See
+[Application themes](APP_THEMING.md#dependencies) for per-target packages and
+setup. GTK syncing needs `adw-gtk-theme`, `gsettings-desktop-schemas`, `glib2`, and
+`dconf`; Qt uses the existing KDE platform integration or qt5ct/qt6ct. Spotify
+uses an already initialized `spicetify-cli` installation. Zen Browser syncing
+needs an existing Zen profile with custom stylesheets enabled (see the setup
+guide above); it requires no additional package. tmux syncing requires `tmux` and
+the dotfiles' `tmux/theme.conf` integration, with no plugin dependency. These optional app
+integrations are not installed by the base script below.
 
 ## Arch install script
 
@@ -104,7 +118,7 @@ packages=(
     quickshell hyprland
     qt6-base qt6-declarative qt6-wayland qt6-svg qt6-imageformats
     ttf-jetbrains-mono-nerd fontconfig hicolor-icon-theme adwaita-icon-theme
-    bash coreutils grep procps-ng jq python
+    bash coreutils grep procps-ng jq python btop
     libpulse pavucontrol
     networkmanager libnm python-gobject nm-connection-editor
     bluez glib2 ddcutil brightnessctl
@@ -217,6 +231,7 @@ isolated integrations without changing live connections or powering off the PC:
 
 ```sh
 bash scripts/check.sh
+python3 scripts/test-app-themes.py
 python3 scripts/test-settings.py
 python3 scripts/test-network.py
 python3 scripts/test-bluetooth.py

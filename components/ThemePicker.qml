@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import "../config"
 
 ColumnLayout {
@@ -10,17 +9,7 @@ ColumnLayout {
     spacing: 12
     focus: true
     signal dismissed
-    readonly property bool choosingWallpaper: wallpaperDialog.visible
     Keys.onEscapePressed: dismissed()
-
-    FileDialog {
-        id: wallpaperDialog
-        property string monitorName: ""
-        title: "Wallpaper for " + monitorName
-        fileMode: FileDialog.OpenFile
-        nameFilters: ["Images (*.png *.jpg *.jpeg *.webp *.bmp *.avif *.svg)", "All files (*)"]
-        onAccepted: Theme.setWallpaper(monitorName, selectedFile.toString())
-    }
 
     Text {
         text: "Appearance"
@@ -106,6 +95,8 @@ ColumnLayout {
         onValueEdited: value => Theme.setFontSize(value)
         onEditingFinished: Theme.save()
     }
+
+    SettingsIconEditor { Layout.fillWidth: true }
 
     Text {
         text: "BAR POSITION"
@@ -215,77 +206,7 @@ ColumnLayout {
         wrapMode: Text.WordWrap
     }
 
-    Text {
-        text: "WALLPAPERS"
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
-        font.letterSpacing: 1.5
-        Layout.topMargin: 4
-    }
-    Repeater {
-        model: Theme.connectedScreens
-        delegate: Rectangle {
-            id: wallpaperCard
-            required property var modelData
-            readonly property string source: Theme.wallpaperFor(modelData.name)
-            Layout.fillWidth: true
-            implicitHeight: wallpaperContent.implicitHeight + 20
-            radius: 10
-            color: Theme.surface
-            ColumnLayout {
-                id: wallpaperContent
-                x: 10; y: 10
-                width: parent.width - 20
-                spacing: 8
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text {
-                        Layout.fillWidth: true
-                        text: wallpaperCard.modelData.name
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 12
-                        elide: Text.ElideRight
-                    }
-                    NotificationButton {
-                        text: "Choose"
-                        enabled: Theme.ready
-                        onClicked: {
-                            wallpaperDialog.monitorName = wallpaperCard.modelData.name;
-                            wallpaperDialog.open();
-                        }
-                    }
-                    NotificationButton {
-                        text: "Clear"
-                        enabled: Theme.ready && wallpaperCard.source.length > 0
-                        onClicked: Theme.setWallpaper(wallpaperCard.modelData.name, "")
-                    }
-                }
-                Image {
-                    id: wallpaperPreview
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 90
-                    visible: wallpaperCard.source.length > 0
-                    source: wallpaperCard.source
-                    sourceSize.width: 600
-                    sourceSize.height: 180
-                    asynchronous: true
-                    fillMode: Image.PreserveAspectCrop
-                    clip: true
-                }
-                Text {
-                    Layout.fillWidth: true
-                    visible: wallpaperPreview.status === Image.Error
-                    text: "Image unavailable. Choose another wallpaper."
-                    color: Theme.love
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 11
-                    wrapMode: Text.WordWrap
-                }
-            }
-        }
-    }
+    ApplicationThemes { Layout.fillWidth: true }
 
     Text {
         Layout.fillWidth: true

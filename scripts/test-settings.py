@@ -13,7 +13,8 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     target = Path(directory)
     for subdir in ['config', 'components', 'modules/settings', 'modules/bar/widgets', 'runtime']:
         (target / subdir).mkdir(parents=True, exist_ok=True, mode=0o700)
-    for name in ['ControlSwitch.qml', 'NotificationButton.qml']:
+    for name in ['ControlSwitch.qml', 'NotificationButton.qml', 'WallpaperSelector.qml',
+                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml']:
         shutil.copyfile(root / 'components' / name, target / 'components' / name)
     for path in ['config/BarLayoutData.js', 'modules/settings/BarLayoutEditor.qml', 'modules/bar/BarSection.qml']:
         shutil.copyfile(root / path, target / path)
@@ -21,14 +22,36 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     (target / 'config/Theme.qml').write_text('''pragma Singleton
 import QtQuick
 QtObject {
+    property bool ready: true
+    property string wallpaperFolder: ""
+    function setWallpaperFolder(value) { wallpaperFolder = value; }
+    readonly property string defaultSettingsIcon: "󰒓"
+    property string settingsIcon: defaultSettingsIcon
+    property string settingsIconSource: ""
+    property int fontSize: 20
+    function setSettingsIcon(glyph, source) {
+        settingsIcon = glyph.trim() || defaultSettingsIcon;
+        settingsIconSource = source;
+    }
+    property var connectedScreens: [{name: "DP-1"}, {name: "HDMI-A-1"}]
+    property var wallpapers: ({})
+    function wallpaperFor(name) { return wallpapers[name] || ""; }
+    function setWallpaper(name, source) {
+        const next = Object.assign({}, wallpapers);
+        if (source) next[name] = source;
+        else delete next[name];
+        wallpapers = next;
+    }
     property bool verticalBar: false
     readonly property color bg: "#191724"
     readonly property color surface: "#1f1d2e"
     readonly property color overlay: "#26233a"
     readonly property color highlightMed: "#403d52"
+    readonly property color highlightHigh: "#524f67"
     readonly property color iris: "#c4a7e7"
     readonly property color text: "#e0def4"
     readonly property color subtle: "#908caa"
+    readonly property color love: "#eb6f92"
     readonly property string fontFamily: "sans-serif"
 }
 ''')
@@ -58,6 +81,17 @@ QtObject {
         (target / f'modules/bar/widgets/{name}.qml').write_text('import QtQuick\nimport "../../../config"\nItem { implicitHeight: 42; ' + conditional + ' }\n')
     for path in (root / 'tests/settings').glob('tst_*.qml'):
         shutil.copyfile(path, target / path.name)
+    (target / 'test wallpaper.svg').write_text('''<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#403d70"/><stop offset="1" stop-color="#ebbcba"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h800v450H0z"/><circle cx="590" cy="125" r="50" fill="#f6c177"/>
+<path fill="#31748f" d="M0 380L240 140 430 365 580 235 800 400V450H0z"/>
+<path fill="#1f1d2e" d="M0 450L180 300 330 420 510 305 800 450z"/></svg>''')
+    (target / 'not an image.jpg').write_text('This is not an image.')
+    (target / 'gallery/subfolder').mkdir(parents=True)
+    (target / 'empty-gallery').mkdir()
+    for name in ['first image.svg', 'SECOND.SVG', 'subfolder/nested.svg']:
+        shutil.copyfile(target / 'test wallpaper.svg', target / 'gallery' / name)
+    (target / 'gallery/readme.txt').write_text('Not a wallpaper')
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', XDG_RUNTIME_DIR=str(target / 'runtime'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'), '-input', str(target)], env=env, check=True)
 
@@ -132,7 +166,7 @@ ShellRoot {
 
     # Real settings-window lifecycle and recovery IPC with every widget hidden.
     state_file.rmdir()
-    for subdir in ['components', 'config', 'services', 'modules/settings']:
+    for subdir in ['components', 'config', 'services', 'modules/settings', 'scripts']:
         shutil.copytree(root / subdir, target / subdir, dirs_exist_ok=True)
     (target / 'shell.qml').write_text('''import QtQuick
 import Quickshell
@@ -149,8 +183,20 @@ ShellRoot {
         }
         function status(): string {
             return JSON.stringify({visible: window.visible, opened: ShellSettings.opened,
-                ready: Theme.ready && BarLayout.ready, disabled: BarLayout.state.disabled.length});
+                ready: Theme.ready && BarLayout.ready, disabled: BarLayout.state.disabled.length,
+                folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
+                error: Theme.errorMessage});
         }
+        function preferences(): void {
+            Theme.setWallpaperFolder(Qt.resolvedUrl("gallery").toString());
+            Theme.setSettingsIcon("★", Qt.resolvedUrl("test wallpaper.svg").toString());
+            Theme.save();
+        }
+        function monitoring(): bool {
+            window.monitoringSettings = true;
+            return window.monitoringSettings;
+        }
+        function monitoringPanels(): int { return SystemStats.panels; }
     }
 }
 ''')
@@ -178,17 +224,43 @@ ShellRoot {
                     raise AssertionError(log.read())
                 time.sleep(0.05)
             assert not status['visible']
+            assert status['folder'] == '' and status['iconSource'] == '' and status['icon'] == '󰒓'
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'open')  # Reuses the same window.
+            assert ipc('test', 'monitoring') == 'true'
+            assert ipc('test', 'monitoringPanels') == '1'
             ipc('test', 'hideAll')
-            assert json.loads(ipc('test', 'status'))['disabled'] == 14
+            assert json.loads(ipc('test', 'status'))['disabled'] == 15
             ipc('settings', 'close')
             assert not json.loads(ipc('test', 'status'))['visible']
+            assert ipc('test', 'monitoringPanels') == '0'
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'toggle')
             assert not json.loads(ipc('test', 'status'))['opened']
+            ipc('test', 'preferences')
+            time.sleep(.4)
+            preferences = json.loads(ipc('test', 'status'))
+            assert not preferences['error'], preferences
+            process.terminate()
+            process.wait(timeout=5)
+            process = subprocess.Popen(['quickshell', '--path', str(target)], env=env,
+                                       stdout=log, stderr=subprocess.STDOUT)
+            deadline = time.monotonic() + 8
+            while True:
+                try:
+                    restored = json.loads(ipc('test', 'status'))
+                    if restored['ready']:
+                        break
+                except (RuntimeError, json.JSONDecodeError):
+                    pass
+                if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
+                time.sleep(.05)
+            assert not restored['error'], restored
+            for key in ['folder', 'icon', 'iconSource']:
+                assert restored[key] == preferences[key], (key, restored, preferences)
+            print('PASS: wallpaper folder and custom settings icon survive restart', flush=True)
             log.flush()
             log.seek(0)
             output = log.read()

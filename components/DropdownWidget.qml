@@ -84,7 +84,7 @@ Item {
     HyprlandFocusGrab {
         id: focusGrab
         windows: [popup]
-        active: dropdownOpen && root.focusGrabEnabled
+        active: dropdownOpen && popup.visible && root.focusGrabEnabled
         onCleared: {
             if (root.focusGrabEnabled)
                 dropdownOpen = false;
@@ -212,6 +212,7 @@ Item {
         onVisibleChanged: {
             if (!visible) {
                 dropdownOpen = false;
+                popupReveal.finishClosing();
             }
         }
     }

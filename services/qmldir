@@ -9,3 +9,4 @@ singleton BluetoothState 1.0 BluetoothState.qml
 singleton Brightness 1.0 Brightness.qml
 singleton Media 1.0 Media.qml
 singleton ShellSettings 1.0 ShellSettings.qml
+singleton AppTheming 1.0 AppTheming.qml

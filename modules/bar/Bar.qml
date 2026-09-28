@@ -16,7 +16,12 @@ PanelWindow {
     Connections {
         target: Hyprland
         function onRawEvent(event) {
-            if (event.name === "activewindow" || event.name === "activewindowv2") {
+            // Focus grabs handle outside clicks. An activewindow event can also
+            // be the popup itself taking focus, so dismiss on workspace changes
+            // explicitly instead of immediately closing a newly opened popup.
+            if (event.name === "workspace" || event.name === "workspacev2"
+                    || event.name === "activespecial" || event.name === "activespecialv2"
+                    || event.name === "focusedmon") {
                 barRoot.closeAllPopups();
             }
         }

@@ -66,6 +66,25 @@ log=open(BASE+'/runtime.log','w')
 p=subprocess.Popen(['quickshell','-p',BASE,'--no-color'],env=env,stdout=log,stderr=log)
 try:
     wait_ready()
+    for during_close in [False, True]:
+        ipc('test', 'openPopup')
+        time.sleep(.25)
+        check(state()['popupVisible'], 'popup opens with a mapped native window')
+        if during_close:
+            ipc('test', 'switchWorkspace')
+        ipc('test', 'dismissPopup')
+        check(not state()['popupOpen'] and not state()['popupVisible'], 'native dismissal clears popup state')
+        # Reopen before the 130 ms exit animation could finish on its own.
+        ipc('test', 'openPopup')
+        time.sleep(.25)
+        check(state()['popupOpen'] and state()['popupVisible'], 'popup reopens after interrupted dismissal')
+        for _ in range(5):
+            ipc('test', 'switchWorkspace')
+            ipc('test', 'openPopup')
+        time.sleep(.25)
+        check(state()['popupOpen'] and state()['popupVisible'], 'rapid workspace close/reopen keeps popup usable')
+        ipc('test', 'switchWorkspace')
+        time.sleep(.2)
     ipc('notifications','clear'); ipc('notifications','dnd','false')
     n=notify('Build finished','All checks passed. Your notification center is ready.')
     s=state(); check(len(s['entries'])==1 and s['popups']==1,'receive and show notification')
@@ -98,6 +117,21 @@ try:
     ipc('notifications','clear')
     for i in range(103): notify('History item '+str(i),timeout=0)
     s=state(); check(len(s['entries'])==100 and s['watchers']==100 and s['popups']==3,'history/live object cap and three-toast limit')
+    changes = s['historyChanges']
+    ipc('test', 'open')
+    s = state()
+    check(s['historyChanges'] - changes <= 2 and s['popups'] == 0 and all(e['read'] for e in s['entries']),
+          'opening a full history batches read and toast updates')
+    changes = s['historyChanges']
+    for _ in range(5):
+        ipc('test', 'close')
+        ipc('test', 'open')
+    check(state()['historyChanges'] == changes, 'reopening read history does not rebuild notification cards')
+    ipc('test', 'close')
+    notify('Dismiss transient on open', timeout=0, transient=True)
+    ipc('test', 'open')
+    check(not any(e['transient'] for e in state()['entries']), 'opening history expires transient toasts')
+    ipc('test', 'close')
     ipc('notifications','clear')
     check(not state()['entries'] and state()['watchers']==0,'clear history releases tracked objects')
     # Exercise a real freedesktop action rather than a mocked QML method.
@@ -135,6 +169,7 @@ finally:
     if p.poll() is None: p.terminate(); p.wait(timeout=3)
     log.close()
     output = pathlib.Path(BASE+'/runtime.log').read_text()
+    if sys.exc_info()[0]: print(output, file=sys.stderr)
     if 'ERROR' in output or 'TypeError' in output or 'ReferenceError' in output:
         print(output, file=sys.stderr)
         raise AssertionError('runtime log contains errors')

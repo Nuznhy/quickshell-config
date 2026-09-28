@@ -8,6 +8,7 @@ var widgets = [
     { id: "clock", label: "Clock", section: "center", source: "widgets/Clock.qml" },
     { id: "cpu", label: "CPU", section: "end", source: "widgets/Cpu.qml" },
     { id: "memory", label: "Memory", section: "end", source: "widgets/Memory.qml" },
+    { id: "monitoring", label: "PC monitoring", section: "end", source: "widgets/MonitoringWidget.qml", settings: true, disabledByDefault: true },
     { id: "network", label: "Network", section: "end", source: "../network/Network.qml" },
     { id: "bluetooth", label: "Bluetooth", section: "end", source: "widgets/BluetoothWidget.qml" },
     { id: "keyboard", label: "Keyboard", section: "end", source: "widgets/KeyboardLanguage.qml" },
@@ -21,7 +22,10 @@ var widgets = [
 function widget(id) { return widgets.find(entry => entry.id === id); }
 function defaults() {
     var result = { version: 1, sections: { start: [], center: [], end: [] }, disabled: [] };
-    for (var entry of widgets) result.sections[entry.section].push(entry.id);
+    for (var entry of widgets) {
+        result.sections[entry.section].push(entry.id);
+        if (entry.disabledByDefault) result.disabled.push(entry.id);
+    }
     return result;
 }
 function normalize(saved) {
@@ -42,6 +46,10 @@ function normalize(saved) {
     }
     result.disabled = Array.isArray(saved.disabled)
         ? [...new Set(saved.disabled.filter(id => !!widget(id)))] : [];
+    for (var entry of widgets) {
+        if (entry.disabledByDefault && !seen.includes(entry.id) && !result.disabled.includes(entry.id))
+            result.disabled.push(entry.id);
+    }
     return result;
 }
 // Index is an insertion boundary in the destination's list BEFORE removal.

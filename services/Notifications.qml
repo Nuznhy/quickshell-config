@@ -25,6 +25,8 @@ Singleton {
         if (ready) saveTimer.restart();
     }
     function patch(key, values) {
+        const current = entries.find(entry => entry.key === key);
+        if (!current || Object.keys(values).every(name => current[name] === values[name])) return;
         entries = entries.map(entry => entry.key === key ? Object.assign({}, entry, values) : entry);
         save();
     }
@@ -34,11 +36,22 @@ Singleton {
         save();
     }
     function markRead() {
-        entries = entries.map(entry => Object.assign({}, entry, { read: true }));
+        if (entries.every(entry => entry.read)) return;
+        entries = entries.map(entry => entry.read ? entry : Object.assign({}, entry, { read: true }));
         save();
     }
     function hidePopups() {
-        for (const entry of entries.slice()) hidePopup(entry.key);
+        // Updating the array recreates history delegates. Hide all toasts in one update,
+        // and leave an already-read, quiet history untouched when reopening the panel.
+        const transientKeys = entries.filter(entry => entry.transient).map(entry => entry.key);
+        if (entries.some(entry => entry.popup)) {
+            entries = entries.map(entry => entry.popup ? Object.assign({}, entry, { popup: false }) : entry);
+            save();
+        }
+        for (const key of transientKeys) {
+            const watcher = watchers[key];
+            if (watcher) watcher.notification.expire();
+        }
     }
     function hidePopup(key) {
         const watcher = watchers[key];
