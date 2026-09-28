@@ -76,9 +76,6 @@ DropdownWidget {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                    ToolTip.visible: containsMouse && root.currentMenu === null
-                    ToolTip.delay: 600
-                    ToolTip.text: modelData.tooltipTitle || modelData.title || modelData.id
 
                     function openMenu() {
                         if (!modelData.hasMenu) return;

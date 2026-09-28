@@ -14,6 +14,11 @@ Rectangle {
         function init() {
             Theme.ready = true;
             Theme.wallpapers = {};
+            Theme.lightWallpapers = {};
+            Theme.darkWallpapers = {};
+            Theme.separateWallpapers = false;
+            Theme.mode = "dark";
+            selector.wallpaperMode = Qt.binding(() => Theme.separateWallpapers ? Theme.mode : "shared");
             Theme.connectedScreens = [{name: "DP-1"}, {name: "HDMI-A-1"}];
             selector.width = 760;
             wait(20);
@@ -78,6 +83,29 @@ Rectangle {
             wait(100);
             const result = grabImage(selector.parent);
             result.save("/tmp/quickshell-wallpaper-selector.png");
+        }
+        function test_drop_and_clear_are_scoped_to_mode_and_monitor() {
+            const image = Qt.resolvedUrl("test wallpaper.svg").toString();
+            Theme.setSeparateWallpapers(true);
+            selector.wallpaperMode = "light";
+            card("HDMI-A-1").acceptDrop(drop([image], Qt.CopyAction));
+            tryVerify(() => Theme.wallpaperFor("HDMI-A-1", "light") === image);
+            compare(Theme.wallpaperFor("HDMI-A-1", "dark"), "");
+            compare(Theme.wallpaperFor("DP-1", "light"), "");
+            selector.wallpaperMode = "dark";
+            compare(card("HDMI-A-1").source, "");
+            selector.wallpaperMode = "light";
+            mouseClick(findChild(selector, "wallpaper-clear-HDMI-A-1"));
+            compare(Theme.wallpaperFor("HDMI-A-1", "light"), "");
+        }
+        function test_mode_switch_cancels_pending_image() {
+            Theme.setSeparateWallpapers(true);
+            selector.wallpaperMode = "light";
+            selector.choose("DP-1", Qt.resolvedUrl("test wallpaper.svg"));
+            selector.wallpaperMode = "dark";
+            compare(card("DP-1").candidate, "");
+            wait(50);
+            compare(Theme.wallpaperFor("DP-1", "dark"), "");
         }
     }
 }

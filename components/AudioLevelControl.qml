@@ -40,9 +40,6 @@ RowLayout {
         hoverEnabled: true
         Accessible.name: (root.muted ? "Unmute " : "Mute ") + (root.microphone ? "microphone" : "output")
         onClicked: root.muteRequested()
-        ToolTip.visible: hovered
-        ToolTip.delay: 500
-        ToolTip.text: Accessible.name
         HoverHandler {
             enabled: muteButton.enabled
             cursorShape: Qt.PointingHandCursor

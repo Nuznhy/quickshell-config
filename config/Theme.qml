@@ -10,6 +10,11 @@ Singleton {
     readonly property var presets: Palettes.presets
     property string preset: "rose-pine"
     property string mode: "dark"
+    property int wallpaperTransitionStyle: 0
+    onModeChanged: {
+        // Pick one of six effects, excluding the previous effect. Shared by screens.
+        wallpaperTransitionStyle = (wallpaperTransitionStyle + 1 + Math.floor(Math.random() * 5)) % 6;
+    }
     property real barOpacity: 1
     property int barTopMargin: 0
     property int barSideMargin: 0
@@ -20,6 +25,9 @@ Singleton {
     readonly property int sideBarWidth: Math.max(64, Math.ceil(fontSize * 2.5) + 16)
     property var disabledBarScreens: []
     property var wallpapers: ({})
+    property bool separateWallpapers: false
+    property var lightWallpapers: ({})
+    property var darkWallpapers: ({})
     property string wallpaperFolder: ""
     readonly property string defaultSettingsIcon: "󰒓"
     property string settingsIcon: defaultSettingsIcon
@@ -60,18 +68,49 @@ Singleton {
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
             disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition,
             wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
+            separateWallpapers: separateWallpapers, lightWallpapers: lightWallpapers, darkWallpapers: darkWallpapers,
             settingsIcon: settingsIcon, settingsIconSource: settingsIconSource }, null, 2) + "\n");
     }
 
-    function wallpaperFor(name) { return Object.prototype.hasOwnProperty.call(wallpapers, name) ? wallpapers[name] : ""; }
+    function wallpaperMode(variant) {
+        return ["shared", "light", "dark"].includes(variant) ? variant : separateWallpapers ? mode : "shared";
+    }
 
-    function setWallpaper(name, source) {
-        if (!ready || !name || (source !== "" && !source.startsWith("file:///"))) return;
-        const next = Object.assign({}, wallpapers);
-        if (source) next[name] = source;
+    function wallpaperFor(name, variant) {
+        const target = wallpaperMode(variant);
+        const choices = target === "light" ? lightWallpapers : target === "dark" ? darkWallpapers : wallpapers;
+        if (Object.prototype.hasOwnProperty.call(choices, name)) return choices[name];
+        return Object.prototype.hasOwnProperty.call(wallpapers, name) ? wallpapers[name] : "";
+    }
+
+    function setWallpaper(name, source, variant) {
+        if (!ready || !name || typeof source !== "string" || (source !== "" && !source.startsWith("file:///"))) return;
+        const target = wallpaperMode(variant);
+        const next = Object.assign({}, target === "light" ? lightWallpapers : target === "dark" ? darkWallpapers : wallpapers);
+        // An explicit empty per-mode value must not inherit the shared image.
+        if (source || target !== "shared") next[name] = source;
         else delete next[name];
-        wallpapers = next;
+        if (target === "light") lightWallpapers = next;
+        else if (target === "dark") darkWallpapers = next;
+        else wallpapers = next;
         appearanceSaveTimer.restart();
+    }
+
+    function setSeparateWallpapers(value) {
+        if (!ready || typeof value !== "boolean") return;
+        separateWallpapers = value;
+        appearanceSaveTimer.restart();
+    }
+
+    function restoreWallpapers(value) {
+        const restored = {};
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+            for (const name of Object.keys(value)) {
+                const source = value[name];
+                if (name.length > 0 && typeof source === "string" && (source === "" || source.startsWith("file:///"))) restored[name] = source;
+            }
+        }
+        return restored;
     }
 
     function setWallpaperFolder(source) {
@@ -160,15 +199,10 @@ Singleton {
                 root.barRadius = root.geometryValue(saved.barRadius, root.maximumBarRadius);
                 root.disabledBarScreens = Array.isArray(saved.disabledBarScreens)
                     ? [...new Set(saved.disabledBarScreens.filter(name => typeof name === "string" && name.length > 0))] : [];
-                const wallpapers = saved.wallpapers;
-                const restoredWallpapers = {};
-                if (wallpapers && typeof wallpapers === "object" && !Array.isArray(wallpapers)) {
-                    for (const name of Object.keys(wallpapers)) {
-                        const source = wallpapers[name];
-                        if (name.length > 0 && typeof source === "string" && source.startsWith("file:///")) restoredWallpapers[name] = source;
-                    }
-                }
-                root.wallpapers = restoredWallpapers;
+                root.wallpapers = root.restoreWallpapers(saved.wallpapers);
+                root.lightWallpapers = root.restoreWallpapers(saved.lightWallpapers);
+                root.darkWallpapers = root.restoreWallpapers(saved.darkWallpapers);
+                root.separateWallpapers = saved.separateWallpapers === true;
                 root.wallpaperFolder = typeof saved.wallpaperFolder === "string" && saved.wallpaperFolder.startsWith("file:///")
                     ? saved.wallpaperFolder : "";
                 root.settingsIcon = typeof saved.settingsIcon === "string" && saved.settingsIcon.trim()

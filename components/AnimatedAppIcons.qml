@@ -9,6 +9,8 @@ Grid {
     required property var icons
     required property bool activeWorkspace
     readonly property int count: iconModel.count
+    property string hoveredAddress: ""
+    signal windowClicked
     spacing: 6
 
     move: Transition {
@@ -71,6 +73,7 @@ Grid {
             property bool appeared: false
             Component.onCompleted: appeared = true
             enabled: present
+            onPresentChanged: { if (!present && root.hoveredAddress === windowAddress) root.hoveredAddress = ""; }
             opacity: appeared && present ? 1 : 0
             scale: appeared && present ? 1 : 0.5
 
@@ -140,7 +143,9 @@ Grid {
                 anchors.margins: -3
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Workspaces.focusWindow(appIcon.modelData.address)
+                onEntered: root.hoveredAddress = appIcon.windowAddress
+                onExited: { if (root.hoveredAddress === appIcon.windowAddress) root.hoveredAddress = ""; }
+                onClicked: { root.windowClicked(); Workspaces.focusWindow(appIcon.modelData.address); }
             }
         }
     }

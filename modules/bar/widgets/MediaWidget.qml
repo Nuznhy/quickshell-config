@@ -115,11 +115,5 @@ DropdownWidget {
                 font.weight: Font.Medium
             }
         }
-        HoverHandler {
-            id: hover
-        }
-        ToolTip.visible: hover.hovered && root.visible && !root.dropdownOpen
-        ToolTip.delay: 700
-        ToolTip.text: root.artist + "\n" + root.title
     }
 }

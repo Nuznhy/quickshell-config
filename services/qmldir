@@ -10,3 +10,6 @@ singleton Brightness 1.0 Brightness.qml
 singleton Media 1.0 Media.qml
 singleton ShellSettings 1.0 ShellSettings.qml
 singleton AppTheming 1.0 AppTheming.qml
+singleton QuickControls 1.0 QuickControls.qml
+singleton BatteryState 1.0 BatteryState.qml
+singleton SystemInfo 1.0 SystemInfo.qml

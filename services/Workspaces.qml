@@ -6,6 +6,7 @@ import Quickshell.Io
 import Quickshell.Services.SystemTray
 import "../config"
 import "WorkspaceWindows.js" as WorkspaceWindows
+import "WorkspacePreviewData.js" as PreviewData
 
 Singleton {
     id: root
@@ -13,6 +14,8 @@ Singleton {
     property var workspaceIcons: ({})
     property var pendingWorkspaceIcons: ({})
     property string pendingIconsJson: "{}"
+    property var workspaceWindows: ({})
+    property string windowsJson: "{}"
 
     Timer {
         id: iconUpdateDebounce
@@ -55,6 +58,10 @@ Singleton {
     function getWsIcons(wsId) {
         return workspaceIcons[wsId] || [];
     }
+    function getWsWindows(wsId) { return workspaceWindows[wsId] || []; }
+    function captureSource(address) {
+        return Hyprland.toplevels.values.find(window => normalizeAddress(window.address) === address)?.wayland || null;
+    }
 
     function focusWindow(address) {
         if (!/^0x[0-9a-f]+$/i.test(address || "")) return;
@@ -69,6 +76,12 @@ Singleton {
             return; // Keep the last good state if hyprctl is temporarily unavailable.
         }
         if (!Array.isArray(clients)) return;
+        const previews = PreviewData.windows(clients);
+        const previewJson = JSON.stringify(previews);
+        if (previewJson !== windowsJson) {
+            windowsJson = previewJson;
+            workspaceWindows = previews;
+        }
         const icons = WorkspaceWindows.build(clients, (appClass, initialClass) => Icons.resolveWindow(appClass, initialClass));
         // Publish only after a short quiet period, collapsing move-event bursts.
         const snapshot = JSON.stringify(icons);

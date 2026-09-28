@@ -58,7 +58,23 @@ audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
 ## Settings window
 
-Click the gear button to open the separate Settings window. **Bar layout**
+Click the bar's settings icon for a compact panel with hostname, OS, uptime,
+Night Shift, light/dark mode, and DND. The gear inside this panel
+opens the full Settings window. Theme and DND use the same shared state as their
+other controls. Night Shift uses `hyprsunset` and starts it on demand.
+While enabled, its color-temperature slider adjusts warmth live from 1500 K to
+6500 K in 50 K steps; 4000 K is the default. Lower values are warmer and higher
+values are cooler. The chosen setting is saved in
+`quick-controls.json` and reused when enabled again. Scrolling does not change
+the slider. Turning Night Shift off restores neutral colors. It reuses an existing daemon,
+preserving its gamma setting. New daemons use the default hyprsunset config;
+any configured schedule can still change the filter's state.
+The panel reads the actual filter state when opened and every five seconds while
+visible. Its state survives shell reloads while the daemon is running; it does
+not add a login service. Install it with `sudo pacman -S hyprsunset`.
+See the [hyprsunset documentation](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/).
+
+**Bar layout**
 lets you drag widget cards within or between Start, Center, and End. The same
 sections become Top, Middle, and Bottom for a vertical bar. Each switch controls
 whether that widget appears; hidden cards retain their saved positions. Escape
@@ -89,6 +105,51 @@ is temporarily absent.
 Run `python3 scripts/test-settings.py` for isolated layout, drag-and-drop,
 visibility, orientation, and persistence checks. It uses Qt 6's test runner and
 Quickshell with temporary state; it does not change your desktop layout.
+Run `python3 scripts/test-quick-controls.py` for the quick panel and Night Shift
+helper checks without changing live theme, notifications, or screen colors.
+
+Expand **System info** in the quick settings panel for OS/kernel, CPU/GPU models,
+RAM, free/total space on the filesystem containing your home directory, laptop
+battery status, active connections and local IPs, and pending repository updates.
+RAM includes installed capacity from udev's cached firmware data or readable
+firmware tables; otherwise it
+is explicitly labelled as OS-usable memory. GPU names use `lspci` from `pciutils`.
+Update checks use `checkupdates` from `pacman-contrib` with its separate database;
+they never install packages or refresh the system pacman database. Checks run
+when first expanded, then at most every 30 minutes while viewed, or on refresh.
+The count covers configured Arch repositories, not AUR packages. Errors and the
+last successful check time remain visible.
+
+## Battery
+
+Enable **Battery** in Settings → Bar layout. It starts disabled and hides itself
+on desktops without a system battery. Peripheral batteries (headsets, mice, etc.)
+are excluded. The bar shows charge percentage and charging state, adapting to
+horizontal and vertical layouts. Multiple energy-reporting batteries use a
+capacity-weighted charge percentage; other combinations use the average.
+
+Click it to see each battery's charge, status, estimated health (full capacity /
+design capacity), cycle count, and full/design capacity when the driver exposes
+them. Missing values are shown as unavailable.
+
+If the driver exposes `charge_control_end_threshold`, choose a **50–100%** charge
+limit and click the check button to apply it. This sets the hardware threshold;
+the driver may round to a supported value, which the panel reads back. Set 100%
+to allow a full charge. When necessary, the start threshold is lowered below the
+new limit and restored if applying the end threshold fails. Existing charge above
+the limit is not forcibly discharged. Hardware support is required; the shell
+does not simulate a limit on unsupported machines.
+
+Applying a limit may prompt through `pkexec`; run a polkit authentication agent
+in your session. Only the requested sysfs write is elevated, without installing
+a custom privileged service or changing permissions. Limits may reset after a
+reboot or be changed by tools such as TLP; the popup always shows the driver value
+and lets you reapply it. The shell does not silently reapply limits at login.
+See the [kernel power-supply interface](https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power).
+
+Run `python3 -m unittest discover -s tests/battery -v` and
+`python3 -m unittest discover -s tests/system_info -v` for isolated hardware and
+update-check fixtures. Quick-controls tests also exercise the battery popup.
 
 ## PC monitoring
 
@@ -102,7 +163,7 @@ Left-click opens graphs for all supported metrics, even those hidden from the
 bar. Samples are taken every two seconds and retained for ten minutes in memory
 while monitoring is enabled. Right-click opens `btop` in the default terminal:
 `xdg-terminal-exec`, `$TERMINAL`, the Hyprland terminal setting, then installed
-terminal fallbacks. Errors appear on hover and in the history popup.
+terminal fallbacks. Errors appear in the history popup.
 
 CPU/GPU load and temperature, RAM/VRAM usage, and exposed CPU/GPU/battery power
 sensors are discovered automatically. Settings offer a CPU temperature source
@@ -176,6 +237,20 @@ history, and settings-persistence checks.
   Wallpaper rendering runs directly in Quickshell's background layer, independently
   of bar visibility, and does not require Noctalia or another wallpaper daemon.
   Clear removes Quickshell's wallpaper for that output without deleting the image.
+- Enable **Different wallpapers for light and dark** in Wallpapers to reveal
+  Light/Dark options. Select a mode, then use the monitor cards or gallery to set
+  its wallpaper; editing a mode does not switch the shell theme. Wallpapers follow
+  the active light/dark theme automatically. Unset modes use the shared wallpaper;
+  Clear explicitly removes only the selected mode's wallpaper. Turning the toggle
+  off restores the shared wallpaper for both themes, keeping separate selections
+  saved for later. The toggle starts off for existing configurations.
+- Mode changes randomly use a fade, gentle zoom, or one of four directional wipes
+  when the wallpaper changes. The next image loads before the transition starts;
+  missing files keep the previous image. Shared wallpapers stay still when the
+  same image is used in both modes. Effects are chosen together for all monitors.
+- The **Light / dark mode** bar widget switches modes with one click. Its sun/moon
+  icon reflects the current mode; it can be moved or hidden in Bar layout.
+  It uses the same theme setting as Appearance, including application theme sync.
 - Dropdowns share the same outer padding, controlled by `popupPadding` in
   `config/Settings.qml` (12 px by default).
 - Workspace icons come from application desktop entries and the system icon theme,
@@ -186,6 +261,14 @@ history, and settings-persistence checks.
 - Click an app icon to switch to its workspace, focus its window, and move the
   pointer to its center. Each icon targets that exact window. Clicking the workspace number or empty
   space still switches workspaces normally.
+- Hover a workspace for a miniature preview; hovering an app icon outlines that
+  exact window. The preview opens after 280 ms, stays outside the bar, and is
+  click-through. It composes window captures over the workspace monitor's wallpaper
+  using Hyprland's window geometry. Captures refresh at most four times per second
+  while shown and are released when closed. Unavailable captures show the window's
+  icon and title. Floating/fullscreen stacking is approximated from window metadata.
+  This uses Quickshell's native ScreencopyView and Hyprland's toplevel export protocol,
+  with no screenshot utility or saved screenshots required.
 - Only workspaces with open app windows appear, sorted by their actual workspace
   numbers. Empty workspaces are hidden, including the active one when empty.
 - App-list changes settle for 100 ms before updating. Moved apps pop out of the
@@ -434,6 +517,9 @@ quickshell -p .
 formatter path on systems where it is installed elsewhere. Full `qmllint` also
 reports semantic/style warnings; Quickshell platform-selected types and enum
 metadata can produce diagnostics that need runtime verification.
+
+`python3 scripts/test-wallpaper-transitions.py` checks all wallpaper effects,
+rapid mode changes, missing images, and the sun/moon button using isolated state.
 
 To format a changed file:
 

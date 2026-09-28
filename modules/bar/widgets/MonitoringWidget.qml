@@ -18,9 +18,6 @@ DropdownWidget {
     showStem: false
     rightClickEnabled: true
     onRightClicked: SystemStats.openBtop()
-    ToolTip.visible: launchHover.hovered && SystemStats.launchError !== ""
-    ToolTip.text: SystemStats.launchError
-    HoverHandler { id: launchHover }
     GridLayout {
         id: cells
         rows: Theme.verticalBar ? -1 : 1
@@ -78,9 +75,8 @@ DropdownWidget {
                         Behavior on width { NumberAnimation { duration: 180 } }
                     }
                 }
-                ToolTip.visible: hover.hovered
-                ToolTip.text: cell.modelData.label + ": " + (cell.modelData.available ? SystemStats.format(cell.modelData) : cell.modelData.reason)
-                HoverHandler { id: hover }
+                Accessible.name: cell.modelData.label
+                Accessible.description: cell.modelData.available ? SystemStats.format(cell.modelData) : cell.modelData.reason
             }
         }
         Text {

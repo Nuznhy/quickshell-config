@@ -21,9 +21,6 @@ ColumnLayout {
         rightPadding: 7
         topPadding: 7
         bottomPadding: 7
-        ToolTip.visible: hovered
-        ToolTip.delay: 600
-        ToolTip.text: Accessible.name
         background: Rectangle {
             radius: 10
             color: control.down ? Theme.highlightMed : control.hovered ? Theme.overlay : Theme.surface
@@ -131,9 +128,6 @@ ColumnLayout {
                             : card.modelData.state === "restart" ? "Restart app" : "Synced"
                         Accessible.name: card.modelData.name + ": " + text + (card.hasDetails ? ". Show details" : "")
                         Accessible.description: card.modelData.message || ""
-                        ToolTip.visible: hovered && card.hasDetails
-                        ToolTip.delay: 600
-                        ToolTip.text: card.modelData.message || ""
                         onClicked: root.detailsId = root.detailsId === card.modelData.id ? "" : card.modelData.id
                         HoverHandler { cursorShape: card.hasDetails ? Qt.PointingHandCursor : Qt.ArrowCursor }
                         background: null

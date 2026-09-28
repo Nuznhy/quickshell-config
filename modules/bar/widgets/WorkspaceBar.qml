@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Hyprland
 import "../../../config"
 import "../../../services"
@@ -7,8 +8,13 @@ import "../../../components"
 
 Grid {
     id: workspaceBar
+    objectName: "workspace-bar"
     columns: Theme.verticalBar ? 1 : Math.max(1, workspaceModel.count)
     spacing: 0
+    WorkspacePreview {
+        id: preview
+        barWindow: workspaceBar.QsWindow.window
+    }
 
     ListModel {
         id: workspaceModel
@@ -56,6 +62,7 @@ Grid {
             id: wsSlot
             required property int workspaceId
             required property bool present
+            objectName: "workspace-slot-" + workspaceId
             property bool appeared: false
             property bool closing: false
             property real exitWidth: 0
@@ -122,13 +129,20 @@ Grid {
 
                 HoverHandler {
                     id: workspaceHover
+                    onHoveredChanged: {
+                        if (hovered && wsSlot.present) preview.request(wsRect.wsId, wsRect, appIcons.hoveredAddress);
+                        else preview.leave(wsRect.wsId);
+                    }
                 }
 
                 // Behind the icon buttons, so each app receives its own click.
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + wsRect.wsId + " })")
+                    onClicked: {
+                        preview.close();
+                        Hyprland.dispatch("hl.dsp.focus({ workspace = " + wsRect.wsId + " })");
+                    }
                 }
 
                 Behavior on color {
@@ -176,6 +190,11 @@ Grid {
                         icons: wsRect.windowIcons
                         activeWorkspace: wsRect.isActive
                         visible: count > 0
+                        onHoveredAddressChanged: {
+                            if (workspaceHover.hovered && wsSlot.present)
+                                preview.request(wsRect.wsId, wsRect, hoveredAddress);
+                        }
+                        onWindowClicked: preview.close()
                     }
                 }
             }

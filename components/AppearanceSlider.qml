@@ -10,6 +10,7 @@ ColumnLayout {
     required property real value
     property real minimum: 0
     property real maximum: 40
+    property real stepSize: 1
     property string suffix: " px"
     signal valueEdited(real value)
     signal editingFinished
@@ -38,7 +39,7 @@ ColumnLayout {
         implicitHeight: 26
         from: root.minimum
         to: root.maximum
-        stepSize: 1
+        stepSize: root.stepSize
         value: root.value
         enabled: Theme.ready
         wheelEnabled: false

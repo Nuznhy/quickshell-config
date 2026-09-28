@@ -11,6 +11,14 @@ GridLayout {
     columnSpacing: 12
     rowSpacing: 12
     readonly property bool choosingWallpaper: picker.visible
+    property string wallpaperMode: Theme.separateWallpapers ? Theme.mode : "shared"
+    onWallpaperModeChanged: {
+        // An image being decoded must never land in a newly selected mode.
+        for (let index = 0; index < cards.count; ++index) {
+            const card = cards.itemAt(index);
+            if (card) { card.candidate = ""; card.errorMessage = ""; }
+        }
+    }
 
     function localImageUrl(urls) {
         if (!urls || urls.length !== 1) return "";
@@ -28,15 +36,17 @@ GridLayout {
     }
     function browse(monitorName) {
         picker.monitorName = monitorName;
+        picker.wallpaperMode = root.wallpaperMode;
         picker.open();
     }
     FileDialog {
         id: picker
         property string monitorName: ""
-        title: "Wallpaper for " + monitorName
+        property string wallpaperMode: "shared"
+        title: "Wallpaper for " + monitorName + (wallpaperMode === "shared" ? "" : " · " + wallpaperMode)
         fileMode: FileDialog.OpenFile
         nameFilters: ["Images (*.png *.jpg *.jpeg *.webp *.bmp *.avif *.svg)", "All files (*)"]
-        onAccepted: root.choose(monitorName, selectedFile)
+        onAccepted: { if (wallpaperMode === root.wallpaperMode) root.choose(monitorName, selectedFile); }
     }
 
     component IconButton: NotificationButton {
@@ -45,9 +55,6 @@ GridLayout {
         implicitHeight: 32
         leftPadding: 6
         rightPadding: 6
-        ToolTip.visible: hovered
-        ToolTip.delay: 600
-        ToolTip.text: Accessible.name
         contentItem: Text {
             text: control.text
             color: Theme.text
@@ -65,8 +72,9 @@ GridLayout {
             id: card
             required property var modelData
             objectName: "wallpaper-card-" + modelData.name
-            readonly property string source: Theme.wallpaperFor(modelData.name)
+            readonly property string source: Theme.wallpaperFor(modelData.name, root.wallpaperMode)
             property string candidate: ""
+            property string candidateMode: "shared"
             property string errorMessage: ""
             readonly property bool loading: probe.status === Image.Loading
             Layout.fillWidth: true
@@ -88,6 +96,7 @@ GridLayout {
                     errorMessage = "Choose one image from your computer.";
                     return;
                 }
+                candidateMode = root.wallpaperMode;
                 candidate = value;
             }
             function acceptDrop(drop) {
@@ -110,7 +119,8 @@ GridLayout {
                 onStatusChanged: {
                     if (!card.candidate) return;
                     if (status === Image.Ready) {
-                        Theme.setWallpaper(card.modelData.name, card.candidate);
+                        if (card.candidateMode === root.wallpaperMode)
+                            Theme.setWallpaper(card.modelData.name, card.candidate, card.candidateMode);
                         card.candidate = "";
                     } else if (status === Image.Error) {
                         card.errorMessage = "Could not open this image. Try another file.";
@@ -236,7 +246,7 @@ GridLayout {
                         onClicked: {
                             card.candidate = "";
                             card.errorMessage = "";
-                            Theme.setWallpaper(card.modelData.name, "");
+                            Theme.setWallpaper(card.modelData.name, "", root.wallpaperMode);
                         }
                     }
                 }

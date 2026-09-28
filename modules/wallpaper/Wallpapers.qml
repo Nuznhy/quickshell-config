@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "../../config"
+import "../../components"
 
 Variants {
     model: Quickshell.screens
@@ -11,7 +12,7 @@ Variants {
         required property var modelData
         readonly property string wallpaperSource: Theme.wallpaperFor(modelData.name)
         screen: modelData
-        visible: Theme.ready && wallpaperSource.length > 0
+        visible: Theme.ready && (wallpaperSource.length > 0 || transition.hasContent)
         anchors { top: true; bottom: true; left: true; right: true }
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Background
@@ -19,13 +20,17 @@ Variants {
         WlrLayershell.namespace: "quickshell-wallpaper"
         mask: Region {}
         color: Theme.bg
-        Image {
+        WallpaperTransition {
+            id: transition
             anchors.fill: parent
             source: wallpaperWindow.wallpaperSource
-            asynchronous: true
-            fillMode: Image.PreserveAspectCrop
-            sourceSize.width: Math.ceil((wallpaperWindow.modelData.width || 1920) * (wallpaperWindow.modelData.devicePixelRatio || 1))
-            sourceSize.height: Math.ceil((wallpaperWindow.modelData.height || 1080) * (wallpaperWindow.modelData.devicePixelRatio || 1))
+            mode: Theme.mode
+            ready: Theme.ready
+            style: Theme.wallpaperTransitionStyle
+            backgroundColor: Theme.bg
+            pixelSize: Qt.size(
+                Math.ceil((wallpaperWindow.modelData.width || 1920) * (wallpaperWindow.modelData.devicePixelRatio || 1)),
+                Math.ceil((wallpaperWindow.modelData.height || 1080) * (wallpaperWindow.modelData.devicePixelRatio || 1)))
         }
     }
 }

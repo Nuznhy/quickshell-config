@@ -19,6 +19,8 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     for path in ['config/BarLayoutData.js', 'modules/settings/BarLayoutEditor.qml', 'modules/bar/BarSection.qml']:
         shutil.copyfile(root / path, target / path)
     (target / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\nsingleton BarLayout 1.0 BarLayout.qml\nsingleton Settings 1.0 Settings.qml\n')
+    theme_source = (root / 'config/Theme.qml').read_text()
+    wallpaper_functions = theme_source[theme_source.index('    function wallpaperMode('):theme_source.index('    function setWallpaperFolder(')]
     (target / 'config/Theme.qml').write_text('''pragma Singleton
 import QtQuick
 QtObject {
@@ -35,13 +37,12 @@ QtObject {
     }
     property var connectedScreens: [{name: "DP-1"}, {name: "HDMI-A-1"}]
     property var wallpapers: ({})
-    function wallpaperFor(name) { return wallpapers[name] || ""; }
-    function setWallpaper(name, source) {
-        const next = Object.assign({}, wallpapers);
-        if (source) next[name] = source;
-        else delete next[name];
-        wallpapers = next;
-    }
+    property string mode: "dark"
+    property bool separateWallpapers: false
+    property var lightWallpapers: ({})
+    property var darkWallpapers: ({})
+    property Timer saveTimer: Timer { id: appearanceSaveTimer; interval: 250 }
+    WALLPAPER_FUNCTIONS
     property bool verticalBar: false
     readonly property color bg: "#191724"
     readonly property color surface: "#1f1d2e"
@@ -54,7 +55,7 @@ QtObject {
     readonly property color love: "#eb6f92"
     readonly property string fontFamily: "sans-serif"
 }
-''')
+'''.replace('    WALLPAPER_FUNCTIONS', wallpaper_functions))
     (target / 'config/Settings.qml').write_text('''pragma Singleton
 import QtQuick
 QtObject { readonly property int barHeight: 42; readonly property int widgetSpacing: 12 }
@@ -185,12 +186,36 @@ ShellRoot {
             return JSON.stringify({visible: window.visible, opened: ShellSettings.opened,
                 ready: Theme.ready && BarLayout.ready, disabled: BarLayout.state.disabled.length,
                 folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
+                separateWallpapers: Theme.separateWallpapers, wallpapers: Theme.wallpapers,
+                lightWallpapers: Theme.lightWallpapers, darkWallpapers: Theme.darkWallpapers,
                 error: Theme.errorMessage});
         }
         function preferences(): void {
             Theme.setWallpaperFolder(Qt.resolvedUrl("gallery").toString());
             Theme.setSettingsIcon("★", Qt.resolvedUrl("test wallpaper.svg").toString());
+            Theme.setWallpaper("TEST-1", Qt.resolvedUrl("test wallpaper.svg").toString(), "shared");
+            Theme.setWallpaper("TEST-1", Qt.resolvedUrl("gallery/first image.svg").toString(), "light");
+            Theme.setWallpaper("TEST-1", "", "dark");
+            Theme.setSeparateWallpapers(true);
             Theme.save();
+        }
+        function checkWallpaperModes(): bool {
+            const previousStyle = Theme.wallpaperTransitionStyle;
+            Theme.selectMode("light");
+            let valid = Theme.wallpaperFor("TEST-1") === Theme.lightWallpapers["TEST-1"];
+            valid = valid && Theme.wallpaperTransitionStyle !== previousStyle
+                && Theme.wallpaperTransitionStyle >= 0 && Theme.wallpaperTransitionStyle < 6;
+            Theme.selectMode("dark");
+            valid = valid && Theme.wallpaperFor("TEST-1") === "";
+            Theme.setSeparateWallpapers(false);
+            valid = valid && Theme.wallpaperFor("TEST-1") === Theme.wallpapers["TEST-1"];
+            Theme.selectMode("light");
+            valid = valid && Theme.wallpaperFor("TEST-1") === Theme.wallpapers["TEST-1"];
+            Theme.setSeparateWallpapers(true);
+            valid = valid && Theme.wallpaperFor("TEST-1") === Theme.lightWallpapers["TEST-1"];
+            Theme.selectMode("dark");
+            Theme.save();
+            return valid;
         }
         function monitoring(): bool {
             window.monitoringSettings = true;
@@ -225,13 +250,14 @@ ShellRoot {
                 time.sleep(0.05)
             assert not status['visible']
             assert status['folder'] == '' and status['iconSource'] == '' and status['icon'] == '󰒓'
+            assert not status['separateWallpapers']
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'open')  # Reuses the same window.
             assert ipc('test', 'monitoring') == 'true'
             assert ipc('test', 'monitoringPanels') == '1'
             ipc('test', 'hideAll')
-            assert json.loads(ipc('test', 'status'))['disabled'] == 15
+            assert json.loads(ipc('test', 'status'))['disabled'] == 17
             ipc('settings', 'close')
             assert not json.loads(ipc('test', 'status'))['visible']
             assert ipc('test', 'monitoringPanels') == '0'
@@ -258,8 +284,10 @@ ShellRoot {
                 if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
                 time.sleep(.05)
             assert not restored['error'], restored
-            for key in ['folder', 'icon', 'iconSource']:
+            for key in ['folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers']:
                 assert restored[key] == preferences[key], (key, restored, preferences)
+            assert ipc('test', 'checkWallpaperModes') == 'true'
+            print('PASS: shared/light/dark wallpapers persist, clear independently, and follow theme changes', flush=True)
             print('PASS: wallpaper folder and custom settings icon survive restart', flush=True)
             log.flush()
             log.seek(0)

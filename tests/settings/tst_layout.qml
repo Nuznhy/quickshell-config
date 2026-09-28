@@ -8,8 +8,8 @@ TestCase {
         const value = Data.defaults();
         compare(value.sections.start, ["workspaces", "tray", "media"]);
         compare(value.sections.center, ["clock"]);
-        compare(value.sections.end.length, 11);
-        compare(value.disabled, ["monitoring"]);
+        compare(value.sections.end.length, 13);
+        compare(value.disabled, ["monitoring", "battery"]);
     }
     function test_normalize_repairs_ids() {
         const value = Data.defaults();
@@ -21,7 +21,7 @@ TestCase {
         compare(repaired.sections.center, []);
         compare(repaired.disabled, ["clock"]);
         const all = [].concat(repaired.sections.start, repaired.sections.center, repaired.sections.end);
-        compare(new Set(all).size, 15);
+        compare(new Set(all).size, 17);
     }
     function test_invalid_state() {
         for (const value of [null, {}, {version: 2}, {version: 1, sections: {start: []}}]) {
@@ -47,10 +47,10 @@ TestCase {
         value = Data.move(value, "clock", "start", 1);
         value = Data.normalize(JSON.parse(JSON.stringify(value)));
         compare(value.sections.start[1], "clock");
-        compare(value.disabled, ["monitoring", "clock"]);
+        compare(value.disabled, ["monitoring", "battery", "clock"]);
         value = Data.setEnabled(value, "clock", true);
         compare(value.sections.start[1], "clock");
-        compare(value.disabled, ["monitoring"]);
+        compare(value.disabled, ["monitoring", "battery"]);
     }
     function test_monitoring_added_without_changing_existing_widgets() {
         const old = Data.defaults();
@@ -61,5 +61,23 @@ TestCase {
         compare(migrated.sections.end.slice(0, -1), old.sections.end);
         const enabled = Data.setEnabled(migrated, "monitoring", true);
         verify(!Data.normalize(enabled).disabled.includes("monitoring"));
+    }
+    function test_battery_added_disabled() {
+        const old = Data.defaults();
+        old.sections.end = old.sections.end.filter(id => id !== "battery");
+        old.disabled = ["monitoring"];
+        const next = Data.normalize(old);
+        compare(next.disabled, ["monitoring", "battery"]);
+        compare(next.sections.end.slice(0, -1), old.sections.end);
+        verify(!Data.setEnabled(next, "battery", true).disabled.includes("battery"));
+    }
+    function test_theme_mode_added_and_can_be_hidden() {
+        const old = Data.defaults();
+        old.sections.end = old.sections.end.filter(id => id !== "theme-mode");
+        const next = Data.normalize(old);
+        compare(next.sections.end.slice(0, -1), old.sections.end);
+        compare(next.sections.end[next.sections.end.length - 1], "theme-mode");
+        verify(!next.disabled.includes("theme-mode"));
+        verify(Data.setEnabled(next, "theme-mode", false).disabled.includes("theme-mode"));
     }
 }

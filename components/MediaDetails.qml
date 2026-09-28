@@ -37,9 +37,6 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: 36
         Accessible.name: actionName
-        ToolTip.visible: hovered
-        ToolTip.delay: 500
-        ToolTip.text: actionName
         contentItem: Text {
             text: control.text
             color: control.accent ? Theme.bg : Theme.text

@@ -10,6 +10,8 @@ ColumnLayout {
     id: root
     spacing: 14
     property string selectedMonitor: ""
+    property string selectedMode: Theme.mode
+    readonly property string wallpaperMode: Theme.separateWallpapers ? selectedMode : "shared"
     readonly property string activeMonitor: Theme.connectedScreens.some(screen => screen.name === selectedMonitor)
         ? selectedMonitor : (Theme.connectedScreens[0]?.name || "")
     readonly property int imageCount: folderLoader.item?.files.count || 0
@@ -65,9 +67,6 @@ ColumnLayout {
             visible: Theme.wallpaperFolder.length > 0
             enabled: Theme.ready
             Accessible.name: "Remove gallery folder"
-            ToolTip.visible: hovered
-            ToolTip.text: Accessible.name
-            ToolTip.delay: 600
             onClicked: Theme.setWallpaperFolder("")
         }
     }
@@ -84,9 +83,50 @@ ColumnLayout {
         font.family: Theme.fontFamily
         font.pixelSize: 11
     }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 12
+        Text {
+            Layout.fillWidth: true
+            text: "Different wallpapers for light and dark"
+            wrapMode: Text.WordWrap
+            color: Theme.text
+            font.family: Theme.fontFamily
+            font.pixelSize: 12
+        }
+        ControlSwitch {
+            objectName: "wallpaper-separate-modes"
+            value: Theme.separateWallpapers
+            enabled: Theme.ready
+            Accessible.name: "Different wallpapers for light and dark"
+            onChangeRequested: value => {
+                if (value) root.selectedMode = Theme.mode;
+                Theme.setSeparateWallpapers(value);
+            }
+        }
+    }
+    RowLayout {
+        objectName: "wallpaper-mode-options"
+        visible: Theme.separateWallpapers
+        Layout.fillWidth: true
+        spacing: 8
+        Repeater {
+            model: ["light", "dark"]
+            delegate: NotificationButton {
+                required property string modelData
+                objectName: "wallpaper-mode-" + modelData
+                text: modelData === "light" ? "Light" : "Dark"
+                accent: root.selectedMode === modelData
+                enabled: Theme.ready
+                onClicked: root.selectedMode = modelData
+            }
+        }
+        Item { Layout.fillWidth: true }
+    }
     WallpaperSelector {
         id: monitors
         Layout.fillWidth: true
+        wallpaperMode: root.wallpaperMode
     }
     RowLayout {
         Layout.fillWidth: true
@@ -165,14 +205,14 @@ ColumnLayout {
             bottomInset: 0
             hoverEnabled: true
             enabled: Theme.ready && root.activeMonitor !== "" && thumbnail.status === Image.Ready
-            Accessible.name: "Set " + fileName + " on " + root.activeMonitor
+            Accessible.name: "Set " + fileName + " on " + root.activeMonitor + " for " + root.wallpaperMode
             onClicked: monitors.choose(root.activeMonitor, fileUrl)
             HoverHandler { cursorShape: tile.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor }
             background: Rectangle {
                 radius: 10
                 color: tile.hovered ? Theme.overlay : Theme.surface
                 border.width: 2
-                border.color: tile.activeFocus || Theme.wallpaperFor(root.activeMonitor) === tile.fileUrl.toString()
+                border.color: tile.activeFocus || Theme.wallpaperFor(root.activeMonitor, root.wallpaperMode) === tile.fileUrl.toString()
                     ? Theme.iris : tile.hovered ? Theme.highlightHigh : Theme.highlightMed
             }
             contentItem: Column {
