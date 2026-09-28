@@ -112,6 +112,14 @@ Meters use sensor limits where available; otherwise temperature uses 100°C and
 power graphs use their labelled recent peak. Vertical memory values use `G` for
 GiB. History resets when Quickshell restarts.
 
+If the CPU power card says its energy counter needs read permission, opt in with
+`sudo python3 scripts/setup-cpu-power.py --group "$(id -gn)"` from this config
+directory. This installs `80-quickshell-cpu-power.rules` in `/etc/udev/rules.d`
+and grants the chosen group read access only to package energy counters, now
+and after reboot. Power controls and core subdomain counters remain unchanged.
+The graph starts sampling automatically, without restarting Quickshell.
+Preview the rule first by adding `--print-rule` (no sudo needed).
+
 Run `python3 scripts/test-monitoring.py` for isolated sensor, terminal, controls,
 history, and settings-persistence checks.
 
@@ -171,13 +179,12 @@ history, and settings-persistence checks.
 - Dropdowns share the same outer padding, controlled by `popupPadding` in
   `config/Settings.qml` (12 px by default).
 - Workspace icons come from application desktop entries and the system icon theme,
-  displayed in their original colors at full opacity. All distinct apps on each
-  workspace are shown. Lookup matches desktop IDs, StartupWMClass, and the initial
+  displayed in their original colors at full opacity. Every window gets its own
+  icon, including multiple windows of the same app on a workspace. Lookup matches desktop IDs, StartupWMClass, and the initial
   window class automatically; apps without a usable icon get a generic fallback.
   No per-app icon mapping is required.
 - Click an app icon to switch to its workspace, focus its window, and move the
-  pointer to its center. If the app has several windows on that workspace, the
-  most recently focused one is selected. Clicking the workspace number or empty
+  pointer to its center. Each icon targets that exact window. Clicking the workspace number or empty
   space still switches workspaces normally.
 - Only workspaces with open app windows appear, sorted by their actual workspace
   numbers. Empty workspaces are hidden, including the active one when empty.
@@ -186,7 +193,7 @@ history, and settings-persistence checks.
   Workspace widths resize smoothly as icons change. New workspaces slide in;
   empty ones slide out after their last icon finishes popping out, smoothly
   shifting neighboring workspaces and the tray.
-- App icons show a small attention badge when one of their windows is marked
+- Window icons show a small attention badge when their window is marked
   urgent by Hyprland. Clicking a badged icon focuses that urgent window; the badge
   clears when it is acknowledged. This follows window urgency, not unread message
   counts or every desktop notification.

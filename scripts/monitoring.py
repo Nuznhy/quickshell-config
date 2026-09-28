@@ -97,10 +97,18 @@ class Collector:
     def cpu_power(self, now):
         watts, limits = [], []
         packages = []
+        restricted = False
         for path in sorted((self.sys / 'class/powercap').glob('*')):
             if read(path / 'name').startswith('package-') and path.resolve() not in packages:
                 packages.append(path.resolve())
-                energy, span = number(read(path / 'energy_uj')), number(read(path / 'max_energy_range_uj'))
+                try:
+                    energy = number((path / 'energy_uj').read_text().strip())
+                except PermissionError:
+                    restricted = True
+                    energy = None
+                except OSError:
+                    energy = None
+                span = number(read(path / 'max_energy_range_uj'))
                 previous = self.energy.get(str(path.resolve()))
                 if energy is not None:
                     self.energy[str(path.resolve())] = (energy, now)
@@ -134,7 +142,8 @@ class Collector:
         return metric('cpu.power', 'CPU package power', 'W',
                       sum(watts) if packages and len(watts) == len(packages) else None,
                       sum(limits) if packages and len(limits) == len(packages) else None,
-                      reason='Power sensor unavailable, restricted, or waiting for sample')
+                      reason='CPU energy counter needs read permission' if restricted else
+                      'Waiting for CPU power sample' if packages else 'CPU power sensor not available')
 
     def nvidia(self):
         if not shutil.which('nvidia-smi'):

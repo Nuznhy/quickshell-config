@@ -74,6 +74,7 @@ Rectangle {
             }
             SystemStats.history=history;
             wait(100);
+            verify(findChild(center, "monitoring-graph-cpu.power") !== null);
             verify(center.implicitHeight > 300);
             grabImage(center.parent).save("/tmp/quickshell-monitoring-graphs.png");
             center.width=320; wait(30);

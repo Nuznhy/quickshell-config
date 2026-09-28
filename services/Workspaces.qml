@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.SystemTray
 import "../config"
+import "WorkspaceWindows.js" as WorkspaceWindows
 
 Singleton {
     id: root
@@ -68,40 +69,7 @@ Singleton {
             return; // Keep the last good state if hyprctl is temporarily unavailable.
         }
         if (!Array.isArray(clients)) return;
-        const icons = {};
-        const grouped = {};
-        const resolved = {};
-        for (const client of clients) {
-            const wsId = client.workspace?.id;
-            if (!(wsId > 0) || !client.address || client.mapped === false) continue;
-            if (!icons[wsId]) {
-                icons[wsId] = [];
-                grouped[wsId] = new Map();
-            }
-            const key = JSON.stringify([client.class, client.initialClass]);
-            if (!resolved[key])
-                resolved[key] = Icons.resolveWindow(client.class, client.initialClass);
-            const icon = resolved[key];
-            const rank = client.focusHistoryID >= 0 ? client.focusHistoryID : Number.MAX_SAFE_INTEGER;
-            const previous = grouped[wsId].get(icon.appId);
-            if (!previous) {
-                grouped[wsId].set(icon.appId, { icon: icon, address: client.address, rank: rank, addresses: [client.address] });
-            } else {
-                previous.addresses.push(client.address);
-                if (rank < previous.rank) {
-                    previous.address = client.address;
-                    previous.rank = rank;
-                }
-            }
-        }
-        for (const wsId in icons) {
-            icons[wsId] = Array.from(grouped[wsId].values()).map(window => ({
-                appId: window.icon.appId,
-                source: window.icon.source,
-                address: window.address,
-                addresses: window.addresses
-            }));
-        }
+        const icons = WorkspaceWindows.build(clients, (appClass, initialClass) => Icons.resolveWindow(appClass, initialClass));
         // Publish only after a short quiet period, collapsing move-event bursts.
         const snapshot = JSON.stringify(icons);
         if (snapshot !== root.pendingIconsJson) {

@@ -46,10 +46,11 @@ FocusScope {
                 columnSpacing: 12
                 rowSpacing: 12
                 Repeater {
-                    model: SystemStats.metrics.filter(entry => entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
+                    model: SystemStats.metrics.filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
                     delegate: Rectangle {
                         id: card
                         required property var modelData
+                        objectName: "monitoring-graph-" + modelData.id
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         Layout.minimumWidth: 0
@@ -68,6 +69,13 @@ FocusScope {
                                 font.pixelSize: 11
                             }
                             Label { text: SystemStats.format(card.modelData); font.pixelSize: 18; font.bold: true }
+                            Label {
+                                Layout.fillWidth: true
+                                visible: !card.modelData.available
+                                text: card.modelData.reason || "Sensor unavailable"
+                                color: Theme.subtle
+                                font.pixelSize: 11
+                            }
                             MonitoringGraph {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
@@ -76,6 +84,7 @@ FocusScope {
                             }
                             RowLayout {
                                 Layout.fillWidth: true
+                                visible: card.modelData.available || (SystemStats.history[card.modelData.id] || []).some(point => point.value !== null)
                                 Label { text: "−10m"; font.pixelSize: 10; color: Theme.subtle }
                                 Label {
                                     Layout.fillWidth: true

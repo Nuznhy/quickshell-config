@@ -63,6 +63,11 @@ is also available in Extra; neither requires an AUR helper.
 | `xdg-terminal-exec` | Optional default-terminal resolver. Without it, monitoring checks `$TERMINAL`, Hyprland's terminal setting, then supported installed terminals. |
 | `lm_sensors` | Optional sensor diagnostics; monitoring reads kernel hwmon files directly and does not run sensor detection or change permissions. |
 
+CPU package energy counters may be root-readable by default. The optional
+`scripts/setup-cpu-power.py` setup uses systemd's `udevadm` and coreutils to grant
+one existing local group read access; see [PC monitoring](README.md#pc-monitoring).
+This permission setup is separate from the base dependency installer.
+
 QML parsing, linting, and UI tests use `qmlformat`, `qmllint`, `qmltestrunner`,
 and `QtTest` from `qt6-declarative`. Python tests use the standard library and
 the runtime GI dependencies above. Notification tests additionally use

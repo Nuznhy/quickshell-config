@@ -19,9 +19,9 @@ Grid {
         id: iconModel
     }
 
-    function removeIcon(appId) {
+    function removeIcon(address) {
         for (let i = 0; i < iconModel.count; ++i) {
-            if (iconModel.get(i).appId === appId && !iconModel.get(i).present) {
+            if (iconModel.get(i).windowAddress === address && !iconModel.get(i).present) {
                 iconModel.remove(i);
                 return;
             }
@@ -30,13 +30,13 @@ Grid {
 
     function syncIcons() {
         const incoming = icons || [];
-        const ids = new Set(incoming.map(icon => icon.appId));
+        const ids = new Set(incoming.map(icon => icon.address));
         for (let i = 0; i < iconModel.count; ++i)
-            iconModel.setProperty(i, "present", ids.has(iconModel.get(i).appId));
+            iconModel.setProperty(i, "present", ids.has(iconModel.get(i).windowAddress));
         for (const icon of incoming) {
             let index = -1;
             for (let i = 0; i < iconModel.count; ++i) {
-                if (iconModel.get(i).appId === icon.appId) {
+                if (iconModel.get(i).windowAddress === icon.address) {
                     index = i;
                     break;
                 }
@@ -44,7 +44,7 @@ Grid {
             const payload = JSON.stringify(icon);
             if (index < 0) {
                 iconModel.append({
-                    appId: icon.appId,
+                    windowAddress: icon.address,
                     iconJson: payload,
                     present: true
                 });
@@ -63,7 +63,8 @@ Grid {
         model: iconModel
         Item {
             id: appIcon
-            required property string appId
+            required property string windowAddress
+            objectName: "workspace-window-" + windowAddress
             required property string iconJson
             required property bool present
             readonly property var modelData: JSON.parse(iconJson)
@@ -87,12 +88,11 @@ Grid {
             Timer {
                 interval: 180
                 running: !appIcon.present
-                onTriggered: root.removeIcon(appIcon.appId)
+                onTriggered: root.removeIcon(appIcon.windowAddress)
             }
             width: Theme.fontSize - 1
             height: width
             property real iconScale: iconMouse.containsMouse ? 1.25 : 1
-            readonly property string attentionAddress: Workspaces.attentionWindow(modelData.addresses)
             readonly property bool needsAttention: Workspaces.needsAttention(modelData.appId, modelData.addresses)
 
             Behavior on iconScale {
@@ -140,7 +140,7 @@ Grid {
                 anchors.margins: -3
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Workspaces.focusWindow(appIcon.attentionAddress || appIcon.modelData.address)
+                onClicked: Workspaces.focusWindow(appIcon.modelData.address)
             }
         }
     }
