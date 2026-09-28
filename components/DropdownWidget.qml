@@ -8,7 +8,9 @@ import "PopupPlacement.js" as PopupPlacement
 
 Item {
     id: root
-    Layout.preferredWidth: iconContainer.width
+    implicitWidth: iconContainer.width
+    implicitHeight: Settings.barHeight
+    Layout.preferredWidth: implicitWidth
     Layout.preferredHeight: Settings.barHeight
 
     required property var barWindow

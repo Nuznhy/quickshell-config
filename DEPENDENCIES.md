@@ -217,6 +217,7 @@ isolated integrations without changing live connections or powering off the PC:
 
 ```sh
 bash scripts/check.sh
+python3 scripts/test-settings.py
 python3 scripts/test-network.py
 python3 scripts/test-bluetooth.py
 python3 scripts/test-notifications.py

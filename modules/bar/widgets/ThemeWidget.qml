@@ -1,42 +1,36 @@
-pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import Quickshell
 import "../../../config"
+import "../../../services"
 import "../../../components"
 
-DropdownWidget {
-    id: root
-    barWindow: root.QsWindow.window
-    popupWidth: 340
-    sizeToContent: true
-    showStem: false
-    stemAlignment: "right"
-    property bool choosingWallpaper: false
-    focusGrabEnabled: !choosingWallpaper
-    popupDismissEnabled: !choosingWallpaper
-
+Item {
+    implicitWidth: 30
+    implicitHeight: Settings.barHeight
+    BarHoverIndicator {
+        anchors.fill: parent
+        hovered: mouse.containsMouse
+        active: ShellSettings.opened
+    }
     Text {
-        height: parent.height
-        width: 30
+        anchors.centerIn: parent
         text: "󰏘"
-        color: root.dropdownOpen ? Theme.iris : Theme.text
+        color: ShellSettings.opened ? Theme.iris : Theme.text
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
     }
-
-    popupContent: ScrollView {
-        id: scroll
-        implicitHeight: Math.min(picker.implicitHeight, Math.max(120, (root.barWindow?.screen?.height || 800) - 110))
-        contentWidth: availableWidth
-        clip: true
-        ThemePicker {
-            id: picker
-            width: scroll.availableWidth
-            onChoosingWallpaperChanged: root.choosingWallpaper = choosingWallpaper
-            onDismissed: root.dropdownOpen = false
+    MouseArea {
+        id: mouse
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            parent.QsWindow.window?.closeAllPopups();
+            ShellSettings.open();
         }
     }
+    ToolTip.visible: mouse.containsMouse
+    ToolTip.delay: 600
+    ToolTip.text: "Settings"
 }

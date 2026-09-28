@@ -56,9 +56,40 @@ components may use config, but should not depend on a particular bar widget.
 Services are singletons, so adding screens does not add another CPU, memory,
 audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
+## Settings window
+
+Click the palette button to open the separate Settings window. **Bar layout**
+lets you drag widget cards within or between Start, Center, and End. The same
+sections become Top, Middle, and Bottom for a vertical bar. Each switch controls
+whether that widget appears; hidden cards retain their saved positions. Escape
+cancels a drag, and dropping outside a section leaves the layout unchanged.
+
+Changes apply immediately to every monitor and save automatically. Reset layout
+restores the original widget order and visibility without changing appearance.
+The clock can also be moved or hidden. Sections scroll when their contents exceed
+the available space, and spacing is only inserted between displayed widgets.
+
+**Appearance** contains the existing palette, font, bar geometry, monitor, and
+wallpaper controls. Closing the settings window leaves the shell running.
+To reopen it even if its bar button is hidden:
+
+```sh
+quickshell ipc -p ~/.config/quickshell call settings open
+```
+
+The same IPC target provides `close` and `toggle`. Widget layouts are stored in
+`bar-layout.json` beside `theme.json` in Quickshell's per-shell state directory.
+Hiding a widget does not turn off the notification daemon or other shared shell
+services. The editor displays media and workspaces even when their bar content
+is temporarily absent.
+
+Run `python3 scripts/test-settings.py` for isolated layout, drag-and-drop,
+visibility, orientation, and persistence checks. It uses Qt 6's test runner and
+Quickshell with temporary state; it does not change your desktop layout.
+
 ## Customize
 
-- Click the palette icon beside the power button, then click the active-theme
+- Open Settings → Appearance, then click the active-theme
   card to toggle a floating menu of names and color swatches. Choose Rosé Pine,
   Catppuccin, Gruvbox, Solarized, Everforest, or Neutral. Every preset supports
   Dark and Light. Scroll the menu for more themes; selecting one closes the menu
@@ -87,7 +118,8 @@ audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
   Theme selection affects this shell; application/GTK themes are configured separately.
 - Change the keyboard device, launcher commands, spacing, and refresh intervals
   in `config/Settings.qml`. Defaults retain the previous configuration.
-- Reorder or add widgets in `modules/bar/Bar.qml`.
+- Reorder and show/hide widgets in Settings → Bar layout. New widget types are
+  registered in `config/BarLayoutData.js`.
 - In Appearance → Monitor bars, switch the bar on or off for each connected
   monitor. Choices persist by output name (for example `DP-1`); new outputs
   default to enabled. One connected bar stays available for restoring others.
@@ -152,7 +184,7 @@ audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
 To add a widget, create a QML type in `modules/bar/widgets/`, import config and
 any needed services using the same relative paths as neighboring widgets, then
-instantiate it in `Bar.qml`. Put shared polling/state in `services/` and register
+register its ID, label, default section, and component path in `config/BarLayoutData.js`. Put shared polling/state in `services/` and register
 new singleton types in `services/qmldir`. Keep processes and timers out of visual
 widgets when their state can be shared. Local UI actions, such as opening the
 power dropdown, can remain in the widget.
