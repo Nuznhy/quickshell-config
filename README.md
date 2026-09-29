@@ -120,6 +120,27 @@ when first expanded, then at most every 30 minutes while viewed, or on refresh.
 The count covers configured Arch repositories, not AUR packages. Errors and the
 last successful check time remain visible.
 
+## Duplicate laptop screen
+
+Click the monitor button to duplicate the active laptop screen on connected
+external monitors. Click again to restore your saved Hyprland configuration,
+including resolution, refresh rate, scale, placement, and color settings.
+The button is enabled by default and can be moved or hidden as **Duplicate laptop
+screen** in Settings → Bar layout. The icon highlights mirroring and turns red on errors.
+
+Mirroring uses each external monitor's preferred resolution and automatic scale;
+the laptop resolution stays unchanged. Hyprland scales the mirrored image to the
+external output, so different aspect ratios may stretch it. See
+[Hyprland monitor modes](https://wiki.hypr.land/configuring/core/monitors/modes/).
+This uses the Lua monitor API (Hyprland 0.55+). Restoring runs `hyprctl reload`,
+which reloads the whole Hyprland configuration and resets other temporary config
+overrides too. No config files are edited. A manual Hyprland reload also restores
+the configured layout. Monitor state is shared between bars and read back after
+changes; reconnects and external configuration changes are picked up automatically.
+
+Run `python3 -m unittest discover -s tests/display_mode -v` for isolated display
+discovery, mirroring, restoration, and failure checks without changing displays.
+
 ## Battery
 
 Enable **Battery** in Settings → Bar layout. It starts disabled and hides itself

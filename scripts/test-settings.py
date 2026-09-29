@@ -263,7 +263,7 @@ ShellRoot {
             assert ipc('test', 'monitoring') == 'true'
             assert ipc('test', 'monitoringPanels') == '1'
             ipc('test', 'hideAll')
-            assert json.loads(ipc('test', 'status'))['disabled'] == 17
+            assert json.loads(ipc('test', 'status'))['disabled'] == 18
             ipc('settings', 'close')
             assert not json.loads(ipc('test', 'status'))['visible']
             assert ipc('test', 'monitoringPanels') == '0'

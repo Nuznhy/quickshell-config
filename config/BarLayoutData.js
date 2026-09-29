@@ -14,6 +14,7 @@ var widgets = [
     { id: "keyboard", label: "Keyboard", section: "end", source: "widgets/KeyboardLanguage.qml" },
     { id: "volume", label: "Volume", section: "end", source: "widgets/VolumeWidget.qml" },
     { id: "brightness", label: "Brightness", section: "end", source: "widgets/BrightnessWidget.qml" },
+    { id: "display-mode", label: "Duplicate laptop screen", section: "end", source: "widgets/DisplayModeWidget.qml" },
     { id: "battery", label: "Battery", section: "end", source: "widgets/BatteryWidget.qml", disabledByDefault: true },
     { id: "notifications", label: "Notifications", section: "end", source: "widgets/NotificationWidget.qml" },
     { id: "theme-mode", label: "Light / dark mode", section: "end", source: "widgets/ThemeModeWidget.qml" },
