@@ -9,7 +9,7 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 
 | Feature | Arch packages | Purpose |
 | --- | --- | --- |
-| Shell | `quickshell` | Bar, popups, tray, media, notifications, wallpaper layers, and lock screen. |
+| Shell | `quickshell` | Bar, popups, tray, media, notifications, and wallpaper layers. |
 | Desktop | `hyprland` | Running Wayland compositor and `hyprctl` for workspaces, window focus, pointer movement, and keyboard layouts. The focus helper uses Hyprland's Lua dispatch API. |
 | Qt UI | `qt6-base`, `qt6-declarative`, `qt6-wayland`, `qt6-svg` | Qt Quick, Controls, Layouts, Shapes, Dialogs, FolderListModel for the wallpaper gallery, Wayland rendering, and SVG icons. These are also Quickshell package dependencies. |
 | Additional image formats | `qt6-imageformats` | Extra Qt image decoders for artwork and wallpapers; available formats depend on installed plugins. |
@@ -19,7 +19,7 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | PC monitoring | `python`, `btop`, an installed terminal | Standard-library collector reads `/proc` and `/sys`; right-click launches `btop`. No extra Python libraries or Qt Charts module are required. |
 | Quick settings system info | `python`, `pciutils`, `systemd` | Standard library and Linux interfaces supply system details; `lspci` supplies GPU models and `udevadm` supplies cached installed RAM sizes. No pip packages are needed. |
 | Pending repository updates | `pacman-contrib` | `checkupdates` checks configured repositories in a separate database without installing packages. AUR updates are not included. |
-| Laptop battery | `python`, `polkit`, `coreutils` | Reads `/sys/class/power_supply`; charge limits use the driver's threshold file. `pkexec` elevates `tee` for protected writes; an active polkit agent is needed for authentication. No extra daemon is required. |
+| Laptop battery | `python`, `polkit`, `coreutils` | Reads charge/discharge estimates from `/sys/class/power_supply`, with energy/power or charge/current fallbacks. Charge limits use the driver's threshold file; firmware power profiles use `/sys/firmware/acpi/platform_profile` and its reported choices. `pkexec` elevates `tee` for protected writes; an active polkit agent is needed. No power-profile daemon or extra Python library is required. |
 | Workspace previews | `quickshell`, `hyprland` | Native `Quickshell.Wayland.ScreencopyView` captures individual windows through `hyprland-toplevel-export-v1`. No external screenshot utility is needed. |
 | Audio controls | `libpulse`, `pavucontrol` | `pactl` for device discovery, volume, mute, and moving streams; middle-click launches the mixer. |
 | Audio server | `pipewire`, `pipewire-pulse`, `wireplumber` **or an existing PulseAudio server** | A running PulseAudio-compatible server is required. PipeWire is the default choice in the script below. |
@@ -30,7 +30,8 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | Built-in display brightness | `brightnessctl` | Controls devices exposed under `/sys/class/backlight`. |
 | Night Shift | `hyprsunset` | Warm screen colors from the quick settings panel, controlled through `hyprctl`; starts on demand, or controls an existing daemon. Included in the install script below. |
 | System/session services | `dbus`, `systemd`, `polkit` | Session/system buses, logind, suspend/reboot/shutdown, and authorization according to system policy. Normally already present on Arch. |
-| Lock authentication | `pam`, `pambase` | The custom locker authenticates through `/etc/pam.d/login`. |
+| Lock authentication | `pam`, `pambase` | Hyprlock authenticates with its packaged `/etc/pam.d/hyprlock` configuration. |
+| Screen locking and sleep | `hyprlock`, `hypridle`, `procps-ng` | Manual Lock/Sleep and lid closing use `loginctl lock-session`. Hypridle launches Hyprlock and delays sleep until the compositor reports the lock. `pgrep` checks the listener; `pidof` prevents duplicate lockers. |
 
 The Quickshell build must provide these imported modules:
 
@@ -45,7 +46,6 @@ Quickshell.Bluetooth
 Quickshell.Services.Mpris
 Quickshell.Services.Notifications
 Quickshell.Services.SystemTray
-Quickshell.Services.Pam
 ```
 
 Missing imported modules can prevent the shell from loading, even if the
@@ -84,8 +84,9 @@ the runtime GI dependencies above. Notification tests additionally use
 `dbus-run-session` from `dbus` and `gdbus` from `glib2`.
 
 Media controls use MPRIS and require a player exposing that interface. No
-`playerctl` package is needed. Wallpapers and locking are implemented in this
-config: Noctalia, `swww`, `hyprpaper`, `hyprlock`, and `swaylock` are not required.
+`playerctl` package is needed. Wallpapers are implemented in this config:
+Noctalia, `swww`, and `hyprpaper` are not required. All locking uses Hyprlock and
+Hypridle; there is no custom Quickshell locker or Quickshell PAM-module dependency.
 Light/dark wallpaper transitions use Qt Quick animations and the existing image
 decoders; they need no additional package.
 Codex/Ghostty notification integration is optional; neither is a shell dependency.
@@ -97,7 +98,9 @@ setup. GTK syncing needs `adw-gtk-theme`, `gsettings-desktop-schemas`, `glib2`, 
 uses an already initialized `spicetify-cli` installation. Zen Browser syncing
 needs an existing Zen profile with custom stylesheets enabled (see the setup
 guide above); it requires no additional package. tmux syncing requires `tmux` and
-the dotfiles' `tmux/theme.conf` integration, with no plugin dependency. These optional app
+the dotfiles' `tmux/theme.conf` integration, with no plugin dependency. Rofi syncing
+requires `rofi` and uses its standard `config.rasi`; installing Rofi also enables
+native parsing checks across every palette in the app-theme tests. These optional app
 integrations are not installed by the base script below.
 
 ## Arch install script
@@ -132,7 +135,7 @@ if (( EUID != 0 )); then
 fi
 
 packages=(
-    quickshell hyprland
+    quickshell hyprland hyprlock hypridle
     qt6-base qt6-declarative qt6-wayland qt6-svg qt6-imageformats
     ttf-jetbrains-mono-nerd fontconfig hicolor-icon-theme adwaita-icon-theme
     bash coreutils grep procps-ng jq python btop pciutils pacman-contrib
@@ -172,7 +175,7 @@ esac
 
 qml_root=/usr/lib/qt6/qml/Quickshell
 for module in . Io Widgets Wayland Hyprland Networking Bluetooth \
-    Services/Mpris Services/Notifications Services/SystemTray Services/Pam; do
+    Services/Mpris Services/Notifications Services/SystemTray; do
     if [[ ! -f "$qml_root/$module/qmldir" ]]; then
         printf 'Missing Quickshell module: %s\n' "$module" >&2
         exit 1
@@ -192,6 +195,23 @@ printf '\nDependencies installed. Follow the service/session setup below.\n'
 ```
 
 ## Service and session setup
+
+Manual Lock/Sleep and the parent dotfiles' lid integration require:
+
+```sh
+sudo pacman -S --needed hyprlock hypridle
+```
+
+Its `hypr/config/binds.lua` binds `switch:on:Lid Switch` to
+`loginctl lock-session`, while `hypr/config/autostart.lua` starts Hypridle.
+`~/.config/hypr/hyprlock.conf` supplies the lock screen, and
+`~/.config/hypr/hypridle.conf` handles `loginctl lock-session` and locking before
+sleep with `inhibit_sleep = 3` and `lock_cmd = pidof hyprlock || hyprlock`. See [Hypridle's sleep integration](https://wiki.hypr.land/hypr-ecosystem/user/hypridle/).
+After installing this setup into an existing session, reload Hyprland and start
+`hypridle` once, or log in again. No inactivity timeout is configured. The
+existing logind lid/suspend policy remains in effect; closing the lid also locks
+when the system stays awake, such as while docked. Test closing/reopening the
+lid and unlocking with the normal login password on each target laptop.
 
 Night Shift needs the [hyprsunset package](https://archlinux.org/packages/extra/x86_64/hyprsunset/).
 For an existing installation that only needs this new dependency:
@@ -230,10 +250,12 @@ pactl info
 Network and power actions follow the machine's polkit/logind permissions. If a
 policy requires interactive authorization, the session also needs a running
 polkit authentication agent; this config does not implement one.
-Battery charge-limit writes also use that agent. Limits are available only when
+Battery charge-limit and firmware power-profile writes also use that agent. Limits are available only when
 the battery driver exposes `charge_control_end_threshold`; peripheral batteries
 are excluded. Driver-supported values and persistence across reboot vary. See
-[Battery](README.md#battery) for applying limits and restoring full charging.
+[Battery](README.md#battery) for estimates, selecting power profiles, applying
+limits, and restoring full charging. The firmware exposes supported profiles
+through `platform_profile_choices`; unsupported devices show an explanation.
 
 For DDC brightness, enable DDC/CI in the monitor's menu. The installed Arch
 `ddcutil` package supplies `/usr/lib/modules-load.d/ddcutil.conf` to load
@@ -245,7 +267,7 @@ Brightness support still depends on the monitor, GPU, and connection.
 
 Run the shell inside Hyprland with a working session D-Bus. The locker also
 requires the compositor's `ext-session-lock-v1` support and a working
-`/etc/pam.d/login` authentication stack. Keep only one notification daemon
+`/etc/pam.d/hyprlock` authentication stack. Keep only one notification daemon
 running so Quickshell can own `org.freedesktop.Notifications`.
 
 From this repository directory:

@@ -7,9 +7,11 @@ import "../config"
 Singleton {
     id: root
     property var batteries: []
+    property var powerProfiles: ({available: false, current: "", profiles: []})
     property int openPanels: 0
     property string errorMessage: ""
     property string message: ""
+    property string actionKind: ""
     readonly property bool changing: action.running
     readonly property bool present: batteries.length > 0
     readonly property bool charging: batteries.some(b => b.status === "Charging")
@@ -27,13 +29,24 @@ Singleton {
         if (changing) return;
         errorMessage = "";
         message = "";
+        actionKind = "limit";
         action.command = ["python3", helper, "set", id, String(Math.round(value))];
+        action.running = true;
+    }
+    function setProfile(profile) {
+        if (changing || !powerProfiles.available || !powerProfiles.profiles.some(p => p.id === profile)) return;
+        errorMessage = "";
+        message = "";
+        actionKind = "profile";
+        action.command = ["python3", helper, "profile", profile];
         action.running = true;
     }
     function accept(text, mutation) {
         try {
             const data = JSON.parse(text);
             if (JSON.stringify(batteries) !== JSON.stringify(data.batteries || [])) batteries = data.batteries || [];
+            const profiles = data.powerProfiles || {available: false, current: "", profiles: []};
+            if (JSON.stringify(powerProfiles) !== JSON.stringify(profiles)) powerProfiles = profiles;
             if (mutation) {
                 errorMessage = data.error || "";
                 message = data.message || "";
@@ -53,7 +66,7 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.accept(text, true) }
         stderr: StdioCollector {}
         onExited: code => {
-            if (code !== 0) root.errorMessage = root.errorMessage || "Could not apply the battery charge limit.";
+            if (code !== 0) root.errorMessage = root.errorMessage || "Could not apply the battery setting.";
             Qt.callLater(root.refresh);
         }
     }

@@ -132,6 +132,20 @@ Click it to see each battery's charge, status, estimated health (full capacity /
 design capacity), cycle count, and full/design capacity when the driver exposes
 them. Missing values are shown as unavailable.
 
+The popup also shows estimated time until empty while discharging, or until full
+(or the applied charge limit) while charging. It uses driver estimates when
+available, otherwise remaining energy/power or charge/current. Estimates update
+every 10 seconds while the popup is open and vary with workload and charging rate.
+Idle/full batteries hide the estimate; missing rate data is shown as unavailable.
+
+Use **Power profile** in the popup to select the firmware's supported modes,
+such as Power saver, Balanced, and Performance. The active mode is highlighted
+after driver readback; firmware hotkey changes are picked up on refresh. This
+uses the kernel's [platform profile interface](https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-platform_profile)
+and may prompt for polkit authorization. Unsupported devices show an explanation.
+Profiles control the laptop's firmware performance/power/cooling policy; they do
+not configure a separate CPU governor or install a power management daemon.
+
 If the driver exposes `charge_control_end_threshold`, choose a **50–100%** charge
 limit and click the check button to apply it. This sets the hardware threshold;
 the driver may round to a supported value, which the panel reads back. Set 100%
@@ -352,27 +366,27 @@ The power dropdown has Lock, Sleep, Reboot, and Shut down icons.
 Reboot and shutdown require confirmation in the dropdown. Failed commands show
 an error. These actions do not depend on Noctalia or an external logout script.
 
-Lock launches this configuration's own `modules/lock/shell.qml` in a separate
-Quickshell process. It uses Wayland's session-lock protocol on every monitor and
-PAM's `login` service to authenticate the current user with the system password.
-Only successful PAM authentication unlocks the session. Passwords are not passed
-to commands or saved; fields and pending responses are cleared after use.
-The lock screen inherits the bar's colors when launched from the power menu.
-File watching is disabled in the locker so editing the bar does not reload it.
+Manual Lock and the parent dotfiles' lid-close binding both request
+`loginctl lock-session`. Hypridle listens for that request and launches Hyprlock
+using `~/.config/hypr/hyprlock.conf`. Unlock with your normal login password.
+Sleep requests the same lock, then runs `systemctl suspend`; Hypridle's
+`inhibit_sleep = 3` delays sleep until Hyprland reports the session locked.
+The helper rejects Lock/Sleep if required tools or the Hypridle listener are
+missing. Reboot and shutdown use `systemctl reboot` and `systemctl poweroff`,
+respecting the system's normal permissions and inhibitors.
 
-Sleep waits for the compositor to confirm the lock is secure, then runs
-`systemctl suspend`. Reboot and shutdown use `systemctl reboot` and
-`systemctl poweroff`, respecting the system's normal permissions and inhibitors.
-On another PC, this requires a compositor supporting `ext-session-lock-v1`,
-Quickshell's PAM module, an appropriate `/etc/pam.d/login`, and systemd.
+The parent dotfiles start Hypridle with Hyprland and keep the existing
+lid/suspend policy. See [Dependencies and session setup](DEPENDENCIES.md#service-and-session-setup)
+for packages, configuration, and activation. The shell no longer runs a separate
+Quickshell locker or passes theme colors to one; all entry points share
+Hyprlock's appearance and authentication.
 
 For a lock keybinding, run `python3 ~/.config/quickshell/scripts/power-action.py lock`.
 For lock-then-sleep, use `sleep` instead of `lock`. Run
-`python3 scripts/test-power.py` for mocked power and authentication checks. These
-do not lock, suspend, reboot, power off, or check your real password.
-An actual compositor lock/unlock has not been exercised by these tests. If a
-session-lock process crashes, the compositor keeps the session locked; do not
-kill the locker as a way to unlock it.
+`python3 scripts/test-power.py` for isolated routing and failure checks. These
+use fake session commands and do not lock, suspend, reboot, power off, or check
+your real password. Verify physical lid closing and password unlocking on the
+target machine.
 
 ## Monitor brightness
 

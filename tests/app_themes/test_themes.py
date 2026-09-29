@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import plistlib
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import tomllib
@@ -94,6 +96,58 @@ class ThemeTests(unittest.TestCase):
         self.assertTrue(all(not t['enabled'] for t in status['targets']))
         self.assertEqual(before, list(self.home.rglob('*')))
         self.assertEqual(self.commands, [])
+
+    def test_rofi_roundtrip_sync_preserves_config_and_symlink(self):
+        original = '@theme "default"\n* { font: "monospace 14"; }\nwindow { width: 700px; }\n'
+        path = self.put('rofi/config.rasi', original)
+        real = self.home / 'rofi-dotfile'
+        path.rename(real)
+        path.symlink_to(real)
+        self.assertEqual(self.status(self.apply('rofi'), 'rofi')['state'], 'applied')
+        generated = self.config / 'rofi/quickshell-config.rasi'
+        self.assertIn(self.palette['bg'], generated.read_text())
+        next_palette = list(palettes())[1]
+        self.engine.handle(dict(action='sync', palette=next_palette, mode='light'))
+        self.assertIn(next_palette['bg'], generated.read_text())
+        self.assertEqual(path.read_text(), original + '@import "quickshell-config.rasi"\n')
+        path.write_text(path.read_text() + 'listview { lines: 8; }\n')
+        # Recovery must survive restarting the worker or uninstalling rofi.
+        self.engine = module.Themes(self.state, self.home, self.config, self.data, self.run_command, lambda _: None)
+        self.assertEqual(self.status(self.apply('rofi', False), 'rofi')['state'], 'off')
+        self.assertTrue(path.is_symlink())
+        self.assertEqual(path.read_text(), original + 'listview { lines: 8; }\n')
+        self.assertFalse(generated.exists())
+        self.assertEqual(self.commands, [])
+
+    def test_rofi_manual_generated_edits_are_preserved(self):
+        self.apply('rofi')
+        generated = self.config / 'rofi/quickshell-config.rasi'
+        generated.write_text('/* personal theme */\n')
+        self.assertEqual(self.status(self.apply('rofi', False), 'rofi')['state'], 'error')
+        self.assertEqual(generated.read_text(), '/* personal theme */\n')
+
+    @unittest.skipUnless(shutil.which('rofi'), 'rofi is not installed')
+    def test_rofi_native_parser_all_palettes_and_layout_preservation(self):
+        path = self.put('rofi/config.rasi', '@theme "default"\n'
+                        '* { font: "monospace 14"; }\nwindow { width: 700px; }\n'
+                        'element selected.normal { text-color: #123456; }\n')
+        for palette in palettes():
+            self.apply('rofi', palette=palette)
+            result = subprocess.run(['rofi', '-config', str(path), '-dump-theme'],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn('Error', result.stderr)
+            self.assertRegex(result.stdout, r'width:\s+700px\s*;')
+            self.assertIn('"monospace 14"', result.stdout)
+            selected = re.search(r'element selected\.normal\s*\{([^}]+)', result.stdout)[1]
+            # Rofi serializes colors as rgba() or a standard color name.
+            for prop, color in [('background-color', palette['iris']),
+                                ('text-color', formats.on_color(palette['iris']))]:
+                r, g, b = formats.rgb(color)
+                color_pattern = rf'rgba\s*\(\s*{r},\s*{g},\s*{b},\s*100 %\s*\)'
+                if color in ('#000000', '#ffffff'):
+                    color_pattern = '(?:' + color_pattern + '|' + ('Black' if r == 0 else 'White') + ')'
+                self.assertRegex(selected, rf'{prop}:\s+{color_pattern}')
 
     def test_ghostty_roundtrip_preserves_other_edits_and_symlink(self):
         original = '# personal\nfont-size = 15\ntheme = noctalia\n'

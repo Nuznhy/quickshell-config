@@ -17,6 +17,9 @@ TestCase {
         info.expanded = false; info.active = false; info.visible = true;
         battery.visible = false; battery.drafts = {};
         BatteryState.batteries = [];
+        BatteryState.powerProfiles = {available: false, current: "", profiles: []};
+        BatteryState.lastProfile = ""; BatteryState.changing = false;
+        BatteryState.actionKind = "limit";
         BatteryState.lastLimit = 0; Theme.verticalBar = false;
     }
     function test_collapsible_info_and_polling() {
@@ -70,5 +73,48 @@ TestCase {
         wait(50);
         verify(!findChild(battery, "charge-limit-BAT0").visible);
         verify(!findChild(battery, "apply-limit-BAT0").visible);
+    }
+    function test_estimates_follow_status_and_limit() {
+        info.visible = false; battery.visible = true;
+        const base = {id: "BAT0", model: "Battery", percent: 50, health: null, cycles: null, full: null, design: null, unit: "", limitSupported: false, limit: null};
+        const cases = [
+            {status: "Charging", timeRemaining: 5400, chargeTarget: 100, expected: "Estimated until full: 1 h 30 min"},
+            {status: "Charging", timeRemaining: 1800, chargeTarget: 80, expected: "Estimated to 80% limit: 30 min"},
+            {status: "Discharging", timeRemaining: 7200, expected: "Estimated until empty: 2 h"},
+            {status: "Discharging", timeRemaining: 30, expected: "Estimated until empty: less than 1 min"},
+            {status: "Discharging", timeRemaining: null, expected: "Time until empty: unavailable"},
+            {status: "Full", timeRemaining: 7200, expected: ""},
+            {status: "Not charging", timeRemaining: 7200, expected: ""}
+        ];
+        for (const entry of cases) {
+            BatteryState.batteries = [Object.assign({}, base, entry)];
+            wait(10);
+            const label = findChild(battery, "battery-estimate-BAT0");
+            compare(label.text, entry.expected);
+            compare(label.visible, entry.expected.length > 0);
+        }
+    }
+    function test_power_profiles_selection_and_busy_state() {
+        info.visible = false; battery.visible = true;
+        BatteryState.batteries = [{id: "BAT0", model: "Laptop battery", percent: 72, status: "Charging", timeRemaining: 5400, chargeTarget: 80, health: 91.2, cycles: 120, full: 45.6, design: 50, unit: "Wh", limitSupported: true, limit: 80}];
+        battery.edit("BAT0", 85);
+        BatteryState.powerProfiles = {available: true, current: "balanced", profiles: [
+            {id: "low-power", label: "Power saver"}, {id: "balanced", label: "Balanced"}, {id: "performance", label: "Performance"}]};
+        wait(30);
+        const performance = findChild(battery, "power-profile-performance");
+        verify(findChild(battery, "power-profile-balanced").accent);
+        mouseClick(performance);
+        compare(BatteryState.lastProfile, "performance");
+        verify(!performance.accent); // Wait for driver readback.
+        BatteryState.powerProfiles = Object.assign({}, BatteryState.powerProfiles, {current: "performance"});
+        verify(performance.accent);
+        BatteryState.changing = true;
+        verify(!performance.enabled);
+        BatteryState.changing = false;
+        compare(battery.drafts.BAT0, 85);
+        grabImage(battery).save('/tmp/quickshell-battery-profiles.png');
+        BatteryState.powerProfiles = {available: false, current: "", profiles: []};
+        wait(10);
+        verify(!findChild(battery, "power-profile-performance"));
     }
 }

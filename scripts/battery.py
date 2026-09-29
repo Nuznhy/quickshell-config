@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Discover system batteries and apply driver charge thresholds."""
+"""Discover battery estimates, charge thresholds and firmware power profiles."""
 import argparse
 import json
 import os
@@ -9,6 +9,10 @@ import shutil
 import subprocess
 
 ROOT = Path('/sys/class/power_supply')
+PLATFORM_ROOT = Path('/sys/firmware/acpi')
+PROFILE_LABELS = {'low-power': 'Power saver', 'cool': 'Cool', 'quiet': 'Quiet',
+                  'balanced': 'Balanced', 'balanced-performance': 'Balanced performance',
+                  'performance': 'Performance'}
 
 
 def read(path):
@@ -23,6 +27,38 @@ def number(path):
         return int(read(path))
     except ValueError:
         return None
+
+
+def time_remaining(path, status, target):
+    if status not in ('Charging', 'Discharging'):
+        return None
+    charging = status == 'Charging'
+    # Driver estimates are in seconds. A full-charge estimate does not describe
+    # reaching a lower charge limit, so calculate that from the measured rate.
+    if not charging or target == 100:
+        for suffix in ('now', 'avg'):
+            seconds = number(path / f'time_to_{"full" if charging else "empty"}_{suffix}')
+            if seconds is not None and seconds > 0:
+                return seconds
+    for kind, rate_name in [('energy', 'power'), ('charge', 'current')]:
+        now = number(path / f'{kind}_now')
+        full = number(path / f'{kind}_full')
+        if now is None or now < 0 or (charging and (full is None or full <= 0)):
+            continue
+        remaining = max(0, full * target / 100 - now) if charging else now
+        for suffix in ('now', 'avg'):
+            rate = number(path / f'{rate_name}_{suffix}')
+            if rate:
+                # Both values use matching micro-units; their ratio is hours.
+                return max(0, round(3600 * remaining / abs(rate)))
+    return None
+
+
+def power_profiles(root=PLATFORM_ROOT):
+    current = read(root / 'platform_profile')
+    choices = read(root / 'platform_profile_choices').split()
+    profiles = [dict(id=name, label=label) for name, label in PROFILE_LABELS.items() if name in choices]
+    return dict(available=bool(current and profiles), current=current, profiles=profiles)
 
 
 def batteries(root=ROOT):
@@ -48,8 +84,11 @@ def batteries(root=ROOT):
             capacity = round(100 * now / full)
         end = number(path/'charge_control_end_threshold')
         start = number(path/'charge_control_start_threshold')
+        status = read(path/'status') or 'Unknown'
+        target = end if end is not None and 0 < end <= 100 else 100
         result.append(dict(id=path.name, model=read(path/'model_name') or path.name,
-                           manufacturer=read(path/'manufacturer'), status=read(path/'status') or 'Unknown',
+                           manufacturer=read(path/'manufacturer'), status=status,
+                           timeRemaining=time_remaining(path, status, target), chargeTarget=target,
                            percent=max(0, min(100, capacity)) if capacity is not None else None,
                            health=round(100 * full / design, 1) if full and design and design > 0 else None,
                            full=full / 1e6 if full else None, design=design / 1e6 if design else None,
@@ -58,20 +97,38 @@ def batteries(root=ROOT):
     return result
 
 
-def write_threshold(path, value):
+def write_value(path, value):
     try:
         path.write_text(f'{value}\n')
     except PermissionError:
         if not shutil.which('pkexec'):
-            raise RuntimeError('Install polkit and run a polkit authentication agent to change the charge limit.')
+            raise RuntimeError('Install polkit and run a polkit authentication agent to change battery settings.')
         # Only tee needs elevated privileges, not this user-editable Python file.
         result = subprocess.run(['pkexec', '/usr/bin/tee', str(path)], input=f'{value}\n',
                                 capture_output=True, text=True, timeout=120)
         if result.returncode:
-            raise RuntimeError('Charge limit authorization was cancelled or the driver rejected the value. ' + result.stderr.strip()[-240:])
+            raise RuntimeError('Battery setting authorization was cancelled or the driver rejected the value. ' + result.stderr.strip()[-240:])
+    actual = read(path)
+    if not actual:
+        raise RuntimeError('Could not read back the battery setting.')
+    return actual
+
+
+def write_threshold(path, value):
+    write_value(path, value)
     actual = number(path)
     if actual is None:
         raise RuntimeError('Could not read back the charge threshold.')
+    return actual
+
+
+def set_profile(name, root=PLATFORM_ROOT, writer=write_value):
+    state = power_profiles(root)
+    if not state['available'] or name not in [profile['id'] for profile in state['profiles']]:
+        raise ValueError('Choose a power profile supported by this device.')
+    actual = writer(root / 'platform_profile', name)
+    if actual != name:
+        raise RuntimeError('The driver did not apply the requested power profile.')
     return actual
 
 
@@ -104,20 +161,23 @@ def set_limit(name, limit, root=ROOT, writer=write_threshold):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', nargs='?', choices=['status', 'set'], default='status')
-    parser.add_argument('battery', nargs='?')
+    parser.add_argument('action', nargs='?', choices=['status', 'set', 'profile'], default='status')
+    parser.add_argument('target', nargs='?')
     parser.add_argument('limit', nargs='?', type=int)
     args = parser.parse_args()
     error = message = ''
     try:
         if args.action == 'set':
-            actual = set_limit(args.battery or '', args.limit)
+            actual = set_limit(args.target or '', args.limit)
             message = f'Charge limit applied: {actual}%.'
             if actual != args.limit:
                 message += ' The driver rounded to a supported value.'
+        elif args.action == 'profile':
+            actual = set_profile(args.target or '')
+            message = f'Power profile applied: {PROFILE_LABELS[actual]}.'
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         error = str(exc)
-    print(json.dumps(dict(batteries=batteries(), error=error, message=message)))
+    print(json.dumps(dict(batteries=batteries(), powerProfiles=power_profiles(), error=error, message=message)))
 
 
 if __name__ == '__main__':

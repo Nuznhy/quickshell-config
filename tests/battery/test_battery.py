@@ -18,7 +18,7 @@ class BatteryTests(unittest.TestCase):
     def device(self, name='BAT0', **values):
         path = self.root/name
         path.mkdir(exist_ok=True)
-        values = dict(type='Battery', scope='System', status='Charging', present='1', **values)
+        values = dict(dict(type='Battery', scope='System', status='Charging', present='1'), **values)
         for key, value in values.items():
             (path/key).write_text(str(value))
         return path
@@ -44,6 +44,73 @@ class BatteryTests(unittest.TestCase):
         self.assertIsNone(entry['health'])
         self.assertFalse(entry['limitSupported'])
         with self.assertRaises(RuntimeError): battery.set_limit('BAT0', 80, self.root)
+
+    def test_energy_charge_and_discharge_times(self):
+        path = self.device(energy_full=60000000, energy_now=30000000, power_now=15000000)
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 7200)
+        (path/'status').write_text('Discharging')
+        (path/'power_now').write_text('10000000')
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 10800)
+
+    def test_charge_units_signed_current_and_average_fallback(self):
+        self.device(status='Discharging', charge_full=4000000, charge_now=2000000,
+                    current_now=0, current_avg=-500000)
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 14400)
+
+    def test_native_estimates_and_applied_charge_limit(self):
+        path = self.device(energy_full=60000000, energy_now=30000000, power_now=12000000,
+                           time_to_full_now=8500)
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 8500)
+        (path/'charge_control_end_threshold').write_text('80')
+        entry = battery.batteries(self.root)[0]
+        self.assertEqual(entry['chargeTarget'], 80)
+        self.assertEqual(entry['timeRemaining'], 5400)
+        (path/'status').write_text('Discharging')
+        (path/'time_to_empty_avg').write_text('1234')
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 1234)
+
+    def test_missing_idle_and_zero_rate_estimates(self):
+        path = self.device(energy_full=60000000, energy_now=30000000)
+        self.assertIsNone(battery.batteries(self.root)[0]['timeRemaining'])
+        (path/'power_now').write_text('0')
+        self.assertIsNone(battery.batteries(self.root)[0]['timeRemaining'])
+        (path/'time_to_full_now').write_text('500')
+        for status in ('Full', 'Not charging', 'Unknown'):
+            (path/'status').write_text(status)
+            self.assertIsNone(battery.batteries(self.root)[0]['timeRemaining'])
+        (path/'status').write_text('Charging')
+        (path/'charge_control_end_threshold').write_text('50')
+        (path/'power_now').write_text('1000000')
+        self.assertEqual(battery.batteries(self.root)[0]['timeRemaining'], 0)
+
+    def test_power_profiles_discovery_switch_and_external_change(self):
+        self.assertFalse(battery.power_profiles(self.root)['available'])
+        (self.root/'platform_profile_choices').write_text('low-power balanced performance unknown')
+        path = self.root/'platform_profile'
+        path.write_text('balanced')
+        state = battery.power_profiles(self.root)
+        self.assertTrue(state['available'])
+        self.assertEqual([p['id'] for p in state['profiles']], ['low-power', 'balanced', 'performance'])
+        self.assertEqual(battery.set_profile('performance', self.root), 'performance')
+        self.assertEqual(path.read_text(), 'performance\n')
+        path.write_text('low-power')
+        self.assertEqual(battery.power_profiles(self.root)['current'], 'low-power')
+        for name in ('../performance', 'quiet', 'unknown', ''):
+            with self.assertRaises(ValueError): battery.set_profile(name, self.root)
+        self.assertEqual(path.read_text(), 'low-power')
+
+    def test_profile_rejection_and_authorization(self):
+        (self.root/'platform_profile_choices').write_text('balanced performance')
+        path = self.root/'platform_profile'
+        path.write_text('balanced')
+        with self.assertRaisesRegex(RuntimeError, 'did not apply'):
+            battery.set_profile('performance', self.root, lambda path, value: 'balanced')
+        with patch.object(Path, 'write_text', side_effect=PermissionError), patch.object(battery.shutil, 'which', return_value='/usr/bin/pkexec'), patch.object(battery.subprocess, 'run', return_value=subprocess.CompletedProcess([], 126, '', 'cancelled')) as run:
+            with self.assertRaisesRegex(RuntimeError, 'authorization'):
+                battery.set_profile('performance', self.root)
+        self.assertEqual(run.call_args.args[0], ['pkexec', '/usr/bin/tee', str(path)])
+        self.assertEqual(run.call_args.kwargs['input'], 'performance\n')
+        self.assertEqual(path.read_text(), 'balanced')
 
     def test_start_threshold_then_end(self):
         path = self.device(capacity=90, charge_control_start_threshold=95, charge_control_end_threshold=100)

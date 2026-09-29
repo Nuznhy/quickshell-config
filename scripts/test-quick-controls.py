@@ -77,6 +77,10 @@ Item {
             function refresh() {}''',
         'services/BatteryState': '''property int openPanels: 0
             property var batteries: []
+            property var powerProfiles: ({available: false, current: "", profiles: []})
+            property string lastProfile: ""
+            property string actionKind: "limit"
+            function setProfile(profile) { actionKind = "profile"; lastProfile = profile; }
             property bool changing: false
             property bool charging: false
             property real percent: 72
@@ -167,9 +171,12 @@ ShellRoot {
     (base/'scripts/battery.py').write_text('''import json, sys
 from pathlib import Path
 state = Path(__file__).with_name('battery-limit')
+profile_state = Path(__file__).with_name('power-profile')
 if len(sys.argv) > 1 and sys.argv[1] == 'set': state.write_text(sys.argv[3])
+if len(sys.argv) > 1 and sys.argv[1] == 'profile': profile_state.write_text(sys.argv[2])
 limit = int(state.read_text()) if state.exists() else 100
-print(json.dumps(dict(batteries=[dict(id="BAT0", percent=75, status="Charging", full=40, unit="Wh", limit=limit)], error="", message="Applied")))
+profile = profile_state.read_text() if profile_state.exists() else 'balanced'
+print(json.dumps(dict(batteries=[dict(id="BAT0", percent=75, status="Charging", full=40, unit="Wh", limit=limit, timeRemaining=1800, chargeTarget=limit)], powerProfiles=dict(available=True, current=profile, profiles=[dict(id=p, label=p) for p in ['balanced', 'performance']]), error="", message="Applied")))
 ''')
     (base/'scripts/system-info.py').write_text('''import json, sys
 print(json.dumps(dict(count=4, error="") if len(sys.argv)>1 else dict(os="Test Linux", cpu="Test CPU")))
@@ -195,7 +202,12 @@ ShellRoot {
                 phase = 2;
             } else if (phase === 2 && !BatteryState.changing && BatteryState.batteries[0].limit === 80) {
                 if (BatteryState.errorMessage) {console.error("SYSTEM_FAILED: apply error"); Qt.quit(); return;}
-                console.log("SYSTEM_OK: discovery, info, updates and charge action"); Qt.quit();
+                if (BatteryState.batteries[0].timeRemaining !== 1800 || !BatteryState.powerProfiles.available) {console.error("SYSTEM_FAILED: estimates/profiles"); Qt.quit(); return;}
+                BatteryState.setProfile("performance");
+                phase = 3;
+            } else if (phase === 3 && !BatteryState.changing && BatteryState.powerProfiles.current === "performance") {
+                if (BatteryState.errorMessage) {console.error("SYSTEM_FAILED: profile error"); Qt.quit(); return;}
+                console.log("SYSTEM_OK: discovery, estimates, info, updates, charge and profile actions"); Qt.quit();
             }
         }
     }

@@ -1,5 +1,5 @@
 import QtQuick
-import Quickshell.Widgets
+import QtQuick.Window
 import "../config"
 import "../services"
 
@@ -105,10 +105,16 @@ Grid {
                 }
             }
 
-            IconImage {
+            Image {
                 id: systemIcon
                 anchors.fill: parent
                 source: appIcon.modelData.source
+                // Keep enough detail for hover zoom and scaled displays without
+                // reloading the image on every animation frame.
+                readonly property int textureSize: Math.ceil(width * Screen.devicePixelRatio * 2)
+                sourceSize: Qt.size(textureSize, textureSize)
+                fillMode: Image.PreserveAspectFit
+                mipmap: true
                 visible: status === Image.Ready
                 scale: appIcon.iconScale
             }

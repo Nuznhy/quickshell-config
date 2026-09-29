@@ -36,7 +36,6 @@ DropdownWidget {
     }
     Process {
         id: action
-        environment: ({ QS_LOCK_BG: Theme.bg.toString(), QS_LOCK_TEXT: Theme.text.toString(), QS_LOCK_ACCENT: Theme.iris.toString() })
         stdout: StdioCollector {}
         stderr: StdioCollector { id: errors }
         onExited: code => {

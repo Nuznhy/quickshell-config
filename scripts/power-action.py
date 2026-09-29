@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Suspend only after the custom session lock is confirmed secure."""
-from pathlib import Path
+"""Route session locking through Hypridle/Hyprlock and power actions through logind."""
+import os
+import shutil
 import subprocess
 import sys
-import time
-
-LOCK = str(Path(__file__).resolve().parents[1] / 'modules/lock')
 
 
 def run(args, timeout=15):
@@ -16,15 +14,17 @@ def run(args, timeout=15):
 
 
 def lock():
-    run(['quickshell', '--no-duplicate', '--daemonize', '--path', LOCK])
-    for _ in range(40):
-        try:
-            if run(['quickshell', 'ipc', '--path', LOCK, 'call', 'lock', 'status'], timeout=2) == 'secure':
-                return
-        except (RuntimeError, subprocess.TimeoutExpired):
-            pass
-        time.sleep(0.25)
-    raise RuntimeError('The lock screen did not become secure. Sleep was not started.')
+    for executable in ('hyprlock', 'hypridle', 'pgrep', 'loginctl'):
+        if not shutil.which(executable):
+            raise RuntimeError(f'{executable} is required for session locking. See DEPENDENCIES.md.')
+    # loginctl only emits a signal; require the configured listener before
+    # reporting success or requesting sleep. Hypridle owns lock_cmd and the
+    # inhibit_sleep=3 delay until Hyprland confirms the session is locked.
+    try:
+        run(['pgrep', '-u', str(os.getuid()), '-x', 'hypridle'])
+    except RuntimeError as error:
+        raise RuntimeError('Hypridle is not running. Start hypridle in your Hyprland session and retry.') from error
+    run(['loginctl', 'lock-session'])
 
 
 def perform(action):

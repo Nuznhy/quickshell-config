@@ -22,9 +22,24 @@ FocusScope {
         next[id] = Math.round(value);
         drafts = next;
     }
+    function estimateText(battery) {
+        if (battery.status !== "Charging" && battery.status !== "Discharging") return "";
+        const target = battery.status === "Discharging" ? "until empty"
+            : battery.chargeTarget > 0 && battery.chargeTarget < 100 ? "to " + battery.chargeTarget + "% limit" : "until full";
+        const seconds = battery.timeRemaining;
+        if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0)
+            return "Time " + target + ": unavailable";
+        if (seconds < 60) return "Estimated " + target + ": less than 1 min";
+        const minutes = Math.ceil(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        return "Estimated " + target + ": " + (hours ? hours + " h" + (minutes % 60 ? " " : "") : "")
+            + (minutes % 60 ? minutes % 60 + " min" : "");
+    }
     Connections {
         target: BatteryState
-        function onChangingChanged() { if (!BatteryState.changing && !BatteryState.errorMessage) root.drafts = {}; }
+        function onChangingChanged() {
+            if (!BatteryState.changing && !BatteryState.errorMessage && BatteryState.actionKind === "limit") root.drafts = {};
+        }
     }
     component Label: Text {
         color: Theme.text
@@ -42,6 +57,33 @@ FocusScope {
             width: parent.width
             spacing: 12
             Label { text: "Battery"; font.pixelSize: 16 }
+            Label { text: "Power profile"; font.bold: true }
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: BatteryState.powerProfiles.profiles
+                    NotificationButton {
+                        required property var modelData
+                        objectName: "power-profile-" + modelData.id
+                        text: modelData.label
+                        accent: BatteryState.powerProfiles.current === modelData.id
+                        enabled: BatteryState.powerProfiles.available && !BatteryState.changing
+                        Accessible.name: modelData.label + " power profile"
+                        Accessible.checkable: true
+                        Accessible.checked: accent
+                        onClicked: BatteryState.setProfile(modelData.id)
+                    }
+                }
+            }
+            Label {
+                Layout.fillWidth: true
+                color: Theme.subtle
+                font.pixelSize: 10
+                text: BatteryState.powerProfiles.available
+                    ? "Controls your laptop's performance, power use and cooling. Authorization may be required."
+                    : "Power profiles are not exposed by this device's firmware."
+            }
             Repeater {
                 model: BatteryState.batteries
                 Rectangle {
@@ -66,6 +108,13 @@ FocusScope {
                             text: (card.modelData.percent === null ? "Unknown charge" : card.modelData.percent + "%") + " · " + card.modelData.status
                             color: Theme.iris
                             font.pixelSize: 16
+                        }
+                        Label {
+                            objectName: "battery-estimate-" + card.modelData.id
+                            Layout.fillWidth: true
+                            text: root.estimateText(card.modelData)
+                            visible: text.length > 0
+                            color: Theme.subtle
                         }
                         Label {
                             Layout.fillWidth: true

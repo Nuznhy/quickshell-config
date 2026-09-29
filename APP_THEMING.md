@@ -20,6 +20,7 @@ settings, custom CSS, extensions, and dotfile symlinks are preserved.
 | --- | --- | --- |
 | GTK 3 / 4 | Generated `gtk-3.0/quickshell-config.css` and `gtk-4.0/quickshell-config.css`, managed imports in `gtk.css`, GTK settings and desktop color preference. GTK 3 uses adw-gtk3. | Reopen applications; a new login may be needed after initial toolkit setup. |
 | Qt / KDE | Uses the detected KDE or qt5ct/qt6ct platform integration. KDE colors go into `~/.local/share/color-schemes/quickshell-config.colors` and managed `kdeglobals` keys. qtct uses generated palettes and its custom-palette selection. | Sends KDE's palette-change notification; reopen apps or log in again after initial toolkit setup. |
+| Rofi | Appends a managed import of `rofi/quickshell-config.rasi` to `rofi/config.rasi`. Syncs backgrounds, text, borders, accents, and selection colors while preserving the existing font and layout. | Colors load the next time Rofi opens. Disabling removes the override and restores the previous colors. |
 | Ghostty | Selects the generated `ghostty/themes/quickshell-config` theme in existing `config` / `config.ghostty` files. | Requests reload with SIGUSR2 for this user's Ghostty processes. |
 | Foot | Adds/replaces a managed theme include. The generated theme defines both `colors-dark` and `colors-light` using the selected bar palette. | Open a new terminal; tested with Foot 1.28. |
 | Yazi | Generates a `quickshell-config.yazi` flavor and syntax palette, selecting it for both light/dark modes. | Reopen Yazi. |
@@ -65,6 +66,9 @@ Install only the optional tools for integrations you want:
   `dbus-send` from `dbus`.
 - Ghostty: `ghostty` and `procps-ng` (`pkill`).
 - Foot, Yazi, btop: their respective applications (`foot`, `yazi`, `btop`).
+- Rofi: `rofi`. Uses its native [Rasi theme overrides](https://davatorium.github.io/rofi/1.7.9/rofi-theme.5/).
+  Launchers using a separate `-config` or an explicit `-theme` can bypass this
+  integration; use the standard `rofi/config.rasi` to follow the shell palette.
 - Hyprtoolkit: an existing `~/.config/hypr/hyprtoolkit.conf`.
 - Spotify: an initialized `spicetify-cli` setup for the installed Spotify client.
   Failed patching is shown as an error; this feature does not change `/opt`

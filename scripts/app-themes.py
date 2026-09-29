@@ -22,7 +22,7 @@ import time
 
 import app_theme_formats as fmt
 
-TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
+TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'),
            ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux')]
 
@@ -359,6 +359,14 @@ class Themes:
             self.session_setup(target)
             self.reload(target, remember=True)
             return 'restart', 'Applied. Reopen Qt apps; log in again after the first setup.'
+        if target == 'rofi':
+            self.generated(c / 'rofi' / (name + '.rasi'), fmt.rofi(p))
+            # Import last so colors override the existing theme without resetting
+            # its layout (as @theme would). Only manage our own import.
+            self.lines(c / 'rofi/config.rasi', 'theme-import',
+                       r'^\s*@import\s+"quickshell-config\.rasi"\s*;?\s*$',
+                       [f'@import "{name}.rasi"\n'])
+            return 'applied', 'Applied. Colors load the next time Rofi opens.'
         if target == 'ghostty':
             self.generated(c / 'ghostty/themes' / name, fmt.terminal(p, target))
             paths = [path for path in [c / 'ghostty/config', c / 'ghostty/config.ghostty'] if path.exists()]
