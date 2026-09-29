@@ -56,7 +56,7 @@ Singleton {
             discoverPending = false;
             next = { action: "discover" };
         } else return;
-        request = Object.assign({}, next, { palette: Theme.palette, mode: Theme.mode });
+        request = Object.assign({}, next, { palette: Theme.palette, mode: Theme.mode, lockScreen: Theme.lockScreen });
         errorMessage = "";
         worker.running = true;
     }
@@ -65,6 +65,14 @@ Singleton {
         target: Theme
         function onReadyChanged() { if (Theme.ready) root.refresh(); }
         function onPaletteChanged() { if (root.ready) root.scheduleSync(); }
+        function onLockScreenChanged() {
+            // A queued toggle will read the latest options when it starts. Never
+            // replace that toggle with a retry; also catch edits during enabling.
+            if (!root.ready || root.pending.hyprlock?.action === "set") return;
+            if (root.targets.some(t => t.id === "hyprlock" && t.enabled)
+                    || (root.busy && root.request.target === "hyprlock" && root.request.enabled === true))
+                root.retry("hyprlock");
+        }
     }
     Timer { id: debounce; interval: 250; onTriggered: root.pump() }
     Process {

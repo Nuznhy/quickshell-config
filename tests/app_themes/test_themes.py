@@ -97,6 +97,72 @@ class ThemeTests(unittest.TestCase):
         self.assertEqual(before, list(self.home.rglob('*')))
         self.assertEqual(self.commands, [])
 
+    def test_hyprlock_palettes_warnings_and_restore_symlink(self):
+        original = '# original lock screen\nbackground {\n color = rgb(123456)\n}\n'
+        path = self.put('hypr/hyprlock.conf', original)
+        real = self.home / 'lock-dotfile'
+        path.rename(real)
+        path.symlink_to(real)
+        self.assertEqual(self.status(self.apply('hyprlock'), 'hyprlock')['state'], 'applied')
+        for palette in palettes():
+            self.engine.handle(dict(action='sync', palette=palette, mode='light'))
+            text = path.read_text()
+            self.assertIn('color = rgb(' + palette['bg'][1:] + ')', text)
+            self.assertIn('capslock_color = rgb(' + palette['gold'][1:] + ')', text)
+            self.assertIn('bothlock_color = rgb(' + palette['gold'][1:] + ')', text)
+            self.assertIn('text = Keyboard layout: $LAYOUT\n', text)
+            self.assertIn('fade_on_empty = false', text)
+            self.assertIn('text = cmd[update:500] python3 ', text)
+            self.assertNotIn('$LAYOUT[!]', text)
+            self.assertTrue(path.is_symlink())
+        self.assertEqual(self.status(self.apply('hyprlock', False), 'hyprlock')['state'], 'off')
+        self.assertEqual(real.read_text(), original)
+        self.assertEqual(self.commands, [])
+
+    def test_hyprlock_background_options_and_invalid_paths(self):
+        self.apply('hyprlock')
+        path = self.config / 'hypr/hyprlock.conf'
+        def sync(options):
+            return self.engine.handle(dict(action='sync', palette=self.palette, mode='dark', lockScreen=options))
+        sync({'background': 'color', 'color': '#abcdef'})
+        self.assertIn('color = rgb(abcdef)', path.read_text())
+        image = self.put('pictures/lock screen.png', 'image fixture')
+        sync({'background': 'image', 'image': image.as_uri()})
+        self.assertIn('path = ' + str(image), path.read_text())
+        good = path.read_text()
+        for options in [{'background': 'bad'}, {'background': 'color', 'color': '#123\nsource = evil'},
+                        {'background': 'image', 'image': 'https://example.com/a.png'},
+                        {'background': 'image', 'image': (image.parent / 'missing.png').as_uri()}]:
+            result = sync(options)
+            self.assertEqual(self.status(result, 'hyprlock')['state'], 'error')
+            self.assertEqual(path.read_text(), good)
+        for name in ['line\nbreak.png', '$TIME.png', 'comment#.png', 'braces{.png']:
+            bad = self.put('pictures/' + name, 'fixture')
+            result = sync({'background': 'image', 'image': bad.as_uri()})
+            self.assertEqual(self.status(result, 'hyprlock')['state'], 'error')
+            self.assertEqual(path.read_text(), good)
+        sync({'background': 'theme'})
+        self.assertIn('    path = \n', path.read_text())
+        self.assertNotIn(str(image), path.read_text())
+
+    def test_hyprlock_manual_edits_preserved(self):
+        path = self.put('hypr/hyprlock.conf', '# before\n')
+        self.apply('hyprlock')
+        path.write_text('# manual edit\n')
+        result = self.apply('hyprlock', False)
+        self.assertEqual(self.status(result, 'hyprlock')['state'], 'error')
+        self.assertEqual(path.read_text(), '# manual edit\n')
+
+    def test_hyprlock_caps_status(self):
+        spec = importlib.util.spec_from_file_location('lock_status', ROOT / 'scripts/hyprlock-status.py')
+        status = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(status)
+        self.assertEqual(status.caps_status({'keyboards': []}), 'Caps Lock: unknown')
+        self.assertEqual(status.caps_status({'keyboards': [{'main': True}]}), 'Caps Lock: unknown')
+        for enabled, expected in [(True, '<b>Caps Lock: ON</b>'), (False, 'Caps Lock: off')]:
+            self.assertEqual(status.caps_status({'keyboards': [
+                {'main': False, 'capsLock': not enabled}, {'main': True, 'capsLock': enabled}]}), expected)
+
     def test_rofi_roundtrip_sync_preserves_config_and_symlink(self):
         original = '@theme "default"\n* { font: "monospace 14"; }\nwindow { width: 700px; }\n'
         path = self.put('rofi/config.rasi', original)

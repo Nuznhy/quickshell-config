@@ -19,12 +19,13 @@ import subprocess
 import sys
 import tempfile
 import time
+from urllib.parse import unquote, urlsplit
 
 import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'),
-           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux')]
+           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('hyprlock', 'Hyprlock')]
 
 
 def read(path):
@@ -100,6 +101,7 @@ class Themes:
             raise ValueError('Invalid app-theme recovery state; restore its backup before applying themes.')
         self.state.setdefault('reload_restore', [])
         self.current = None
+        self.lock_screen = {}
 
     @staticmethod
     def run_command(args):
@@ -326,7 +328,31 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
-        if target == 'gtk':
+        if target == 'hyprlock':
+            options = self.lock_screen
+            if not isinstance(options, dict) or options.get('background', 'theme') not in ('theme', 'color', 'image'):
+                raise ValueError('Invalid lock-screen background mode.')
+            background = p['bg']
+            image = ''
+            if options.get('background') == 'color':
+                background = options.get('color', '')
+                if not isinstance(background, str) or not re.fullmatch(r'#[0-9a-fA-F]{6}', background):
+                    raise ValueError('Choose a lock-screen color in #RRGGBB format.')
+            elif options.get('background') == 'image':
+                source = options.get('image', '')
+                if not isinstance(source, str) or not source.startswith('file:///'):
+                    raise ValueError('Choose a local PNG, JPEG, or WebP lock-screen picture.')
+                url = urlsplit(source)
+                path = Path(unquote(url.path))
+                if url.netloc or url.query or url.fragment or path.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.webp') or not path.is_file():
+                    raise ValueError('The lock-screen picture must be an existing local PNG, JPEG, or WebP file.')
+                # Hyprlang interprets variables, comments and newlines before widgets.
+                # Reject these rather than letting a filename change the configuration.
+                image = fmt.hyprlock_path(str(path))
+            helper = Path(__file__).resolve().with_name('hyprlock-status.py')
+            self.generated(c / 'hypr/hyprlock.conf', fmt.hyprlock(p, background, image, str(helper)))
+            return 'applied', 'Ready for the next lock. Keyboard layout and Caps Lock status stay visible.'
+        elif target == 'gtk':
             for version, css in zip(('3.0', '4.0'), fmt.gtk(p)):
                 directory = c / ('gtk-' + version)
                 self.generated(directory / (name + '.css'), css)
@@ -509,6 +535,7 @@ class Themes:
         self.save()
 
     def handle(self, request):
+        self.lock_screen = request.get('lockScreen', {})
         action = request.get('action', 'discover')
         if action not in ('discover', 'sync', 'set', 'retry'):
             raise ValueError('Unknown action')

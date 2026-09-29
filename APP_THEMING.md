@@ -4,6 +4,7 @@ Open **Settings → Appearance → Application themes** and enable the applicati
 that should follow the bar. Every switch starts off. Changing the palette or
 Dark/Light updates enabled targets; changing bar geometry, widget order, or
 wallpapers does not regenerate app themes.
+Lock-screen background changes update only the enabled Hyprlock target.
 
 Targets appear in a compact grid that adapts to the settings window width. Each
 card keeps its toggle and a short status; click a status with a chevron to read
@@ -26,6 +27,7 @@ settings, custom CSS, extensions, and dotfile symlinks are preserved.
 | Yazi | Generates a `quickshell-config.yazi` flavor and syntax palette, selecting it for both light/dark modes. | Reopen Yazi. |
 | btop | Generates `btop/themes/quickshell-config.theme` and selects it. | Reopen btop. |
 | Hyprtoolkit | Updates palette keys in `hypr/hyprtoolkit.conf`. | Uses the toolkit's configuration reload behavior. |
+| Hyprlock | Manages `hypr/hyprlock.conf` with the shell palette, persistent layout/Caps Lock indicators, and the background selected in Settings → Lock screen. Backs up the entire previous config and restores it when disabled. | Loads on the next lock. Uses standard PAM authentication; does not restart a running locker. |
 | Spotify | Generates a dedicated Spicetify theme and selects it, preserving extensions/custom apps. Runs `spicetify -q apply --no-restart`. | Reopen Spotify if needed. Existing Spotify/Spicetify setup and write access are required. |
 | Discord | Generates a local CSS theme for detected Vencord/Vesktop installations and adds it to their enabled themes. | Reopen the client after first activation. No client mod is installed by this feature. |
 | Zen Browser | Generates `chrome/quickshell-config.css` and manages its import in each registered profile's `chrome/userChrome.css`. Replaces a recognized Noctalia Zen import while enabled and restores it when disabled. | Restart Zen after palette or Dark/Light changes and after disabling sync. |
@@ -70,6 +72,11 @@ Install only the optional tools for integrations you want:
   Launchers using a separate `-config` or an explicit `-theme` can bypass this
   integration; use the standard `rofi/config.rasi` to follow the shell palette.
 - Hyprtoolkit: an existing `~/.config/hypr/hyprtoolkit.conf`.
+- Hyprlock: `hyprlock` (validated against 0.9.6), `hyprctl`, and Python 3. See the
+  [Hyprlock widget documentation](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/).
+  The persistent Caps Lock label reads only keyboard modifier metadata; no
+  keypresses or passwords are read. The password-border warning is native to
+  Hyprlock and remains available even if `hyprctl` fails.
 - Spotify: an initialized `spicetify-cli` setup for the installed Spotify client.
   Failed patching is shown as an error; this feature does not change `/opt`
   permissions or install Spotify.
@@ -127,6 +134,8 @@ returns a JSON object containing `targets`, or a top-level `error`. Actions are
 `palette` (all semantic roles from `config/Palettes.js`) and `mode` (`dark` or
 `light`); `set` also supplies a known target ID and boolean `enabled`. `retry`
 supplies a target ID. `discover` reads availability without editing app configs.
+Requests can also include `lockScreen: {background: "theme" | "color" | "image",
+color: "#RRGGBB", image: "file:///..."}`. It defaults to the theme background.
 
 `services/AppTheming.qml` debounces palette changes and runs one worker at a time.
 It queues target requests and follows in-flight changes with the latest palette.

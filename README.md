@@ -378,8 +378,29 @@ respecting the system's normal permissions and inhibitors.
 The parent dotfiles start Hypridle with Hyprland and keep the existing
 lid/suspend policy. See [Dependencies and session setup](DEPENDENCIES.md#service-and-session-setup)
 for packages, configuration, and activation. The shell no longer runs a separate
-Quickshell locker or passes theme colors to one; all entry points share
+Quickshell locker; all entry points share
 Hyprlock's appearance and authentication.
+
+In **Settings → Lock screen**, enable **Sync shell theme** to apply the current
+palette and light/dark mode to Hyprlock. Choose **Theme color**, **Plain color**
+(hex `#RRGGBB`), or **Picture** (local PNG, JPEG, or WebP). Pictures are checked
+before selection and must remain on disk. Preferences persist across restarts;
+changes apply on the next lock, including locks requested by Hypridle.
+
+The generated layout always shows the current keyboard layout and Caps Lock
+on/off status, even before typing. Caps Lock also highlights the password border.
+The layout uses Hyprlock's native `$LAYOUT`; the Caps Lock label reads Hyprland's
+main keyboard every 500 ms and shows “unknown” if unavailable. An opaque themed
+panel keeps these indicators readable over pictures and custom colors.
+
+Sync uses a managed `hypr/hyprlock.conf` with standard PAM authentication. The
+previous configuration is backed up and restored when sync is disabled; manual
+edits produce a conflict instead of being overwritten. Use the normal config
+path in Hypridle (`hyprlock`, without a custom `--config`) to share this setup.
+See [application themes](APP_THEMING.md) for recovery details. Background paths
+containing `$`, `#`, braces, newlines, or outer whitespace must be renamed because
+Hyprlang interprets those characters. Keep the Quickshell installation at its
+current path while sync is enabled so the Caps Lock helper stays available.
 
 For a lock keybinding, run `python3 ~/.config/quickshell/scripts/power-action.py lock`.
 For lock-then-sleep, use `sleep` instead of `lock`. Run

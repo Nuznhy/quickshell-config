@@ -68,6 +68,12 @@ FloatingWindow {
                 accent: pages.currentIndex === 2
                 onClicked: pages.currentIndex = 2
             }
+            NotificationButton {
+                objectName: "lock-screen-tab"
+                text: "Lock screen"
+                accent: pages.currentIndex === 3
+                onClicked: pages.currentIndex = 3
+            }
             Item { Layout.fillWidth: true }
         }
         StackLayout {
@@ -123,6 +129,17 @@ FloatingWindow {
                     width: wallpaperScroll.availableWidth
                     onDismissed: ShellSettings.close()
                 }
+            }
+            ScrollView {
+                id: lockScroll
+                clip: true
+                leftPadding: 16
+                rightPadding: 16
+                topPadding: 4
+                bottomPadding: 16
+                contentWidth: availableWidth
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                LockScreenSettings { width: lockScroll.availableWidth }
             }
         }
         Text {

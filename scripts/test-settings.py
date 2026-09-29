@@ -188,6 +188,7 @@ ShellRoot {
                 folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
                 separateWallpapers: Theme.separateWallpapers, wallpapers: Theme.wallpapers,
                 lightWallpapers: Theme.lightWallpapers, darkWallpapers: Theme.darkWallpapers,
+                lockScreen: Theme.lockScreen,
                 error: Theme.errorMessage});
         }
         function preferences(): void {
@@ -197,6 +198,10 @@ ShellRoot {
             Theme.setWallpaper("TEST-1", Qt.resolvedUrl("gallery/first image.svg").toString(), "light");
             Theme.setWallpaper("TEST-1", "", "dark");
             Theme.setSeparateWallpapers(true);
+            Theme.setLockBackground("image", Qt.resolvedUrl("test wallpaper.svg").toString());
+            Theme.setLockBackground("color", "#123abc");
+            Theme.setLockBackground("mode", "color");
+            Theme.setLockBackground("color", "not a color");
             Theme.save();
         }
         function checkWallpaperModes(): bool {
@@ -251,6 +256,7 @@ ShellRoot {
             assert not status['visible']
             assert status['folder'] == '' and status['iconSource'] == '' and status['icon'] == '󰒓'
             assert not status['separateWallpapers']
+            assert status['lockScreen'] == {'background': 'theme', 'color': '#191724', 'image': ''}
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'open')  # Reuses the same window.
@@ -269,6 +275,8 @@ ShellRoot {
             time.sleep(.4)
             preferences = json.loads(ipc('test', 'status'))
             assert not preferences['error'], preferences
+            assert preferences['lockScreen']['background'] == 'color'
+            assert preferences['lockScreen']['color'] == '#123abc'
             process.terminate()
             process.wait(timeout=5)
             process = subprocess.Popen(['quickshell', '--path', str(target)], env=env,
@@ -284,7 +292,7 @@ ShellRoot {
                 if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
                 time.sleep(.05)
             assert not restored['error'], restored
-            for key in ['folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers']:
+            for key in ['folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
                 assert restored[key] == preferences[key], (key, restored, preferences)
             assert ipc('test', 'checkWallpaperModes') == 'true'
             print('PASS: shared/light/dark wallpapers persist, clear independently, and follow theme changes', flush=True)

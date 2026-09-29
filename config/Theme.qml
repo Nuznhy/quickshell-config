@@ -29,6 +29,10 @@ Singleton {
     property var lightWallpapers: ({})
     property var darkWallpapers: ({})
     property string wallpaperFolder: ""
+    property string lockBackgroundMode: "theme"
+    property string lockBackgroundColor: "#191724"
+    property string lockBackgroundImage: ""
+    readonly property var lockScreen: ({background: lockBackgroundMode, color: lockBackgroundColor, image: lockBackgroundImage})
     readonly property string defaultSettingsIcon: "󰒓"
     property string settingsIcon: defaultSettingsIcon
     property string settingsIconSource: ""
@@ -68,6 +72,7 @@ Singleton {
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
             disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition,
             wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
+            lockScreen: lockScreen,
             separateWallpapers: separateWallpapers, lightWallpapers: lightWallpapers, darkWallpapers: darkWallpapers,
             settingsIcon: settingsIcon, settingsIconSource: settingsIconSource }, null, 2) + "\n");
     }
@@ -111,6 +116,15 @@ Singleton {
             }
         }
         return restored;
+    }
+
+    function setLockBackground(kind, value) {
+        if (!ready) return;
+        if (kind === "mode" && ["theme", "color", "image"].includes(value)) lockBackgroundMode = value;
+        else if (kind === "color" && typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)) lockBackgroundColor = value.toLowerCase();
+        else if (kind === "image" && typeof value === "string" && (value === "" || value.startsWith("file:///"))) lockBackgroundImage = value;
+        else return;
+        appearanceSaveTimer.restart();
     }
 
     function setWallpaperFolder(source) {
@@ -203,6 +217,10 @@ Singleton {
                 root.lightWallpapers = root.restoreWallpapers(saved.lightWallpapers);
                 root.darkWallpapers = root.restoreWallpapers(saved.darkWallpapers);
                 root.separateWallpapers = saved.separateWallpapers === true;
+                const lock = saved.lockScreen || {};
+                root.lockBackgroundMode = ["theme", "color", "image"].includes(lock.background) ? lock.background : "theme";
+                root.lockBackgroundColor = typeof lock.color === "string" && /^#[0-9a-fA-F]{6}$/.test(lock.color) ? lock.color : "#191724";
+                root.lockBackgroundImage = typeof lock.image === "string" && lock.image.startsWith("file:///") ? lock.image : "";
                 root.wallpaperFolder = typeof saved.wallpaperFolder === "string" && saved.wallpaperFolder.startsWith("file:///")
                     ? saved.wallpaperFolder : "";
                 root.settingsIcon = typeof saved.settingsIcon === "string" && saved.settingsIcon.trim()
