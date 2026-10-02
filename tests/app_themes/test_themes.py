@@ -264,6 +264,32 @@ class ThemeTests(unittest.TestCase):
         self.assertIn('font=custom', path.read_text())
         self.assertEqual(env.read_text(), 'hl.env("QT_STYLE_OVERRIDE", "kvantum")\nhl.env("TEST", "1")\n')
 
+    def test_gtk_reconciles_reinserted_imports_and_restores_original(self):
+        old = '@import url("noctalia.css");\n'
+        managed = '@import url("quickshell-config.css");\n'
+        custom = '/* custom */\nbutton { border-radius: 7px; }\n'
+        paths = [self.put(f'gtk-{version}/gtk.css', old + custom) for version in ('3.0', '4.0')]
+        self.apply('gtk')
+        # Reproduce the saved-journal conflict seen in both installed gtk.css files.
+        for path in paths:
+            path.write_text(managed + old + managed + custom)
+        result = self.apply('gtk', palette=list(palettes())[1])
+        self.assertEqual(self.status(result, 'gtk')['state'], 'restart')
+        for path in paths:
+            self.assertEqual(path.read_text(), managed + custom)
+            self.assertIn(list(palettes())[1]['bg'], path.with_name('quickshell-config.css').read_text())
+        self.apply('gtk', False)
+        for path in paths:
+            self.assertEqual(path.read_text(), old + custom)
+
+    def test_gtk_reconciliation_rejects_unknown_import_edits(self):
+        path = self.put('gtk-3.0/gtk.css', '@import url("noctalia.css");\n')
+        self.apply('gtk')
+        edited = '@import url("quickshell-config.css"); /* keep this edit */\n'
+        path.write_text(edited)
+        self.assertEqual(self.status(self.apply('gtk'), 'gtk')['state'], 'error')
+        self.assertEqual(path.read_text(), edited)
+
     def test_all_other_targets_restore(self):
         originals = {
             'foot/foot.ini': 'include=~/.config/foot/themes/noctalia\nfont=monospace\n',
@@ -412,6 +438,24 @@ class ThemeTests(unittest.TestCase):
         result = self.status(self.apply('zen', False), 'zen')
         self.assertEqual(result['state'], 'error')
         self.assertEqual(theme.read_text(), '/* user edited the generated theme */\n')
+
+    def test_zen_reconciles_old_import_and_continues_to_other_profiles(self):
+        self.put('zen/profiles.ini', '[Profile0]\nPath=active\n[Profile1]\nPath=other\n')
+        old = '@import "/home/example/.cache/noctalia/zen-browser/zen-userChrome.css";\n'
+        managed = '@import url("quickshell-config.css");\n'
+        custom = '@import url("personal.css");\n#custom { color: red; }\n'
+        active = self.put('zen/active/chrome/userChrome.css', old + custom)
+        other = self.put('zen/other/chrome/userChrome.css', custom)
+        self.apply('zen')
+        active.write_text(old + managed + custom)
+        next_palette = list(palettes())[1]
+        self.assertEqual(self.status(self.apply('zen', palette=next_palette), 'zen')['state'], 'restart')
+        for path in (active, other):
+            self.assertEqual(path.read_text(), managed + custom)
+            self.assertIn(next_palette['bg'], path.with_name('quickshell-config.css').read_text())
+        self.apply('zen', False)
+        self.assertEqual(active.read_text(), old + custom)
+        self.assertEqual(other.read_text(), custom)
 
     def test_zen_user_preferences_override_cached_stylesheet_setting(self):
         profile = self.config / 'zen/profile'

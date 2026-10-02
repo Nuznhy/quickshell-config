@@ -109,6 +109,11 @@ Refresh application availability with the circular-arrow button after installing
 an optional dependency. Targets with missing requirements cannot be enabled;
 an already enabled target can always be switched off to attempt restoration.
 
+GTK and Zen sync reconcile duplicate or mixed Quickshell/previous-theme imports
+when every import matches the saved recovery record. This repairs a previous
+theme manager reinserting its import without discarding custom CSS or changing
+the original restore snapshot. Unrecognized edits still produce a conflict.
+
 ## Recovery and errors
 
 Application-theme preferences, operation journals, and private backups are kept

@@ -31,7 +31,7 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | Night Shift | `hyprsunset` | Warm screen colors from the quick settings panel, controlled through `hyprctl`; starts on demand, or controls an existing daemon. Included in the install script below. |
 | System/session services | `dbus`, `systemd`, `polkit` | Session/system buses, logind, suspend/reboot/shutdown, and authorization according to system policy. Normally already present on Arch. |
 | Lock authentication | `pam`, `pambase` | Hyprlock authenticates with its packaged `/etc/pam.d/hyprlock` configuration. |
-| Screen locking and sleep | `hyprlock`, `hypridle`, `procps-ng` | Manual Lock/Sleep and lid closing use `loginctl lock-session`. Hypridle launches Hyprlock and delays sleep until the compositor reports the lock. `pgrep` checks the listener; `pidof` prevents duplicate lockers. |
+| Screen locking and sleep | `hyprlock`, `hypridle`, `procps-ng` | Manual Lock/Sleep and lid closing use `loginctl lock-session`. Hypridle launches Hyprlock and delays sleep until the compositor reports the lock. `pgrep` checks the listener; the Python launcher checks compositor lock state and serializes startup. |
 
 The Quickshell build must provide these imported modules:
 
@@ -206,9 +206,12 @@ Its `hypr/config/binds.lua` binds `switch:on:Lid Switch` to
 `loginctl lock-session`, while `hypr/config/autostart.lua` starts Hypridle.
 `~/.config/hypr/hyprlock.conf` supplies the lock screen, and
 `~/.config/hypr/hypridle.conf` handles `loginctl lock-session` and locking before
-sleep with `inhibit_sleep = 3` and `lock_cmd = pidof hyprlock || hyprlock`. See [Hypridle's sleep integration](https://wiki.hypr.land/hypr-ecosystem/user/hypridle/).
-After installing this setup into an existing session, reload Hyprland and start
-`hypridle` once, or log in again. No inactivity timeout is configured. The
+sleep with `inhibit_sleep = 3` and
+`lock_cmd = python3 ~/.config/quickshell/scripts/launch-hyprlock.py`.
+The launcher requires `hyprctl` and Python 3. It checks the compositor instead
+of a process ID, so a stale Hyprlock process after unlock cannot disable locking. See [Hypridle's sleep integration](https://wiki.hypr.land/hypr-ecosystem/user/hypridle/).
+After installing this setup into an existing session, restart the session's
+`hypridle` process to load its new `lock_cmd`, or log in again. No inactivity timeout is configured. The
 existing logind lid/suspend policy remains in effect; closing the lid also locks
 when the system stays awake, such as while docked. Test closing/reopening the
 lid and unlocking with the normal login password on each target laptop.

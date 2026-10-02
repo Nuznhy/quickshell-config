@@ -145,12 +145,17 @@ class Themes:
         if current != content:
             atomic(path, content)
 
-    def lines(self, path, identity, pattern, replacement, section=None, prepend=False):
+    def lines(self, path, identity, pattern, replacement, section=None, prepend=False, reconcile_imports=False):
         text = read(path)
         current = [line for _, line in selected_lines(text, pattern, section)]
         record = self.record('lines:' + str(path) + ':' + identity, path, kind='lines', pattern=pattern,
                              section=section, prepend=prepend, before=current, after=current)
-        if current not in (record['before'], record['after']):
+        # Another theme manager can reinsert the previous import alongside ours.
+        # Reconcile only imports already recorded in this target's journal; keep
+        # the original restore snapshot and reject any unfamiliar edited line.
+        known_imports = (reconcile_imports and identity == 'theme-import'
+                         and all(line in record['before'] + record['after'] for line in current))
+        if current not in (record['before'], record['after']) and not known_imports:
             raise RuntimeError(f'Theme setting changed manually: {path} ({identity})')
         record['after'] = replacement
         self.save()
@@ -358,7 +363,7 @@ class Themes:
                 self.generated(directory / (name + '.css'), css)
                 self.lines(directory / 'gtk.css', 'theme-import',
                            r'^\s*@import\s+(?:url\()?\s*[\"\x27](?:noctalia|quickshell-config)\.css',
-                           [f'@import url("{name}.css");\n'], prepend=True)
+                           [f'@import url("{name}.css");\n'], prepend=True, reconcile_imports=True)
                 self.field(directory / 'settings.ini', 'gtk-application-prefer-dark-theme', '1' if mode == 'dark' else '0', 'Settings')
                 if version == '3.0':
                     self.field(directory / 'settings.ini', 'gtk-theme-name', 'adw-gtk3-dark' if mode == 'dark' else 'adw-gtk3', 'Settings')
@@ -449,7 +454,7 @@ class Themes:
                            r'^\s*@import\s+(?:url\(\s*)?["\x27](?:quickshell-config\.css|'
                            r'(?:[^"\x27\r\n]*/)?noctalia/zen-browser/zen-userChrome\.css|'
                            r'noctalia\.css)["\x27]\s*\)?\s*;\s*$',
-                           [f'@import url("{name}.css");\n'], prepend=True)
+                           [f'@import url("{name}.css");\n'], prepend=True, reconcile_imports=True)
                 if not self.zen_styles_enabled(profile):
                     missing_styles.append(profile.name)
             message = f'Applied to {len(profiles)} profile(s). Restart Zen to load colors.'

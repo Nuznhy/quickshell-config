@@ -389,7 +389,12 @@ an error. These actions do not depend on Noctalia or an external logout script.
 
 Manual Lock and the parent dotfiles' lid-close binding both request
 `loginctl lock-session`. Hypridle listens for that request and launches Hyprlock
-using `~/.config/hypr/hyprlock.conf`. Unlock with your normal login password.
+through `scripts/launch-hyprlock.py`, using `~/.config/hypr/hyprlock.conf`.
+The launcher checks Hyprland's lock state rather than `pidof`: Hyprlock can leave
+a process behind after unlocking, and that process must not block the next lock.
+A per-session guard prevents overlapping launches until the compositor locks.
+Startup errors go to `quickshell-hyprlock-*.log` in `$XDG_RUNTIME_DIR`.
+Unlock with your normal login password.
 Sleep requests the same lock, then runs `systemctl suspend`; Hypridle's
 `inhibit_sleep = 3` delays sleep until Hyprland reports the session locked.
 The helper rejects Lock/Sleep if required tools or the Hypridle listener are
