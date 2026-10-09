@@ -14,3 +14,4 @@ singleton QuickControls 1.0 QuickControls.qml
 singleton BatteryState 1.0 BatteryState.qml
 singleton SystemInfo 1.0 SystemInfo.qml
 singleton DisplayMode 1.0 DisplayMode.qml
+singleton DesktopTv 1.0 DesktopTv.qml

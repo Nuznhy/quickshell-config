@@ -10,68 +10,113 @@ backend = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(backend)
 
 
-def outputs(*names):
-    return [dict(name=name, disabled=False) for name in names]
+def displays(source='none'):
+    return [dict(id=0, name='eDP-1', mirrorOf='none', disabled=False, dpmsStatus=True),
+            dict(id=1, name='HDMI-A-1', mirrorOf=source, disabled=False, dpmsStatus=True)]
 
 
 class DisplayModeTests(unittest.TestCase):
     def setUp(self):
         self.enterContext(patch.object(backend.time, 'sleep'))
 
-    def test_status_from_actual_outputs(self):
-        self.assertEqual(backend.status(outputs('DP-1', 'DP-2'))['mode'], 'desktop')
-        self.assertEqual(backend.status(outputs('DP-1'))['mode'], 'desktop')
-        self.assertEqual(backend.status(outputs('HDMI-A-1'))['mode'], 'tv')
-        self.assertEqual(backend.status(outputs('DP-1', 'HDMI-A-1'))['mode'], 'transition')
-        self.assertEqual(backend.status(outputs())['mode'], 'unavailable')
-        self.assertFalse(backend.status(outputs('DP-2'))['available'])
+    def test_discover_extended_and_mirrored_including_id_zero(self):
+        self.assertTrue(backend.status(displays())['available'])
+        self.assertFalse(backend.status(displays())['mirrored'])
+        for source in [0, '0', 'eDP-1']:
+            self.assertTrue(backend.status(displays(source))['mirrored'])
 
-    def test_toggle_waits_for_confirmed_target(self):
-        with patch.object(backend, 'ipc', return_value='ok') as ipc, \
-                patch.object(backend, 'monitors', side_effect=[
-                    outputs('DP-1', 'DP-2', 'HDMI-A-1'),
-                    outputs('HDMI-A-1'), outputs('HDMI-A-1'), outputs('HDMI-A-1')]):
-            result = backend.toggle(outputs('DP-1', 'DP-2'))
-        self.assertEqual(backend.status(result)['mode'], 'tv')
-        ipc.assert_called_once_with('eval', 'require("config.monitors").toggleMons()')
+    def test_missing_external_or_internal_or_disabled_laptop(self):
+        for outputs in [[], displays()[:1], displays()[1:]]:
+            self.assertFalse(backend.status(outputs)['available'])
+        outputs = displays()
+        outputs[0]['disabled'] = True
+        self.assertFalse(backend.status(outputs)['available'])
 
-    def test_return_to_desktop(self):
-        with patch.object(backend, 'ipc', return_value='ok'), \
-                patch.object(backend, 'monitors', return_value=outputs('DP-1', 'DP-2')):
-            self.assertEqual(backend.status(backend.toggle(outputs('HDMI-A-1')))['mode'], 'desktop')
+    def test_laptop_as_mirror_cannot_be_source(self):
+        outputs = displays()
+        outputs[0]['mirrorOf'] = 1
+        self.assertFalse(backend.status(outputs)['available'])
 
-    def test_confirmation_requires_pending_tv(self):
-        with patch.object(backend, 'pending_confirmation', side_effect=[True, False]), \
-                patch.object(backend, 'ipc', return_value='ok') as ipc, \
-                patch.object(backend, 'monitors', return_value=outputs('HDMI-A-1')):
-            self.assertEqual(backend.status(backend.confirm())['mode'], 'tv')
-        ipc.assert_called_once_with('eval', 'require("config.monitors").confirmTv()')
-        with patch.object(backend, 'pending_confirmation', return_value=False):
-            with self.assertRaisesRegex(RuntimeError, 'not awaiting'):
-                backend.confirm()
+    def test_screen_off_blocks_mirror_but_allows_restore(self):
+        for source, available in [('none', False), ('0', True)]:
+            outputs = displays(source)
+            outputs[0]['dpmsStatus'] = False
+            self.assertEqual(backend.status(outputs)['available'], available)
 
-    def test_reject_transition_and_timeout(self):
-        with patch.object(backend, 'ipc') as ipc:
-            with self.assertRaisesRegex(RuntimeError, 'changing'):
-                backend.toggle(outputs('DP-1', 'HDMI-A-1'))
-            ipc.assert_not_called()
-        with patch.object(backend, 'ipc', side_effect=lambda *args: 'ok' if args[0] == 'eval' else ''), \
-                patch.object(backend, 'monitors', return_value=outputs('DP-1')):
-            with self.assertRaisesRegex(RuntimeError, 'did not complete'):
-                backend.toggle(outputs('DP-1'))
-        with patch.object(backend, 'ipc', side_effect=lambda *args: 'ok' if args[0] == 'eval' else 'TV unavailable'), \
-                patch.object(backend, 'monitors', return_value=outputs('DP-1')):
-            with self.assertRaisesRegex(RuntimeError, 'TV unavailable'):
-                backend.toggle(outputs('DP-1'))
+    def test_missing_hardware_never_issues_changes(self):
+        with patch.object(backend, 'change') as change:
+            with self.assertRaisesRegex(RuntimeError, 'Connect'):
+                backend.toggle(displays()[:1])
+            change.assert_not_called()
 
-    def test_ipc_errors(self):
+    def test_automatic_resolution_only_changes_external_outputs(self):
+        with patch.object(backend, 'change') as change, \
+                patch.object(backend, 'monitors', side_effect=[displays(), displays('0')]):
+            result = backend.toggle(displays())
+        self.assertTrue(backend.status(result)['mirrored'])
+        change.assert_called_once()
+        command, lua = change.call_args.args
+        self.assertEqual(command, 'eval')
+        self.assertIn('output = "HDMI-A-1"', lua)
+        self.assertIn('mode = "preferred"', lua)
+        self.assertIn('scale = "auto"', lua)
+        self.assertIn('mirror = "eDP-1"', lua)
+        self.assertNotIn('output = "eDP-1"', lua)
+
+    def test_restore_reloads_saved_rules_without_guessing_resolution(self):
+        with patch.object(backend, 'change') as change, \
+                patch.object(backend, 'ipc', return_value='') as ipc, \
+                patch.object(backend, 'monitors', return_value=displays()):
+            self.assertFalse(backend.status(backend.toggle(displays('0')))['mirrored'])
+        change.assert_called_once_with('reload')
+        ipc.assert_called_once_with('configerrors')
+
+    def test_restore_reports_broken_configuration(self):
+        with patch.object(backend, 'change'), \
+                patch.object(backend, 'ipc', return_value='bad monitor rule'), \
+                patch.object(backend, 'monitors', return_value=displays()):
+            with self.assertRaisesRegex(RuntimeError, 'configuration errors'):
+                backend.toggle(displays('0'))
+
+    def test_failed_or_unconfirmed_mirror_restores_config(self):
+        for failure in [None, RuntimeError('bad mode'), subprocess.TimeoutExpired('hyprctl', 5)]:
+            with self.subTest(failure=failure), \
+                    patch.object(backend, 'change', side_effect=[failure, None]) as change, \
+                    patch.object(backend, 'monitors', return_value=displays()):
+                with self.assertRaisesRegex(RuntimeError, 'Reloaded your configured layout'):
+                    backend.toggle(displays())
+                self.assertEqual(change.call_args.args, ('reload',))
+
+    def test_multiple_externals_and_hot_unplug_rollback(self):
+        outputs = displays() + [dict(id=2, name='DP-2', mirrorOf='none')]
+        mirrored = [dict(m, mirrorOf='0') if m['id'] else m for m in outputs]
+        with patch.object(backend, 'change') as change, \
+                patch.object(backend, 'monitors', return_value=mirrored):
+            backend.toggle(outputs)
+            self.assertEqual(change.call_args.args[1].count('hl.monitor('), 2)
+        with patch.object(backend, 'change') as change, \
+                patch.object(backend, 'monitors', return_value=mirrored[:2]):
+            with self.assertRaisesRegex(RuntimeError, 'Reloaded'):
+                backend.toggle(outputs)
+            self.assertEqual(change.call_args.args, ('reload',))
+
+    def test_failed_rollback_is_reported(self):
+        with patch.object(backend, 'change', side_effect=RuntimeError('socket failed')):
+            with self.assertRaisesRegex(RuntimeError, 'Restore also failed'):
+                backend.toggle(displays())
+
+    def test_reject_lua_in_connector(self):
+        with self.assertRaises(ValueError):
+            backend.mirror_command(dict(name='DP-1"}); os.execute("bad")'), 'eDP-1')
+
+    def test_reject_ipc_failure_and_error_reply(self):
         result = subprocess.CompletedProcess([], 1, '', 'socket failed')
         with patch.object(backend.subprocess, 'run', return_value=result):
             with self.assertRaisesRegex(RuntimeError, 'socket failed'):
                 backend.ipc('reload')
         with patch.object(backend, 'ipc', return_value='Lua error'):
             with self.assertRaisesRegex(RuntimeError, 'Lua error'):
-                backend.toggle(outputs('DP-1'))
+                backend.change('eval', 'bad')
 
 
 if __name__ == '__main__':

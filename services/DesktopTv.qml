@@ -7,17 +7,16 @@ import Quickshell.Io
 Singleton {
     id: root
     property bool available: false
-    property bool mirrored: false
-    property string reason: "Checking connected displays…"
+    property string mode: "unavailable"
+    property bool pending: false
+    property string reason: "Checking display layout…"
     property string errorMessage: ""
-    property string laptop: ""
-    property var outputs: []
     property bool requestPending: false
-    readonly property bool busy: requestPending || worker.running
-    readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/display-mode.py").toString().replace(/^file:\/\//, ""))
+    readonly property bool busy: requestPending || worker.running || mode === "transition"
+    readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/desktop-tv.py").toString().replace(/^file:\/\//, ""))
 
     function run(action) {
-        if (busy) return;
+        if (requestPending || worker.running) return;
         requestPending = true;
         worker.action = action;
         worker.command = ["python3", helper, action];
@@ -26,7 +25,7 @@ Singleton {
     function toggle() {
         if (!available || busy) return;
         errorMessage = "";
-        run("toggle");
+        run(pending ? "confirm" : "toggle");
     }
     Component.onCompleted: run("status")
     Connections {
@@ -46,11 +45,10 @@ Singleton {
                 try {
                     const state = JSON.parse(text);
                     root.available = !!state.available;
-                    root.mirrored = !!state.mirrored;
+                    root.mode = state.mode || "unavailable";
+                    root.pending = !!state.pending;
                     root.reason = state.reason || "";
-                    root.laptop = state.laptop || "";
-                    root.outputs = state.outputs || [];
-                    if (state.error || worker.action === "toggle") root.errorMessage = state.error || "";
+                    if (state.error || worker.action !== "status") root.errorMessage = state.error || "";
                 } catch (error) {
                     root.available = false;
                     root.errorMessage = "Could not read display mode.";
