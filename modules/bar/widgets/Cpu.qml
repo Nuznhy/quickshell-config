@@ -22,7 +22,7 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         color: Theme.text
         font.pixelSize: Theme.fontSize
-        font.family: Theme.fontFamily
+        font.family: Theme.barFontFamily
         font.bold: true
     }
 }

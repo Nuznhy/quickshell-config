@@ -256,7 +256,10 @@ history, and settings-persistence checks.
 - The Bar Opacity slider adjusts the entire bar, including its text and icons,
   from 20% to 100% across all screens. Popups remain opaque for readability.
   Opacity updates live and is saved alongside the palette and mode.
-- Bar Font Size adjusts bar text from 12–28 px, with bar thickness adapting to
+- Appearance → Text & icon lets you search installed fonts for the bar, preview
+  the selection, and reset to JetBrainsMono Nerd Font. The chosen font is saved
+  across restarts. Settings and icon-only buttons keep their existing font.
+- Bar text size adjusts bar text from 12–28 px, with bar thickness adapting to
   larger text. Bar Position places the bar on the Top, Left, Bottom, or Right.
   Side bars use a narrow rail with vertically stacked widget contents: workspaces,
   tray, and media at the top, the clock centered, and system controls at the bottom.
@@ -270,7 +273,7 @@ history, and settings-persistence checks.
   (`~/.local/state/quickshell/by-shell/<shell-id>` by default), independently of
   the dotfiles. The initial theme is Rosé Pine Dark. Save failures appear in
   the picker; missing or invalid settings fall back to the default.
-- Edit palette definitions in `config/Palettes.js` and fonts in `config/Theme.qml`.
+- Edit palette definitions in `config/Palettes.js` and the shell’s default font in `config/Theme.qml`.
   Enable individual targets under Application themes to sync app colors with the
   shell. See [Application themes](APP_THEMING.md) for supported apps, toolkit
   setup, and restoration. All app switches start off.

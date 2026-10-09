@@ -20,11 +20,11 @@ ColumnLayout {
         Layout.fillWidth: true
         Text {
             Layout.fillWidth: true
-            text: root.label.toUpperCase()
+            text: root.label
             color: Theme.subtle
             font.family: Theme.fontFamily
             font.pixelSize: 11
-            font.letterSpacing: 1
+            wrapMode: Text.WordWrap
         }
         Text {
             text: Math.round(root.value) + root.suffix

@@ -99,7 +99,7 @@ DropdownWidget {
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
                 color: Theme.subtle
-                font.family: Theme.fontFamily
+                font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.5)
             }
             Text {
@@ -110,7 +110,7 @@ DropdownWidget {
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
                 color: Theme.text
-                font.family: Theme.fontFamily
+                font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.6)
                 font.weight: Font.Medium
             }

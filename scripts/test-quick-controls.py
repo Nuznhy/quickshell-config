@@ -39,6 +39,7 @@ Item {
             readonly property bool isDark: mode === "dark"
             property bool ready: true
             property string fontFamily: "JetBrainsMono Nerd Font"
+            property string barFontFamily: fontFamily
             property color love: "#eb6f92"
             property color text: "#e0def4"
             property color subtle: "#908caa"

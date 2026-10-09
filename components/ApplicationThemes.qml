@@ -55,6 +55,14 @@ ColumnLayout {
             onClicked: AppTheming.refresh()
         }
     }
+    Text {
+        Layout.fillWidth: true
+        text: "Let your apps follow the shell’s colors."
+        color: Theme.subtle
+        font.family: Theme.fontFamily
+        font.pixelSize: 11
+        wrapMode: Text.WordWrap
+    }
     GridLayout {
         id: grid
         objectName: "app-themes-grid"

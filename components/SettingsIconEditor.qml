@@ -85,13 +85,16 @@ ColumnLayout {
                 }
                 contentItem: Column {
                     spacing: 4
-                    Text {
+                    Item {
                         width: parent.width
-                        text: option.modelData.icon
-                        color: option.selected ? Theme.iris : Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 24
-                        horizontalAlignment: Text.AlignHCenter
+                        height: 32
+                        SettingsIcon {
+                            anchors.centerIn: parent
+                            glyph: option.modelData.icon
+                            source: ""
+                            iconSize: 24
+                            color: option.selected ? Theme.iris : Theme.text
+                        }
                     }
                     Text {
                         width: parent.width

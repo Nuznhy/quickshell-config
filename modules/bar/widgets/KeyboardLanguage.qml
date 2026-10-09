@@ -19,7 +19,7 @@ Item {
         visible: Theme.verticalBar
         text: "󰌌\n" + Keyboard.layoutName.toUpperCase()
         color: Theme.text
-        font.family: Theme.fontFamily
+        font.family: Theme.barFontFamily
         font.pixelSize: Theme.fontSize
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
@@ -56,7 +56,7 @@ Item {
             text: Keyboard.layoutName.toUpperCase()
             color: Theme.text
             font.pixelSize: Theme.fontSize
-            font.family: Theme.fontFamily
+            font.family: Theme.barFontFamily
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             FontMetrics {

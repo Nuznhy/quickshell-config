@@ -25,6 +25,7 @@ QtObject {
  property bool verticalBar: false
  property int fontSize: 14
  property string fontFamily: "JetBrainsMono Nerd Font"
+ property string barFontFamily: fontFamily
  property color bg: "#191724"
  property color text: "#e0def4"
  property color subtle: "#908caa"

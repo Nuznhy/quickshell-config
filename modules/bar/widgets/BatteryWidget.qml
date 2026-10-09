@@ -37,7 +37,7 @@ DropdownWidget {
             Layout.alignment: Qt.AlignCenter
             text: BatteryState.percent < 0 ? "—" : Math.round(BatteryState.percent) + "%"
             color: Theme.text
-            font.family: Theme.fontFamily
+            font.family: Theme.barFontFamily
             font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
         }
     }

@@ -167,7 +167,7 @@ Grid {
                         text: wsRect.wsId
                         color: wsRect.isActive ? Theme.love : Theme.text
                         font.pixelSize: Theme.fontSize
-                        font.family: Theme.fontFamily
+                        font.family: Theme.barFontFamily
                         Behavior on color {
                             ColorAnimation {
                                 duration: 300

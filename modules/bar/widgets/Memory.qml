@@ -21,7 +21,7 @@ Item {
         text: Theme.verticalBar ? "󰾆\n" + SystemStats.memUsage + "%" : SystemStats.memUsage + "% 󰾆"
         color: Theme.text
         font.pixelSize: Theme.fontSize
-        font.family: Theme.fontFamily
+        font.family: Theme.barFontFamily
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

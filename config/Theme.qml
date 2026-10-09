@@ -20,6 +20,8 @@ Singleton {
     property int barSideMargin: 0
     property int barRadius: 0
     property int fontSize: 20
+    readonly property string defaultBarFontFamily: "JetBrainsMono Nerd Font"
+    property string barFontFamily: defaultBarFontFamily
     property string barPosition: "top"
     readonly property bool verticalBar: barPosition === "left" || barPosition === "right"
     readonly property int sideBarWidth: Math.max(64, Math.ceil(fontSize * 2.5) + 16)
@@ -70,7 +72,7 @@ Singleton {
         errorMessage = "";
         stateFile.setText(JSON.stringify({ preset: preset, mode: mode, barOpacity: barOpacity,
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius,
-            disabledBarScreens: disabledBarScreens, fontSize: fontSize, barPosition: barPosition,
+            disabledBarScreens: disabledBarScreens, fontSize: fontSize, barFontFamily: barFontFamily, barPosition: barPosition,
             wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
             lockScreen: lockScreen,
             separateWallpapers: separateWallpapers, lightWallpapers: lightWallpapers, darkWallpapers: darkWallpapers,
@@ -147,6 +149,12 @@ Singleton {
         appearanceSaveTimer.restart();
     }
 
+    function setBarFontFamily(value) {
+        if (!ready || typeof value !== "string" || !value.trim() || value.length > 200) return;
+        barFontFamily = value.trim();
+        appearanceSaveTimer.restart();
+    }
+
     function setBarPosition(value) {
         if (!ready || !["top", "left", "bottom", "right"].includes(value)) return;
         barPosition = value;
@@ -205,6 +213,8 @@ Singleton {
                 root.mode = saved.mode === "light" ? "light" : "dark";
                 root.fontSize = typeof saved.fontSize === "number" && Number.isFinite(saved.fontSize)
                     ? Math.round(Math.max(12, Math.min(28, saved.fontSize))) : 20;
+                root.barFontFamily = typeof saved.barFontFamily === "string" && saved.barFontFamily.trim()
+                    && saved.barFontFamily.length <= 200 ? saved.barFontFamily.trim() : root.defaultBarFontFamily;
                 root.barPosition = ["top", "left", "bottom", "right"].includes(saved.barPosition) ? saved.barPosition : "top";
                 root.barOpacity = typeof saved.barOpacity === "number" && Number.isFinite(saved.barOpacity)
                     ? Math.max(0.2, Math.min(1, saved.barOpacity)) : 1;

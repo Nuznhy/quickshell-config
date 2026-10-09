@@ -22,7 +22,7 @@ DropdownWidget {
         verticalAlignment: Text.AlignVCenter
         color: root.dropdownOpen ? Theme.iris : Theme.text
         font.pixelSize: Theme.fontSize - 2
-        font.family: Theme.fontFamily
+        font.family: Theme.barFontFamily
         font.bold: true
     }
 

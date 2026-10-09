@@ -43,6 +43,7 @@ QtObject {
  property bool verticalBar: false
  property int fontSize: 20
  property string fontFamily: "sans-serif"
+ property string barFontFamily: fontFamily
  property color bg: "#191724"
  property color text: "#e0def4"
  property color love: "#eb6f92"

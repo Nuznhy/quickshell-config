@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     for subdir in ['config', 'components', 'modules/settings', 'modules/bar/widgets', 'runtime']:
         (target / subdir).mkdir(parents=True, exist_ok=True, mode=0o700)
     for name in ['ControlSwitch.qml', 'NotificationButton.qml', 'WallpaperSelector.qml',
-                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml']:
+                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml', 'BarFontPicker.qml']:
         shutil.copyfile(root / 'components' / name, target / 'components' / name)
     for path in ['config/BarLayoutData.js', 'modules/settings/BarLayoutEditor.qml', 'modules/bar/BarSection.qml']:
         shutil.copyfile(root / path, target / path)
@@ -31,6 +31,9 @@ QtObject {
     property string settingsIcon: defaultSettingsIcon
     property string settingsIconSource: ""
     property int fontSize: 20
+    readonly property string defaultBarFontFamily: "JetBrainsMono Nerd Font"
+    property string barFontFamily: defaultBarFontFamily
+    function setBarFontFamily(value) { barFontFamily = value; }
     function setSettingsIcon(glyph, source) {
         settingsIcon = glyph.trim() || defaultSettingsIcon;
         settingsIconSource = source;
@@ -185,13 +188,16 @@ ShellRoot {
         function status(): string {
             return JSON.stringify({visible: window.visible, opened: ShellSettings.opened,
                 ready: Theme.ready && BarLayout.ready, disabled: BarLayout.state.disabled.length,
-                folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
+                font: Theme.barFontFamily, folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
                 separateWallpapers: Theme.separateWallpapers, wallpapers: Theme.wallpapers,
                 lightWallpapers: Theme.lightWallpapers, darkWallpapers: Theme.darkWallpapers,
                 lockScreen: Theme.lockScreen,
                 error: Theme.errorMessage});
         }
         function preferences(): void {
+            Theme.setBarFontFamily("DejaVu Sans");
+            Theme.setBarFontFamily("");
+            Theme.setBarFontFamily(null);
             Theme.setWallpaperFolder(Qt.resolvedUrl("gallery").toString());
             Theme.setSettingsIcon("★", Qt.resolvedUrl("test wallpaper.svg").toString());
             Theme.setWallpaper("TEST-1", Qt.resolvedUrl("test wallpaper.svg").toString(), "shared");
@@ -254,6 +260,7 @@ ShellRoot {
                     raise AssertionError(log.read())
                 time.sleep(0.05)
             assert not status['visible']
+            assert status['font'] == 'JetBrainsMono Nerd Font'
             assert status['folder'] == '' and status['iconSource'] == '' and status['icon'] == '󰒓'
             assert not status['separateWallpapers']
             assert status['lockScreen'] == {'background': 'theme', 'color': '#191724', 'image': ''}
@@ -263,7 +270,7 @@ ShellRoot {
             assert ipc('test', 'monitoring') == 'true'
             assert ipc('test', 'monitoringPanels') == '1'
             ipc('test', 'hideAll')
-            assert json.loads(ipc('test', 'status'))['disabled'] == 18
+            assert json.loads(ipc('test', 'status'))['disabled'] == 19
             ipc('settings', 'close')
             assert not json.loads(ipc('test', 'status'))['visible']
             assert ipc('test', 'monitoringPanels') == '0'
@@ -275,6 +282,7 @@ ShellRoot {
             time.sleep(.4)
             preferences = json.loads(ipc('test', 'status'))
             assert not preferences['error'], preferences
+            assert preferences['font'] == 'DejaVu Sans'
             assert preferences['lockScreen']['background'] == 'color'
             assert preferences['lockScreen']['color'] == '#123abc'
             process.terminate()
@@ -292,7 +300,7 @@ ShellRoot {
                 if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
                 time.sleep(.05)
             assert not restored['error'], restored
-            for key in ['folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
+            for key in ['font', 'folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
                 assert restored[key] == preferences[key], (key, restored, preferences)
             assert ipc('test', 'checkWallpaperModes') == 'true'
             print('PASS: shared/light/dark wallpapers persist, clear independently, and follow theme changes', flush=True)

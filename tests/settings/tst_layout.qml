@@ -8,7 +8,7 @@ TestCase {
         const value = Data.defaults();
         compare(value.sections.start, ["workspaces", "tray", "media"]);
         compare(value.sections.center, ["clock"]);
-        compare(value.sections.end.length, 14);
+        compare(value.sections.end.length, 15);
         compare(value.disabled, ["monitoring", "battery"]);
     }
     function test_normalize_repairs_ids() {
@@ -21,7 +21,7 @@ TestCase {
         compare(repaired.sections.center, []);
         compare(repaired.disabled, ["clock"]);
         const all = [].concat(repaired.sections.start, repaired.sections.center, repaired.sections.end);
-        compare(new Set(all).size, 18);
+        compare(new Set(all).size, Data.widgets.length);
     }
     function test_invalid_state() {
         for (const value of [null, {}, {version: 2}, {version: 1, sections: {start: []}}]) {

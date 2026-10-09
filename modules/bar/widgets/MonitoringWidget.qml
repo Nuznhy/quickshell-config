@@ -36,7 +36,7 @@ DropdownWidget {
                 implicitHeight: Theme.verticalBar ? (longMode ? Math.max(62, Theme.fontSize + 44) : Math.max(36, Theme.fontSize + 10)) : Settings.barHeight
                 TextMetrics {
                     id: labelMetrics
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
                     font.pixelSize: Theme.fontSize
                     text: cell.modelData.unit === "B" ? ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + "/" + ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + " GiB" : cell.modelData.unit === "W" ? "888.8 W" : "100 °C"
                 }
@@ -57,7 +57,7 @@ DropdownWidget {
                         ? (cell.modelData.value / 1073741824).toFixed(1) + "G\n/" + (cell.modelData.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.modelData)
                     horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
                     color: cell.modelData.available ? Theme.text : Theme.subtle
-                    font.family: Theme.fontFamily
+                    font.family: Theme.barFontFamily
                     font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
                 }
                 Rectangle {
