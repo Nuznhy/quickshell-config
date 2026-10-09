@@ -1,4 +1,5 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
@@ -117,12 +118,9 @@ Item {
             anchors.fill: parent
             opened: root.dropdownOpen
 
-            Rectangle {
+            UI.MenuSurface {
                 anchors.fill: parent
                 visible: !root.showStem
-                color: Theme.bg
-                radius: 12
-                border.color: Theme.highlightMed
             }
 
             // Main card with notch corners
@@ -134,9 +132,9 @@ Item {
                 property int rawStemWidth: iconContainer.width + 16
                 property int stemWidth: Math.min(rawStemWidth, width - 60)  // ensure room for notch corners
                 property int stemHeight: root.showStem ? 12 : 0
-                property int notchRadius: 10
-                property int cardRadius: 12
-                property color backgroundColor: Theme.bg
+                property int notchRadius: Design.radiusControl
+                property int cardRadius: Design.radiusCard
+                property color backgroundColor: Design.background
 
                 onStemWidthChanged: requestPaint()
                 onWidthChanged: requestPaint()

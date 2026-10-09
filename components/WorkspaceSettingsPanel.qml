@@ -1,37 +1,38 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
     signal backRequested
-    spacing: 16
-    component Label: Text {
+    spacing: Design.space16
+    component Label: UI.Text {
         Layout.fillWidth: true
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
-    component Card: Pane {
+    component Card: UI.Pane {
         default property alias items: body.data
         Layout.fillWidth: true
-        padding: 16
-        background: Rectangle { color: Theme.surface; radius: 12; border.color: Theme.highlightMed }
-        contentItem: ColumnLayout { id: body; spacing: 12 }
+        padding: Design.panelPadding
+        background: UI.Card { border.color: Design.border }
+        contentItem: UI.ColumnLayout { id: body; spacing: Design.space12 }
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        NotificationButton {
+        UI.IconButton {
             text: "‹"
             Layout.preferredWidth: 32
             Accessible.name: "Back to bar layout"
             onClicked: root.backRequested()
         }
-        Label { text: "Workspaces"; font.pixelSize: 18; font.bold: true }
+        Label { text: "Workspaces"; role: "panel"; font.bold: true }
         NotificationButton {
             objectName: "workspace-settings-reset"
             text: "Reset"
@@ -41,10 +42,10 @@ ColumnLayout {
     }
     Label {
         text: "Personalize the icons beside each workspace number. Changes save automatically."
-        color: Theme.subtle
+        color: Design.textSecondary
     }
     Card {
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
             Label { text: "Show app icons" }
             ControlSwitch {
@@ -57,12 +58,12 @@ ColumnLayout {
         }
         Label {
             text: "Each icon represents a window. Click it to focus that window."
-            font.pixelSize: 11
-            color: Theme.subtle
+            role: "label"
+            color: Design.textSecondary
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: Design.space8
             Repeater {
                 model: [{id: "app", label: "App icons"}, {id: "nerd", label: "Nerd Font icons"}]
                 NotificationButton {
@@ -81,20 +82,20 @@ ColumnLayout {
         }
         Label {
             text: "Nerd Font icons use matching app symbols, with a generic icon for unknown apps."
-            font.pixelSize: 11
-            color: Theme.subtle
+            role: "label"
+            color: Design.textSecondary
         }
     }
     Card {
-        Label { text: "Separator"; font.pixelSize: 14 }
+        Label { text: "Separator"; role: "section" }
         Label {
             text: "Between the workspace number and its icons. Leave empty for no separator."
-            font.pixelSize: 11
-            color: Theme.subtle
+            role: "label"
+            color: Design.textSecondary
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: Design.space8
             Repeater {
                 model: [{label: "None", value: ""}, {label: "Dot", value: "·"}, {label: "Line", value: "|"}, {label: "Slash", value: "/"}]
                 NotificationButton {
@@ -108,33 +109,22 @@ ColumnLayout {
                 }
             }
         }
-        TextField {
+        UI.TextField {
             id: separator
             objectName: "workspace-separator-input"
             Layout.fillWidth: true
-            implicitHeight: 38
             maximumLength: 16
             text: WorkspaceAppearance.separator
             placeholderText: "Custom separator (up to 8 characters)"
-            color: Theme.text
-            placeholderTextColor: Theme.subtle
-            selectionColor: Theme.iris
-            selectedTextColor: Theme.bg
-            font.family: Theme.fontFamily
-            font.pixelSize: 14
             enabled: WorkspaceAppearance.ready && WorkspaceAppearance.showIcons
             Accessible.name: "Workspace icon separator"
             onTextEdited: WorkspaceAppearance.setOption("separator", text)
             onEditingFinished: text = Qt.binding(() => WorkspaceAppearance.separator)
-            background: Rectangle {
-                color: Theme.overlay
-                radius: 8
-                border.color: separator.activeFocus ? Theme.iris : Theme.highlightMed
-            }
+
         }
     }
     Card {
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
             Label { text: "Icon capsule" }
             ControlSwitch {
@@ -147,13 +137,13 @@ ColumnLayout {
         }
         Label {
             text: "Group app icons inside a rounded background."
-            font.pixelSize: 11
-            color: Theme.subtle
+            role: "label"
+            color: Design.textSecondary
         }
     }
     Label {
         visible: text !== ""
         text: WorkspaceAppearance.errorMessage
-        color: Theme.love
+        color: Design.danger
     }
 }

@@ -1,15 +1,16 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import "../config"
 
-GridLayout {
+UI.GridLayout {
     id: root
     columns: Math.max(1, Math.min(cards.count, Math.floor((width + columnSpacing) / 252)))
-    columnSpacing: 12
-    rowSpacing: 12
+    columnSpacing: Design.space12
+    rowSpacing: Design.space12
     readonly property bool choosingWallpaper: picker.visible
     property string wallpaperMode: Theme.separateWallpapers ? Theme.mode : "shared"
     onWallpaperModeChanged: {
@@ -49,26 +50,12 @@ GridLayout {
         onAccepted: { if (wallpaperMode === root.wallpaperMode) root.choose(monitorName, selectedFile); }
     }
 
-    component IconButton: NotificationButton {
-        id: control
-        implicitWidth: 32
-        implicitHeight: 32
-        leftPadding: 6
-        rightPadding: 6
-        contentItem: Text {
-            text: control.text
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 18
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
-    }
+    component IconButton: UI.IconButton {}
 
     Repeater {
         id: cards
         model: Theme.connectedScreens
-        delegate: Rectangle {
+        delegate: UI.Card {
             id: card
             required property var modelData
             objectName: "wallpaper-card-" + modelData.name
@@ -81,12 +68,11 @@ GridLayout {
             Layout.fillHeight: true
             Layout.preferredWidth: 1
             Layout.minimumWidth: 0
-            implicitHeight: content.implicitHeight + 24
-            radius: 12
-            color: Theme.surface
-            border.color: dropArea.containsDrag ? Theme.iris : Theme.highlightMed
+            implicitHeight: content.implicitHeight + Design.panelPadding * 2
+
+            border.color: dropArea.containsDrag ? Design.accent : Design.border
             border.width: dropArea.containsDrag ? 2 : 1
-            Behavior on border.color { ColorAnimation { duration: 120 } }
+            Behavior on border.color { ColorAnimation { duration: Design.durationFast } }
 
             function loadImage(value) {
                 if (!Theme.ready) return;
@@ -128,33 +114,33 @@ GridLayout {
                     }
                 }
             }
-            ColumnLayout {
+            UI.ColumnLayout {
                 id: content
-                x: 12
-                y: 12
-                width: parent.width - 24
-                spacing: 10
-                RowLayout {
+                x: Design.panelPadding
+                y: Design.panelPadding
+                width: parent.width - Design.panelPadding * 2
+                spacing: Design.space8
+                UI.RowLayout {
                     Layout.fillWidth: true
-                    spacing: 8
-                    Text {
+                    spacing: Design.space8
+                    UI.Text {
                         text: "󰍹"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 18
-                        color: Theme.iris
+                        font.family: Design.fontFamily
+                        font.pixelSize: Design.iconLarge
+                        color: Design.accent
                     }
-                    Text {
+                    UI.Text {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         text: card.modelData.name
                         elide: Text.ElideRight
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.family: Design.fontFamily
+                        role: "body"
                         font.bold: true
-                        color: Theme.text
+                        color: Design.text
                     }
                 }
-                Button {
+                UI.Button {
                     id: previewButton
                     objectName: "wallpaper-browse-" + card.modelData.name
                     Layout.fillWidth: true
@@ -162,22 +148,16 @@ GridLayout {
                     padding: 0
                     topInset: 0
                     bottomInset: 0
-                    hoverEnabled: true
                     enabled: Theme.ready
                     Accessible.name: "Choose wallpaper for " + card.modelData.name
                     onClicked: root.browse(card.modelData.name)
-                    HoverHandler { cursorShape: Qt.PointingHandCursor }
-                    background: Rectangle {
-                        radius: 8
-                        color: Theme.bg
-                        border.color: previewButton.activeFocus ? Theme.iris : Theme.highlightMed
-                    }
+
                     contentItem: Item {
                         clip: true
                         Image {
                             id: preview
                             anchors.fill: parent
-                            anchors.margins: 4
+                            anchors.margins: Design.space4
                             source: card.source
                             sourceSize: Qt.size(800, 450)
                             asynchronous: true
@@ -185,40 +165,40 @@ GridLayout {
                         }
                         Rectangle {
                             anchors.fill: parent
-                            anchors.margins: 4
-                            color: Theme.bg
+                            anchors.margins: Design.space4
+                            color: Design.background
                             opacity: preview.status === Image.Ready ? 0.75 : 1
                             visible: dropArea.containsDrag || previewButton.hovered || preview.status !== Image.Ready || card.loading
                         }
                         Column {
                             anchors.centerIn: parent
-                            width: parent.width - 24
-                            spacing: 8
+                            width: parent.width - Design.panelPadding * 2
+                            spacing: Design.space8
                             visible: dropArea.containsDrag || previewButton.hovered || preview.status !== Image.Ready || card.loading
-                            Text {
+                            UI.Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: dropArea.containsDrag ? "󰇚" : "󰥶"
-                                color: Theme.iris
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 30
+                                color: Design.accent
+                                font.family: Design.fontFamily
+                                font.pixelSize: Design.iconDisplay
                             }
-                            Text {
+                            UI.Text {
                                 width: parent.width
                                 text: card.loading ? "Loading image…" : dropArea.containsDrag ? "Drop to set wallpaper"
                                     : preview.status === Image.Error ? "Choose another image" : "Drop an image or click to browse"
                                 horizontalAlignment: Text.AlignHCenter
                                 wrapMode: Text.WordWrap
-                                color: Theme.text
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
+                                color: Design.text
+                                font.family: Design.fontFamily
+                                role: "label"
                             }
                         }
                     }
                 }
-                RowLayout {
+                UI.RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
-                    Text {
+                    spacing: Design.space4
+                    UI.Text {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         text: {
@@ -227,9 +207,9 @@ GridLayout {
                             try { return decodeURIComponent(name); } catch (error) { return name; }
                         }
                         elide: Text.ElideMiddle
-                        color: Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.textSecondary
+                        font.family: Design.fontFamily
+                        role: "caption"
                         textFormat: Text.PlainText
                     }
                     IconButton {
@@ -250,13 +230,13 @@ GridLayout {
                         }
                     }
                 }
-                Text {
+                UI.Text {
                     Layout.fillWidth: true
                     visible: text.length > 0
                     text: card.errorMessage || (preview.status === Image.Error ? "Saved image is unavailable." : "")
-                    color: Theme.love
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    color: Design.danger
+                    font.family: Design.fontFamily
+                    role: "label"
                     wrapMode: Text.WordWrap
                 }
             }

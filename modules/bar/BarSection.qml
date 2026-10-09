@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../components/ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../../config"
@@ -40,8 +41,8 @@ Flickable {
     onNaturalLengthChanged: Qt.callLater(settleScroll)
     onWidthChanged: Qt.callLater(settleScroll)
     onHeightChanged: Qt.callLater(settleScroll)
-    ScrollBar.vertical: ScrollBar { policy: Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
-    ScrollBar.horizontal: ScrollBar { policy: !Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
+    ScrollBar.vertical: UI.ScrollBar { policy: Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
+    ScrollBar.horizontal: UI.ScrollBar { policy: !Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
 
     Repeater {
         id: widgets

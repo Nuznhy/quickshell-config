@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import Quickshell.Wayland
 import Quickshell.Widgets
 import "../config"
@@ -19,13 +20,13 @@ Item {
     readonly property real previewHeight: previewWidth * monitorBounds.height / monitorBounds.width
     implicitHeight: previewHeight + 30
 
-    Text {
+    UI.Text {
         width: parent.width
         text: "Workspace " + root.workspaceId + (root.selectedWindow ? " · " + root.selectedWindow.title : "")
         textFormat: Text.PlainText
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         elide: Text.ElideRight
     }
     Rectangle {
@@ -33,7 +34,7 @@ Item {
         y: 26
         width: root.previewWidth
         height: root.previewHeight
-        color: Theme.bg
+        color: Design.background
         clip: true
         Image {
             anchors.fill: parent
@@ -51,7 +52,7 @@ Item {
                 x: rect.x; y: rect.y; width: rect.width; height: rect.height
                 // Hyprland's recent-focus rank approximates stacking within layers.
                 z: (modelData.fullscreen ? 30000 : modelData.floating ? 20000 : 10000) - Math.min(9999, modelData.rank)
-                color: Theme.surface
+                color: Design.surface
                 clip: true
                 ScreencopyView {
                     id: capture
@@ -64,20 +65,20 @@ Item {
                 Column {
                     anchors.centerIn: parent
                     width: Math.max(0, parent.width - 8)
-                    spacing: 5
+                    spacing: Design.space4
                     visible: !capture.hasContent
                     IconImage {
                         anchors.horizontalCenter: parent.horizontalCenter
                         implicitSize: Math.min(26, window.height / 2)
                         source: Workspaces.getWsIcons(root.workspaceId).find(icon => icon.address === window.modelData.address)?.source || ""
                     }
-                    Text {
+                    UI.Text {
                         width: parent.width
                         text: window.modelData.title
                         textFormat: Text.PlainText
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.text
+                        font.family: Design.fontFamily
+                        role: "caption"
                         elide: Text.ElideRight
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -86,7 +87,7 @@ Item {
                     anchors.fill: parent
                     color: "transparent"
                     border.width: 1
-                    border.color: Theme.highlightMed
+                    border.color: Design.border
                 }
                 Timer {
                     interval: 250
@@ -105,7 +106,7 @@ Item {
             visible: !!root.selectedWindow
             z: 100000
             color: "transparent"
-            border.color: Theme.iris
+            border.color: Design.accent
             border.width: 3
         }
     }

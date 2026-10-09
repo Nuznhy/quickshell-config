@@ -56,6 +56,106 @@ components may use config, but should not depend on a particular bar widget.
 Services are singletons, so adding screens does not add another CPU, memory,
 audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
+## Design system
+
+All shell surfaces share the tokens in `config/Design.qml` and the primitives in
+`components/ui/`. `Theme` owns palettes and saved preferences; `Design` derives
+presentation from them without writing settings or depending on services.
+Existing bar font, size, geometry, and workspace capsule settings remain intact.
+
+Import the primitives with a namespace to avoid collisions with Qt's controls:
+
+```qml
+import "../config"
+import "ui" as UI
+
+UI.Button {
+    text: "Connect"
+    variant: "primary"
+    busy: connectionPending
+    enabled: deviceAvailable
+    onClicked: requestConnection()
+}
+```
+
+Use the relative path to `components/ui` from the consuming file. Features own
+service calls, validation rules, and persistence; primitives own appearance,
+keyboard behavior, and interaction feedback.
+
+| Foundation | Shared values / roles |
+| --- | --- |
+| Spacing | `space2`, `space4`, `space8`, `space12`, `space16`, `space20`, `space24`, `space32` |
+| Layout | `controlGap` 8, `panelPadding` 12, `sectionGap` 16, `windowPadding` 20 |
+| Text roles | `caption` 10, `label` 11, `body` 12, `section` 16, `panel` 20, `page` 24 px |
+| Line height | Body 1.35, headings 1.2, `bar` 1 to preserve existing bar metrics |
+| Corners | `radiusSmall` 4, `radiusControl` 8, `radiusCard` 12; capsules use half their height |
+| Heights | `compactHeight` 28, `controlHeight` 32, `selectorHeight` 40; content may grow |
+| Motion | `durationFast` 120, `durationNormal` 160, `durationSlow` 300 ms |
+| Colors | `background`, `surface`, `surfaceRaised`, `text`, `textSecondary`, `textMuted`, `border`, `accent`, `danger`, `warning`, `success`, `info` |
+
+`UI.Text.role` selects size, weight, and line height. Use `UI.Icon` for glyphs;
+its font stays on JetBrainsMono Nerd Font. Keep the configurable bar font for
+bar text. Filled controls choose readable foreground colors from the palette,
+falling back to black or white when neither palette foreground reaches 4.5:1.
+
+| Primitive | Interface and use |
+| --- | --- |
+| `Button`, `IconButton` | Standard Qt button signals/properties; `variant`: `neutral`, `primary`, `ghost`, `destructive`; `size`: `default`, `compact`; `busy`, `capsule`, `accentColor`; `checked`/`highlighted` for selection |
+| `TextField` | Standard text, placeholder, password, read-only, validator, and editing APIs; `invalid` adds error presentation without hiding focus |
+| `ComboBox` | Standard model, `textRole`, `valueRole`, current index/value, and `activated`; `busy` disables interaction and closes the popup |
+| `MenuItem`, `Popup` | Selectable rows and a shared popup surface; Escape/outside-parent dismissal, bounded content supplied by the caller |
+| `CheckBox`, `RadioButton`, `Switch` | Standard Qt checked/toggled behavior; radio siblings are exclusive; `Switch.busy` suppresses activation |
+| `SegmentedControl` | String-array `model`, caller-owned `currentIndex`, and `selected(index)` request signal; arrow-key navigation |
+| `ToggleTile` | Button contract plus `iconGlyph`; caller-owned `checked`, or opt into local toggling with `checkable: true` |
+| `Slider` | Standard range/value/moved APIs; `accentColor`, `showHandle`; wheel input is opt-in |
+| `Card`, `Pane`, `Capsule`, `Divider`, `MenuSurface` | Shared surfaces; `Pane` includes standard padding, `Card` leaves child layout to the caller |
+| `RowLayout`, `ColumnLayout`, `GridLayout` | Qt layout APIs with the shared default control gap |
+| `ScrollView`, `ScrollBar` | Qt scrolling behavior with shared scrollbar geometry and state colors |
+| `FieldLabel`, `HelperText` | Shared field label/helper roles; helper text supports `invalid` |
+
+Controls distinguish normal, hover, pressed, selected, keyboard-focused,
+disabled, and applicable busy states. Button hover animates the fill and a
+one-pixel outline; keyboard focus uses a distinct two-pixel outline.
+Focus is independent of selection.
+Busy buttons retain their dimensions and show an activity mark; clearing busy
+restores the caller's current `enabled` binding. Provide accessible names for
+icon buttons, fields, selectors, and sliders.
+
+`NotificationButton` is a compatibility adapter (`accent` maps to the primary
+variant). `ControlSwitch` retains its service-controlled `value` and
+`changeRequested(value)` contract: a failed request does not change confirmed
+state. Audio throttling and media seek-on-release remain in their feature
+adapters, which extend `UI.Slider`.
+
+New feature components should use these primitives and semantic tokens rather
+than defining another button background, field style, font size, or corner
+radius. Specialized content geometry remains local: charts, wallpaper/media
+previews, miniature lock-screen text, window positioning, and workspace animation
+math. Native tray menus and external application theme generators retain their
+platform behavior. Palette swatches display the actual palette colors.
+
+Run the standalone gallery from the repository root:
+
+```sh
+quickshell --path tools/design-gallery
+```
+
+It displays all primitives and variants, supports all six palettes in light and
+dark modes, and never saves preview choices. Hover, press, Tab, and resize to
+inspect interaction and narrow layouts. `Design.previewPalette` is reserved for
+this isolated preview and tests; production screens use the active `Theme`.
+
+```sh
+python3 scripts/test-design-system.py
+bash scripts/check.sh
+```
+
+The isolated QtTest suite covers interaction, disabled/busy behavior, controlled
+selection, text input, sliders, popup dismissal, and live palette changes. It
+also renders every palette and a narrow gallery under `/tmp/qs-design-gallery-*`.
+Existing feature test harnesses install the same production UI library alongside
+their service mocks through `scripts/design_test_support.py`.
+
 ## Settings window
 
 Click the bar's settings icon for a compact panel with hostname, OS, uptime,

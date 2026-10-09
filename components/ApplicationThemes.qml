@@ -1,52 +1,31 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 import "../services"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
-    spacing: 10
+    spacing: Design.space8
     property string detailsId: ""
     readonly property var detailTarget: AppTheming.targets.find(target => target.id === detailsId) || null
     onVisibleChanged: { if (visible) AppTheming.refresh(); }
 
-    component RefreshButton: NotificationButton {
-        id: control
-        implicitWidth: 36
-        implicitHeight: 36
-        padding: 7
-        leftPadding: 7
-        rightPadding: 7
-        topPadding: 7
-        bottomPadding: 7
-        background: Rectangle {
-            radius: 10
-            color: control.down ? Theme.highlightMed : control.hovered ? Theme.overlay : Theme.surface
-            border.color: control.hovered || control.activeFocus ? Theme.iris : Theme.highlightMed
-            Behavior on color { ColorAnimation { duration: 120 } }
-            Behavior on border.color { ColorAnimation { duration: 120 } }
-        }
-        contentItem: Text {
-            text: "󰑐"
-            color: Theme.iris
-            font.family: Theme.fontFamily
-            font.pixelSize: 20
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
+    component RefreshButton: UI.IconButton {
+        text: "󰑐"
     }
 
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 12
-        Text {
+        spacing: Design.space12
+        UI.Text {
             text: "Application themes"
-            font.family: Theme.fontFamily
-            font.pixelSize: 18
+            font.family: Design.fontFamily
+            role: "panel"
             font.bold: true
-            color: Theme.text
+            color: Design.text
             Layout.fillWidth: true
         }
         RefreshButton {
@@ -55,24 +34,24 @@ ColumnLayout {
             onClicked: AppTheming.refresh()
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         text: "Let your apps follow the shell’s colors."
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
+        color: Design.textSecondary
+        font.family: Design.fontFamily
+        role: "label"
         wrapMode: Text.WordWrap
     }
-    GridLayout {
+    UI.GridLayout {
         id: grid
         objectName: "app-themes-grid"
         Layout.fillWidth: true
         columns: Math.max(1, Math.floor((width + columnSpacing) / 230))
-        columnSpacing: 10
-        rowSpacing: 10
+        columnSpacing: Design.space8
+        rowSpacing: Design.space8
         Repeater {
             model: AppTheming.targets
-            delegate: Rectangle {
+            delegate: UI.Card {
                 id: card
                 required property var modelData
                 objectName: "app-theme-card-" + modelData.id
@@ -82,37 +61,36 @@ ColumnLayout {
                 Layout.preferredWidth: 1
                 Layout.minimumWidth: 0
                 Layout.alignment: Qt.AlignTop
-                implicitHeight: Math.max(82, cardContent.implicitHeight + 24)
-                radius: 10
-                color: Theme.surface
-                border.color: modelData.state === "error" ? Theme.love : Theme.highlightMed
-                ColumnLayout {
+                implicitHeight: Math.max(82, cardContent.implicitHeight + Design.panelPadding * 2)
+
+                border.color: modelData.state === "error" ? Design.danger : Design.border
+                UI.ColumnLayout {
                     id: cardContent
-                    x: 12; y: 12
-                    width: parent.width - 24
-                    spacing: 6
-                    RowLayout {
+                    x: Design.panelPadding; y: Design.panelPadding
+                    width: parent.width - Design.panelPadding * 2
+                    spacing: Design.space4
+                    UI.RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8
-                        Text {
+                        spacing: Design.space8
+                        UI.Text {
                             Layout.fillWidth: true
                             Layout.minimumWidth: 0
                             text: card.modelData.name
-                            color: Theme.text
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 13
+                            color: Design.text
+                            font.family: Design.fontFamily
+                            role: "body"
                             elide: Text.ElideRight
                         }
                         RefreshButton {
                             objectName: "app-theme-retry-" + card.modelData.id
                             visible: card.modelData.state === "error"
                             implicitWidth: 26
-                            implicitHeight: 26
-                            padding: 3
-                            leftPadding: 3
-                            rightPadding: 3
-                            topPadding: 3
-                            bottomPadding: 3
+                            implicitHeight: Design.compactHeight
+                            padding: Design.space2
+                            leftPadding: Design.space2
+                            rightPadding: Design.space2
+                            topPadding: Design.space2
+                            bottomPadding: Design.space2
                             Accessible.name: "Retry " + card.modelData.name
                             enabled: !card.applying
                             onClicked: AppTheming.retry(card.modelData.id)
@@ -125,13 +103,12 @@ ColumnLayout {
                             onChangeRequested: value => AppTheming.setEnabled(card.modelData.id, value)
                         }
                     }
-                    Button {
+                    UI.Button {
                         id: statusButton
                         objectName: "app-theme-details-" + card.modelData.id
                         Layout.fillWidth: true
                         implicitHeight: Math.max(20, contentItem.implicitHeight)
                         padding: 0
-                        hoverEnabled: true
                         enabled: card.hasDetails
                         text: card.applying ? "Applying…" : card.modelData.state === "error"
                             ? card.modelData.message || "Theme update failed. No error details were reported."
@@ -140,33 +117,33 @@ ColumnLayout {
                         Accessible.name: card.modelData.name + ": " + text + (card.hasDetails ? ". Show details" : "")
                         Accessible.description: card.modelData.message || ""
                         onClicked: root.detailsId = root.detailsId === card.modelData.id ? "" : card.modelData.id
-                        HoverHandler { cursorShape: card.hasDetails ? Qt.PointingHandCursor : Qt.ArrowCursor }
-                        background: null
-                        contentItem: RowLayout {
-                            spacing: 6
+
+                        variant: "ghost"
+                        contentItem: UI.RowLayout {
+                            spacing: Design.space4
                             Rectangle {
-                                implicitWidth: 5; implicitHeight: 5; radius: 3
-                                color: card.modelData.state === "error" ? Theme.love
-                                    : card.modelData.enabled ? Theme.iris : Theme.subtle
+                                implicitWidth: 5; implicitHeight: 5; radius: Design.radiusSmall
+                                color: card.modelData.state === "error" ? Design.danger
+                                    : card.modelData.enabled ? Design.accent : Design.textSecondary
                             }
-                            Text {
+                            UI.Text {
                                 objectName: "app-theme-status-" + card.modelData.id
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 text: statusButton.text
                                 textFormat: Text.PlainText
-                                color: card.modelData.state === "error" ? Theme.love : Theme.subtle
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
+                                color: card.modelData.state === "error" ? Design.danger : Design.textSecondary
+                                font.family: Design.fontFamily
+                                role: "label"
                                 wrapMode: card.modelData.state === "error" ? Text.Wrap : Text.NoWrap
                                 elide: card.modelData.state === "error" ? Text.ElideNone : Text.ElideRight
                             }
-                            Text {
+                            UI.Text {
                                 visible: card.hasDetails
                                 text: root.detailsId === card.modelData.id ? "⌃" : "⌄"
-                                color: statusButton.hovered || statusButton.activeFocus ? Theme.iris : Theme.subtle
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                color: statusButton.hovered || statusButton.activeFocus ? Design.accent : Design.textSecondary
+                                font.family: Design.fontFamily
+                                role: "section"
                             }
                         }
                     }
@@ -178,49 +155,49 @@ ColumnLayout {
         objectName: "app-theme-details-panel"
         Layout.fillWidth: true
         visible: !!root.detailTarget?.message
-        implicitHeight: detailContent.implicitHeight + 24
-        radius: 10
-        color: Theme.overlay
-        ColumnLayout {
+        implicitHeight: detailContent.implicitHeight + Design.panelPadding * 2
+        radius: Design.radiusCard
+        color: Design.surfaceRaised
+        UI.ColumnLayout {
             id: detailContent
-            x: 12; y: 12
-            width: parent.width - 24
-            spacing: 8
-            RowLayout {
+            x: Design.panelPadding; y: Design.panelPadding
+            width: parent.width - Design.panelPadding * 2
+            spacing: Design.space8
+            UI.RowLayout {
                 Layout.fillWidth: true
-                Text {
+                UI.Text {
                     Layout.fillWidth: true
                     text: root.detailTarget?.name || ""
-                    color: Theme.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    color: Design.text
+                    font.family: Design.fontFamily
+                    role: "body"
                     font.bold: true
                 }
-                NotificationButton {
+                UI.IconButton {
                     implicitWidth: 28
                     text: "×"
                     Accessible.name: "Close application theme details"
                     onClicked: root.detailsId = ""
                 }
             }
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 text: root.detailTarget?.message || ""
-                color: root.detailTarget?.state === "error" ? Theme.love : Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 11
+                color: root.detailTarget?.state === "error" ? Design.danger : Design.textSecondary
+                font.family: Design.fontFamily
+                role: "label"
                 textFormat: Text.PlainText
                 wrapMode: Text.WordWrap
             }
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: text !== ""
         text: AppTheming.errorMessage
-        color: Theme.love
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.danger
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.WordWrap
     }

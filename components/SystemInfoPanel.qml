@@ -1,15 +1,16 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 import "../services"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
     property bool active: false
     property bool expanded: false
     readonly property bool showing: active && expanded
-    spacing: 8
+    spacing: Design.space8
     onShowingChanged: {
         SystemInfo.openPanels += showing ? 1 : -1;
         BatteryState.openPanels += showing ? 1 : -1;
@@ -25,16 +26,16 @@ ColumnLayout {
         Accessible.name: "System information"
         onClicked: root.expanded = !root.expanded
     }
-    ScrollView {
+    UI.ScrollView {
         visible: root.expanded
         Layout.fillWidth: true
         Layout.preferredHeight: Math.min(280, rows.implicitHeight)
         contentWidth: availableWidth
         clip: true
-        ColumnLayout {
+        UI.ColumnLayout {
             id: rows
             width: parent.width
-            spacing: 8
+            spacing: Design.space8
             Repeater {
                 model: [
                     {label: "OS", value: SystemInfo.details.os || "…"},
@@ -46,42 +47,42 @@ ColumnLayout {
                 ].concat(BatteryState.batteries.map(b => ({label: b.id, value: (b.percent === null ? "—" : b.percent + "%") + " · " + b.status})))
                  .concat(NetworkState.connections.filter(c => c.state === "activated").map(c => ({label: c.vpn ? "VPN" : "Network", value: c.name + "\n" + c.devices.join(", ") + " · " + c.ipv4.concat(c.ipv6).join(", ")})))
                  .concat(NetworkState.connections.some(c => c.state === "activated") ? [] : [{label: "Network", value: NetworkState.statusError || "Disconnected"}])
-                RowLayout {
+                UI.RowLayout {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignTop
-                    spacing: 10
-                    Text {
+                    spacing: Design.space8
+                    UI.Text {
                         Layout.preferredWidth: 68
                         Layout.alignment: Qt.AlignTop
                         text: modelData.label
-                        color: Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.textSecondary
+                        font.family: Design.fontFamily
+                        role: "caption"
                         wrapMode: Text.Wrap
                         textFormat: Text.PlainText
                     }
-                    Text {
+                    UI.Text {
                         Layout.fillWidth: true
                         text: modelData.value
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.text
+                        font.family: Design.fontFamily
+                        role: "caption"
                         wrapMode: Text.WrapAnywhere
                         textFormat: Text.PlainText
                     }
                 }
             }
-            RowLayout {
+            UI.RowLayout {
                 Layout.fillWidth: true
-                Text {
+                UI.Text {
                     Layout.fillWidth: true
                     text: "Updates (repos): " + (SystemInfo.checkingUpdates ? "Checking…" : SystemInfo.updateCount < 0 ? "Unknown" : SystemInfo.updateCount)
-                    color: Theme.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    color: Design.text
+                    font.family: Design.fontFamily
+                    role: "caption"
                 }
-                NotificationButton {
+                UI.IconButton {
                     text: "󰑐"
                     implicitWidth: 30
                     enabled: !SystemInfo.checkingUpdates
@@ -89,21 +90,21 @@ ColumnLayout {
                     onClicked: SystemInfo.checkUpdates()
                 }
             }
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 visible: SystemInfo.checkedAt > 0
                 text: "Checked " + Qt.formatDateTime(new Date(SystemInfo.checkedAt), "hh:mm")
-                color: Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
+                color: Design.textSecondary
+                font.family: Design.fontFamily
+                role: "caption"
             }
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 visible: text.length > 0
                 text: [SystemInfo.errorMessage, SystemInfo.updateError].filter(Boolean).join("\n")
-                color: Theme.love
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
+                color: Design.danger
+                font.family: Design.fontFamily
+                role: "caption"
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
             }

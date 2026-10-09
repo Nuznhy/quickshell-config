@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isolated monitoring backend, QML controls, history, and persistence checks."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -93,6 +94,7 @@ Item {
 }
 ''')
     shutil.copyfile(ROOT / 'tests/monitoring/tst_controls.qml', base / 'tst_controls.qml')
+    install_design(base)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software',
                XDG_RUNTIME_DIR=str(base / 'runtime'), XDG_STATE_HOME=str(base / 'state'), XDG_CACHE_HOME=str(base / 'cache'))
     subprocess.run(['/usr/lib/qt6/bin/qmltestrunner','-input',str(base)],env=env,check=True)

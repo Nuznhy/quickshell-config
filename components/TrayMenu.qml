@@ -1,16 +1,13 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import "../config"
 
 Menu {
     id: root
 
-    background: Rectangle {
+    background: UI.MenuSurface {
         implicitWidth: 180
-        color: Theme.overlay
-        radius: 10
-        border.color: Theme.iris
-        border.width: 1
     }
 
     delegate: MenuItem {
@@ -21,19 +18,18 @@ Menu {
         enabled: modelData.enabled
         visible: modelData.visible
 
-        contentItem: Text {
+        contentItem: UI.Text {
             text: itemDelegate.text
-            color: itemDelegate.highlighted ? Theme.bg : Theme.text
-            font.pixelSize: 13
+            color: itemDelegate.highlighted ? Design.textOnAccent : Design.text
+            role: "body"
             verticalAlignment: Text.AlignVCenter
-            leftPadding: 10
+            leftPadding: Design.space8
         }
 
-        background: Rectangle {
-            color: itemDelegate.highlighted ? Theme.love : "transparent"
-            radius: 6
-            anchors.fill: parent
-            anchors.margins: 4
+        background: UI.ControlSurface {
+            control: itemDelegate
+            variant: "ghost"
+            selected: itemDelegate.highlighted
         }
     }
 }

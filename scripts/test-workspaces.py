@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test per-window workspace icons, focus targets, and animated lifecycle."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -81,5 +82,6 @@ QtObject {
 ''')
     shutil.copyfile(root / 'tests/workspaces/tst_windows.qml', base / 'tst_windows.qml')
     shutil.copyfile(root / 'tests/workspaces/tst_preview.qml', base / 'tst_preview.qml')
+    install_design(base)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software', XDG_RUNTIME_DIR=str(base / 'runtime'))
     subprocess.run(['/usr/lib/qt6/bin/qmltestrunner','-input',str(base)],env=env,check=True)

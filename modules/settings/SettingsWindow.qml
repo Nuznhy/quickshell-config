@@ -1,4 +1,5 @@
 import QtQuick
+import "../../components/ui" as UI
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -14,7 +15,7 @@ FloatingWindow {
     implicitWidth: 900
     implicitHeight: 720
     minimumSize: Qt.size(640, 480)
-    color: Theme.bg
+    color: Design.background
     visible: ShellSettings.opened && Theme.ready
     onClosed: ShellSettings.close()
     onVisibleChanged: {
@@ -31,27 +32,27 @@ FloatingWindow {
         target: ShellSettings
         function onActivateRequested() { Qt.callLater(root.activate); }
     }
-    ColumnLayout {
+    UI.ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 16
-        RowLayout {
+        anchors.margins: Design.space20
+        spacing: Design.space16
+        UI.RowLayout {
             Layout.fillWidth: true
-            Text {
+            UI.Text {
                 text: "Settings"
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 24
+                color: Design.text
+                font.family: Design.fontFamily
+                role: "page"
                 font.bold: true
                 Layout.fillWidth: true
             }
-            NotificationButton {
+            UI.IconButton {
                 text: "×"
                 Accessible.name: "Close settings"
                 onClicked: ShellSettings.close()
             }
         }
-        RowLayout {
+        UI.RowLayout {
             NotificationButton {
                 text: "Bar layout"
                 accent: pages.currentIndex === 0
@@ -86,13 +87,13 @@ FloatingWindow {
                     id: editor
                     onSettingsRequested: widgetId => { root.widgetSettings = widgetId; }
                 }
-                ScrollView {
+                UI.ScrollView {
                     id: monitoringScroll
                     clip: true
-                    leftPadding: 16
-                    rightPadding: 16
-                    topPadding: 4
-                    bottomPadding: 16
+                    leftPadding: Design.space16
+                    rightPadding: Design.space16
+                    topPadding: Design.space4
+                    bottomPadding: Design.space16
                     contentWidth: availableWidth
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     MonitoringSettings {
@@ -101,13 +102,13 @@ FloatingWindow {
                         onBackRequested: root.widgetSettings = ""
                     }
                 }
-                ScrollView {
+                UI.ScrollView {
                     id: workspaceScroll
                     clip: true
-                    leftPadding: 16
-                    rightPadding: 16
-                    topPadding: 4
-                    bottomPadding: 16
+                    leftPadding: Design.space16
+                    rightPadding: Design.space16
+                    topPadding: Design.space4
+                    bottomPadding: Design.space16
                     contentWidth: availableWidth
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     WorkspaceSettingsPanel {
@@ -116,13 +117,13 @@ FloatingWindow {
                     }
                 }
             }
-            ScrollView {
+            UI.ScrollView {
                 id: appearanceScroll
                 clip: true
-                leftPadding: 16
-                rightPadding: 16
-                topPadding: 4
-                bottomPadding: 16
+                leftPadding: Design.space16
+                rightPadding: Design.space16
+                topPadding: Design.space4
+                bottomPadding: Design.space16
                 contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 ThemePicker {
@@ -130,13 +131,13 @@ FloatingWindow {
                     onDismissed: ShellSettings.close()
                 }
             }
-            ScrollView {
+            UI.ScrollView {
                 id: wallpaperScroll
                 clip: true
-                leftPadding: 16
-                rightPadding: 16
-                topPadding: 4
-                bottomPadding: 16
+                leftPadding: Design.space16
+                rightPadding: Design.space16
+                topPadding: Design.space4
+                bottomPadding: Design.space16
                 contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 WallpaperPage {
@@ -144,25 +145,25 @@ FloatingWindow {
                     onDismissed: ShellSettings.close()
                 }
             }
-            ScrollView {
+            UI.ScrollView {
                 id: lockScroll
                 clip: true
-                leftPadding: 16
-                rightPadding: 16
-                topPadding: 4
-                bottomPadding: 16
+                leftPadding: Design.space16
+                rightPadding: Design.space16
+                topPadding: Design.space4
+                bottomPadding: Design.space16
                 contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 LockScreenSettings { width: lockScroll.availableWidth }
             }
         }
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             visible: text !== ""
             text: [BarLayout.errorMessage, Theme.errorMessage].filter(message => message !== "").join("\n")
-            color: Theme.love
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
+            color: Design.danger
+            font.family: Design.fontFamily
+            role: "body"
             wrapMode: Text.WordWrap
         }
     }

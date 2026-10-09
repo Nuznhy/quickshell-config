@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Controls
 import "../../../config"
 import "../../../components"
@@ -17,13 +18,15 @@ Item {
     Keys.onReturnPressed: toggle()
     BarHoverIndicator {
         anchors.fill: parent
-        hovered: mouse.containsMouse || root.activeFocus
+        hovered: mouse.containsMouse
+        focused: root.activeFocus
     }
-    Text {
+    UI.Text {
+        role: "bar"
         anchors.centerIn: parent
         text: Theme.isDark ? "󰖔" : "󰖙"
-        color: Theme.text
-        font.family: Theme.fontFamily
+        color: Design.text
+        font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }
     MouseArea {

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import "../../../components"
@@ -20,20 +21,21 @@ DropdownWidget {
     Item {
         width: 30
         height: parent.height
-        Text {
+        UI.Text {
+            role: "bar"
             anchors.centerIn: parent
             text: Notifications.doNotDisturb ? "󰂛" : "󰂚"
-            color: Notifications.doNotDisturb ? Theme.iris : Theme.text
-            font.family: Theme.fontFamily
+            color: Notifications.doNotDisturb ? Design.accent : Design.text
+            font.family: Design.fontFamily
             font.pixelSize: Math.round(Theme.fontSize * 1.05)
         }
         Rectangle {
             visible: Notifications.unreadCount > 0
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: 8
-            width: 6; height: 6; radius: 3
-            color: Theme.love
+            anchors.topMargin: Design.space8
+            width: 6; height: 6; radius: Design.radiusSmall
+            color: Design.danger
         }
     }
     popupContent: NotificationCenter {

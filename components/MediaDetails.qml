@@ -1,9 +1,10 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
     property var player: null
     property bool active: false
@@ -11,7 +12,7 @@ ColumnLayout {
     onActiveChanged: { if (!active) timeline.cancelSeek(); }
     readonly property real position: { clockTick; return player?.positionSupported ? Math.max(0, player.position) : 0; }
     readonly property real duration: player?.lengthSupported ? Math.max(0, player.length) : 0
-    spacing: 12
+    spacing: Design.space12
     function timeLabel(seconds) {
         const total = Math.floor(seconds);
         return Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
@@ -22,41 +23,35 @@ ColumnLayout {
         repeat: true
         onTriggered: root.clockTick++
     }
-    component Label: Text {
+    component Label: UI.Text {
         Layout.fillWidth: true
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
         horizontalAlignment: Text.AlignHCenter
     }
     component TransportButton: NotificationButton {
+        font.family: Design.iconFontFamily
+        font.pixelSize: Design.iconLarge
         id: control
         property string actionName
         Layout.fillWidth: true
-        implicitHeight: 36
+        implicitHeight: Design.controlHeight
         Accessible.name: actionName
-        contentItem: Text {
-            text: control.text
-            color: control.accent ? Theme.bg : Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 22
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
+
     }
     Label {
         text: root.player?.identity || "Media"
-        color: Theme.subtle
-        font.pixelSize: 10
+        color: Design.textSecondary
+        role: "caption"
     }
-    Rectangle {
+    UI.Card {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 160
         Layout.preferredHeight: 160
-        radius: 12
-        color: Theme.surface
+
         Image {
             id: cover
             anchors.fill: parent
@@ -67,22 +62,22 @@ ColumnLayout {
             fillMode: Image.PreserveAspectFit
             visible: status === Image.Ready
         }
-        Text {
+        UI.Text {
             anchors.centerIn: parent
             visible: cover.status !== Image.Ready
             text: "󰎆"
-            color: Theme.iris
-            font.family: Theme.fontFamily
-            font.pixelSize: 60
+            color: Design.accent
+            font.family: Design.fontFamily
+            font.pixelSize: Design.artworkPlaceholderSize
         }
     }
-    Label { text: root.player?.trackArtist || "Unknown artist"; color: Theme.subtle }
-    Label { text: root.player?.trackTitle || "Unknown title"; font.pixelSize: 15; font.bold: true }
-    Label { text: root.player?.trackAlbum || ""; visible: text.length > 0; color: Theme.muted; font.pixelSize: 10 }
-    ColumnLayout {
+    Label { text: root.player?.trackArtist || "Unknown artist"; color: Design.textSecondary }
+    Label { text: root.player?.trackTitle || "Unknown title"; role: "section"; font.bold: true }
+    Label { text: root.player?.trackAlbum || ""; visible: text.length > 0; color: Design.textMuted; role: "caption" }
+    UI.ColumnLayout {
         Layout.fillWidth: true
         visible: root.duration > 0 && (root.player?.positionSupported ?? false)
-        spacing: 5
+        spacing: Design.space4
         MediaSeekSlider {
             id: timeline
             Layout.fillWidth: true
@@ -94,15 +89,15 @@ ColumnLayout {
                 if (root.player?.canSeek && root.player.positionSupported) root.player.position = seconds;
             }
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
-            Label { text: root.timeLabel(timeline.pressed ? timeline.value : root.position); horizontalAlignment: Text.AlignLeft; font.pixelSize: 10; color: Theme.subtle }
-            Label { text: root.timeLabel(root.duration); horizontalAlignment: Text.AlignRight; font.pixelSize: 10; color: Theme.subtle }
+            Label { text: root.timeLabel(timeline.pressed ? timeline.value : root.position); horizontalAlignment: Text.AlignLeft; role: "caption"; color: Design.textSecondary }
+            Label { text: root.timeLabel(root.duration); horizontalAlignment: Text.AlignRight; role: "caption"; color: Design.textSecondary }
         }
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 8
+        spacing: Design.space8
         TransportButton {
             text: "󰒮"
             actionName: "Previous track"

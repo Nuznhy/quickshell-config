@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../components/ui" as UI
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
@@ -22,7 +23,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.namespace: "quickshell-notifications"
-    ScrollView {
+    UI.ScrollView {
         id: scroll
         anchors.fill: parent
         contentWidth: availableWidth
@@ -31,7 +32,7 @@ PanelWindow {
         Column {
             id: stack
             width: scroll.availableWidth
-            spacing: 8
+            spacing: Design.space8
             Repeater {
                 model: Notifications.popups
                 NotificationCard {

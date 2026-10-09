@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import "../../../config"
@@ -18,11 +19,12 @@ DropdownWidget {
     Item {
         width: 24
         height: parent.height
-        Text {
+        UI.Text {
+            role: "bar"
             anchors.centerIn: parent
             text: !BluetoothState.enabled ? "󰂲" : BluetoothState.connectedDevices.length > 0 ? "󰂱" : "󰂯"
-            color: BluetoothState.connectedDevices.length > 0 ? Theme.iris : BluetoothState.enabled ? Theme.text : Theme.muted
-            font.family: Theme.fontFamily
+            color: BluetoothState.connectedDevices.length > 0 ? Design.accent : BluetoothState.enabled ? Design.text : Design.textMuted
+            font.family: Design.fontFamily
             font.pixelSize: Math.round(Theme.fontSize * 0.9)
         }
     }

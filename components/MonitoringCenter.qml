@@ -1,4 +1,5 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -12,42 +13,42 @@ FocusScope {
     signal dismissed
     onActiveChanged: { if (active) forceActiveFocus(); }
     Keys.onEscapePressed: dismissed()
-    component Label: Text {
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+    component Label: UI.Text {
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
-    ScrollView {
+    UI.ScrollView {
         id: scroll
         anchors.fill: parent
         contentWidth: availableWidth
         clip: true
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-        ColumnLayout {
+        UI.ColumnLayout {
             id: content
             width: scroll.availableWidth
-            spacing: 12
-            RowLayout {
+            spacing: Design.space12
+            UI.RowLayout {
                 Layout.fillWidth: true
-                Label { text: "PC monitoring"; font.pixelSize: 17; Layout.fillWidth: true }
-                Label { text: "10 min"; color: Theme.subtle }
+                Label { text: "PC monitoring"; role: "section"; Layout.fillWidth: true }
+                Label { text: "10 min"; color: Design.textSecondary }
             }
             Label {
                 Layout.fillWidth: true
                 visible: text !== ""
                 text: SystemStats.launchError || SystemStats.errorMessage
-                color: Theme.love
+                color: Design.danger
             }
-            GridLayout {
+            UI.GridLayout {
                 Layout.fillWidth: true
                 columns: width >= 480 ? 2 : 1
-                columnSpacing: 12
-                rowSpacing: 12
+                columnSpacing: Design.space12
+                rowSpacing: Design.space12
                 Repeater {
                     model: SystemStats.metrics.filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
-                    delegate: Rectangle {
+                    delegate: UI.Card {
                         id: card
                         required property var modelData
                         objectName: "monitoring-graph-" + modelData.id
@@ -55,26 +56,25 @@ FocusScope {
                         Layout.preferredWidth: 1
                         Layout.minimumWidth: 0
                         implicitHeight: 180
-                        color: Theme.surface
-                        radius: 10
-                        ColumnLayout {
+
+                        UI.ColumnLayout {
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 5
+                            anchors.margins: Design.space12
+                            spacing: Design.space4
                             Label {
                                 Layout.fillWidth: true
                                 text: card.modelData.label
                                 maximumLineCount: 2
                                 elide: Text.ElideRight
-                                font.pixelSize: 11
+                                role: "label"
                             }
-                            Label { text: SystemStats.format(card.modelData); font.pixelSize: 18; font.bold: true }
+                            Label { text: SystemStats.format(card.modelData); role: "panel"; font.bold: true }
                             Label {
                                 Layout.fillWidth: true
                                 visible: !card.modelData.available
                                 text: card.modelData.reason || "Sensor unavailable"
-                                color: Theme.subtle
-                                font.pixelSize: 11
+                                color: Design.textSecondary
+                                role: "label"
                             }
                             MonitoringGraph {
                                 Layout.fillWidth: true
@@ -82,22 +82,22 @@ FocusScope {
                                 points: SystemStats.history[card.modelData.id] || []
                                 maximum: SystemStats.maximum(card.modelData)
                             }
-                            RowLayout {
+                            UI.RowLayout {
                                 Layout.fillWidth: true
                                 visible: card.modelData.available || (SystemStats.history[card.modelData.id] || []).some(point => point.value !== null)
-                                Label { text: "−10m"; font.pixelSize: 10; color: Theme.subtle }
+                                Label { text: "−10m"; role: "caption"; color: Design.textSecondary }
                                 Label {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
-                                    font.pixelSize: 10
-                                    color: Theme.subtle
+                                    role: "caption"
+                                    color: Design.textSecondary
                                     text: {
                                         const max = SystemStats.maximum(card.modelData);
                                         const range = card.modelData.unit === "B" ? (max / 1073741824).toFixed(1) + " GiB" : Math.round(max) + " " + card.modelData.unit;
                                         return "0–" + range + (card.modelData.maximum > 0 ? "" : " · peak");
                                     }
                                 }
-                                Label { text: "Now"; font.pixelSize: 10; color: Theme.subtle }
+                                Label { text: "Now"; role: "caption"; color: Design.textSecondary }
                             }
                         }
                     }
@@ -106,7 +106,7 @@ FocusScope {
             Label {
                 visible: !SystemStats.metrics.some(entry => entry.available)
                 text: "Waiting for monitoring data…"
-                color: Theme.subtle
+                color: Design.textSecondary
             }
         }
     }

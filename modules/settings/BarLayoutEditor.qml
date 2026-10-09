@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../components/ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../../config"
@@ -64,10 +65,10 @@ FocusScope {
         }
     }
 
-    ColumnLayout {
+    UI.ColumnLayout {
         anchors.fill: parent
-        spacing: 16
-        RowLayout {
+        spacing: Design.space16
+        UI.RowLayout {
             Layout.fillWidth: true
             Item { Layout.fillWidth: true }
             NotificationButton {
@@ -77,14 +78,14 @@ FocusScope {
                 onClicked: BarLayout.reset()
             }
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 12
+            spacing: Design.space12
             Repeater {
                 id: lanes
                 model: ["start", "center", "end"]
-                delegate: Rectangle {
+                delegate: UI.Card {
                     id: lane
                     required property string modelData
                     required property int index
@@ -94,36 +95,35 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.preferredWidth: 1
-                    color: Theme.surface
-                    radius: 12
-                    border.color: root.destination === section ? Theme.iris : Theme.highlightMed
-                    Text {
-                        x: 12; y: 14
+
+                    border.color: root.destination === section ? Design.accent : Design.border
+                    UI.Text {
+                        x: Design.panelPadding; y: 14
                         text: (Theme.verticalBar ? ["Top", "Middle", "Bottom"] : ["Start", "Center", "End"])[lane.index]
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        color: Design.text
+                        font.family: Design.fontFamily
+                        role: "section"
                         font.bold: true
                     }
                     Flickable {
                         id: scroll
                         objectName: "lane-" + lane.section
                         anchors.fill: parent
-                        anchors.margins: 10
-                        anchors.topMargin: 46
+                        anchors.margins: Design.space8
+                        anchors.topMargin: Design.controlHeight + Design.space16
                         contentWidth: width
                         contentHeight: Math.max(height, cards.count * 58 + 4)
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
                         interactive: !root.dragging
-                        ScrollBar.vertical: ScrollBar {}
-                        Text {
+                        ScrollBar.vertical: UI.ScrollBar {}
+                        UI.Text {
                             visible: cards.count === 0
                             anchors.centerIn: parent
                             text: "Drop widgets here"
-                            color: Theme.subtle
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            color: Design.textSecondary
+                            font.family: Design.fontFamily
+                            role: "label"
                         }
                         Repeater {
                             id: cards
@@ -136,10 +136,10 @@ FocusScope {
                                 x: 2; y: 2 + index * 58
                                 width: scroll.width - 4
                                 height: 50
-                                radius: 8
-                                color: handle.containsMouse ? Theme.highlightMed : Theme.overlay
+                                radius: Design.radiusControl
+                                color: handle.containsMouse ? Design.border : Design.surfaceRaised
                                 opacity: root.dragId === modelData ? 0.3 : BarLayout.isEnabled(modelData) ? 1 : 0.55
-                                border.color: handle.activeFocus ? Theme.iris : "transparent"
+                                border.color: handle.activeFocus ? Design.accent : "transparent"
                                 MouseArea {
                                     id: handle
                                     objectName: "drag-" + card.modelData
@@ -163,23 +163,23 @@ FocusScope {
                                     }
                                     onReleased: root.finishDrag()
                                     onCanceled: root.cancelDrag()
-                                    Text {
+                                    UI.Text {
                                         anchors.fill: parent
-                                        anchors.leftMargin: 10
-                                        anchors.rightMargin: 4
+                                        anchors.leftMargin: Design.space8
+                                        anchors.rightMargin: Design.space4
                                         text: "⠿  " + BarLayout.entry(card.modelData).label
-                                        color: Theme.text
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 12
+                                        color: Design.text
+                                        font.family: Design.fontFamily
+                                        role: "body"
                                         verticalAlignment: Text.AlignVCenter
                                         elide: Text.ElideRight
                                     }
                                 }
-                                NotificationButton {
+                                UI.IconButton {
                                     objectName: "settings-" + card.modelData
                                     visible: !!BarLayout.entry(card.modelData).settings
                                     anchors.right: parent.right
-                                    anchors.rightMargin: 54
+                                    anchors.rightMargin: Design.space8 + Design.switchWidth + Design.space8
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: 28
                                     height: 28
@@ -191,7 +191,7 @@ FocusScope {
                                 ControlSwitch {
                                     objectName: "toggle-" + card.modelData
                                     anchors.right: parent.right
-                                    anchors.rightMargin: 8
+                                    anchors.rightMargin: Design.space8
                                     anchors.verticalCenter: parent.verticalCenter
                                     value: BarLayout.isEnabled(card.modelData)
                                     enabled: BarLayout.ready && !root.dragging
@@ -206,8 +206,8 @@ FocusScope {
                             y: root.insertionIndex * 58
                             width: scroll.width - 4
                             height: 3
-                            radius: 1
-                            color: Theme.iris
+                            radius: Design.radiusSmall
+                            color: Design.accent
                         }
                     }
                 }
@@ -221,14 +221,14 @@ FocusScope {
         y: Math.max(0, Math.min(root.height - height, root.pointer.y + 12))
         width: 180; height: 42
         z: 10
-        radius: 8
-        color: Theme.iris
-        Text {
+        radius: Design.radiusControl
+        color: Design.accent
+        UI.Text {
             anchors.centerIn: parent
             text: root.dragId ? BarLayout.entry(root.dragId).label : ""
-            color: Theme.bg
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
+            color: Design.background
+            font.family: Design.fontFamily
+            role: "body"
         }
     }
 }

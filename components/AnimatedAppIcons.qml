@@ -1,4 +1,5 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Window
 import "../config"
 import "../services"
@@ -14,7 +15,7 @@ Grid {
     property string hoveredAddress: ""
     onVisibleChanged: { if (!visible) hoveredAddress = ""; }
     signal windowClicked
-    spacing: 6
+    spacing: Design.space4
 
     move: Transition {
         NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic }
@@ -123,16 +124,16 @@ Grid {
                 scale: appIcon.iconScale
             }
 
-            Text {
+            UI.Text {
                 id: glyph
                 objectName: "workspace-app-glyph-" + appIcon.windowAddress
                 x: (parent.width - glyphMetrics.tightBoundingRect.width) / 2 - glyphMetrics.tightBoundingRect.x
                 y: (parent.height - glyphMetrics.tightBoundingRect.height) / 2 - glyphMetrics.tightBoundingRect.y - baselineOffset
                 visible: root.nerdFontIcons || systemIcon.status !== Image.Ready
                 text: root.nerdFontIcons ? AppGlyphs.resolve(appIcon.modelData.appId) : "󰏗"
-                font.family: Theme.fontFamily
+                font.family: Design.fontFamily
                 font.pixelSize: appIcon.height
-                color: root.activeWorkspace ? Theme.love : Theme.text
+                color: root.activeWorkspace ? Design.danger : Design.text
                 scale: appIcon.iconScale
             }
             TextMetrics { id: glyphMetrics; font: glyph.font; text: glyph.text }
@@ -145,8 +146,8 @@ Grid {
                 width: 9
                 height: 9
                 radius: width / 2
-                color: Theme.love
-                border.color: Theme.bg
+                color: Design.danger
+                border.color: Design.background
                 border.width: 1
                 visible: appIcon.needsAttention
             }

@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
@@ -18,7 +19,7 @@ DropdownWidget {
     showStem: false
     rightClickEnabled: true
     onRightClicked: SystemStats.openBtop()
-    GridLayout {
+    UI.GridLayout {
         id: cells
         rows: Theme.verticalBar ? -1 : 1
         columns: Theme.verticalBar ? 1 : -1
@@ -40,15 +41,17 @@ DropdownWidget {
                     font.pixelSize: Theme.fontSize
                     text: cell.modelData.unit === "B" ? ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + "/" + ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + " GiB" : cell.modelData.unit === "W" ? "888.8 W" : "100 °C"
                 }
-                Text {
+                UI.Text {
+                    role: "bar"
                     x: Theme.verticalBar ? (parent.width - width) / 2 : 0
                     y: Theme.verticalBar ? 0 : (parent.height - height) / 2 - 3
                     text: SystemStats.icon(cell.modelData)
-                    color: Theme.text
-                    font.family: Theme.fontFamily
+                    color: Design.text
+                    font.family: Design.fontFamily
                     font.pixelSize: Theme.fontSize
                 }
-                Text {
+                UI.Text {
+                    role: "bar"
                     visible: cell.longMode
                     x: Theme.verticalBar ? 0 : 24
                     y: Theme.verticalBar ? Math.max(23, Theme.fontSize + 5) : (parent.height - height) / 2 - 3
@@ -56,7 +59,7 @@ DropdownWidget {
                     text: Theme.verticalBar && cell.modelData.unit === "B" && cell.modelData.available
                         ? (cell.modelData.value / 1073741824).toFixed(1) + "G\n/" + (cell.modelData.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.modelData)
                     horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                    color: cell.modelData.available ? Theme.text : Theme.subtle
+                    color: cell.modelData.available ? Design.text : Design.textSecondary
                     font.family: Theme.barFontFamily
                     font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
                 }
@@ -65,13 +68,13 @@ DropdownWidget {
                     anchors.bottomMargin: Theme.verticalBar ? 0 : 4
                     width: parent.width
                     height: 3
-                    radius: 1.5
-                    color: Theme.highlightMed
+                    radius: Design.radiusSmall
+                    color: Design.border
                     Rectangle {
                         width: parent.width * (cell.modelData.available ? Math.max(0, Math.min(1, cell.modelData.value / SystemStats.maximum(cell.modelData))) : 0)
                         height: parent.height
                         radius: parent.radius
-                        color: Theme.iris
+                        color: Design.accent
                         Behavior on width { NumberAnimation { duration: 180 } }
                     }
                 }
@@ -79,11 +82,12 @@ DropdownWidget {
                 Accessible.description: cell.modelData.available ? SystemStats.format(cell.modelData) : cell.modelData.reason
             }
         }
-        Text {
+        UI.Text {
+            role: "bar"
             visible: root.entries.length === 0
             text: "󰍹"
-            color: Theme.text
-            font.family: Theme.fontFamily
+            color: Design.text
+            font.family: Design.fontFamily
             font.pixelSize: Theme.fontSize
             Layout.preferredHeight: Settings.barHeight
             verticalAlignment: Text.AlignVCenter

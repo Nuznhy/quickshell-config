@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import "../../../config"
 import "../../../services"
 import "../../../components"
@@ -25,15 +26,17 @@ Item {
     Keys.onReturnPressed: DesktopTv.toggle()
     BarHoverIndicator {
         anchors.fill: parent
-        hovered: mouse.containsMouse || root.activeFocus
+        hovered: mouse.containsMouse
+        focused: root.activeFocus
     }
-    Text {
+    UI.Text {
+        role: "bar"
         anchors.centerIn: parent
         text: DesktopTv.mode === "tv" ? "󰟴" : "󰍹"
-        color: DesktopTv.errorMessage ? Theme.love : !DesktopTv.available ? Theme.subtle
-            : DesktopTv.mode === "tv" ? Theme.iris : Theme.text
+        color: DesktopTv.errorMessage ? Design.danger : !DesktopTv.available ? Design.textSecondary
+            : DesktopTv.mode === "tv" ? Design.accent : Design.text
         opacity: DesktopTv.busy ? 0.5 : 1
-        font.family: Theme.fontFamily
+        font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }
     MouseArea {

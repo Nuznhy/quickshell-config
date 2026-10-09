@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
@@ -28,12 +29,13 @@ DropdownWidget {
             currentMenu.close();
     }
 
-    Text {
+    UI.Text {
+        role: "bar"
         width: 30
         height: parent.height
         text: "󰅀"
-        color: root.dropdownOpen ? Theme.iris : Theme.text
-        font.family: Theme.fontFamily
+        color: root.dropdownOpen ? Design.accent : Design.text
+        font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize + 2
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -50,20 +52,21 @@ DropdownWidget {
         focus: root.dropdownOpen
         Keys.onEscapePressed: root.dropdownOpen = false
 
-        Text {
+        UI.Text {
+            role: "bar"
             id: emptyLabel
             anchors.centerIn: parent
             visible: root.itemCount === 0
             text: "No tray applications"
-            font.family: Theme.fontFamily
+            font.family: Design.fontFamily
             font.pixelSize: Math.round(Theme.fontSize * 0.6)
-            color: Theme.subtle
+            color: Design.textSecondary
         }
 
         Grid {
             id: grid
             columns: Math.max(1, Math.min(6, root.itemCount))
-            spacing: 6
+            spacing: Design.space4
 
             Repeater {
                 model: SystemTray.items
@@ -92,8 +95,8 @@ DropdownWidget {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: 6
-                        color: Theme.highlightMed
+                        radius: Design.radiusControl
+                        color: Design.border
                         opacity: trayItem.containsMouse ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 120 } }
                     }
@@ -112,12 +115,13 @@ DropdownWidget {
                         }
                     }
 
-                    Text {
+                    UI.Text {
+                        role: "bar"
                         anchors.centerIn: parent
                         visible: trayIcon.status !== Image.Ready
                         text: "󰏗"
-                        color: Theme.text
-                        font.family: Theme.fontFamily
+                        color: Design.text
+                        font.family: Design.fontFamily
                         font.pixelSize: Math.round(Theme.fontSize * 1.0)
                     }
 

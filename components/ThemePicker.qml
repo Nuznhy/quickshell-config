@@ -1,121 +1,106 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
-    spacing: 16
+    spacing: Design.space16
     focus: true
     signal dismissed
     Keys.onEscapePressed: dismissed()
 
-    component Label: Text {
+    component Label: UI.Text {
         Layout.fillWidth: true
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 13
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         wrapMode: Text.WordWrap
     }
-    component Section: Pane {
+    component Section: UI.Pane {
         id: section
         property string title: ""
         property string description: ""
         default property alias items: sectionBody.data
         Layout.fillWidth: true
-        padding: 16
-        background: Rectangle {
-            color: Theme.surface
-            radius: 14
-            border.color: Theme.highlightMed
+        padding: Design.panelPadding
+        background: UI.Card {
+            border.color: Design.border
         }
-        contentItem: ColumnLayout {
+        contentItem: UI.ColumnLayout {
             id: sectionBody
-            spacing: 14
+            spacing: Design.space12
             Label {
                 visible: section.title !== ""
                 text: section.title
-                font.pixelSize: 16
+                role: "section"
                 font.bold: true
             }
             Label {
                 visible: section.description !== ""
                 text: section.description
-                color: Theme.subtle
-                font.pixelSize: 11
+                color: Design.textSecondary
+                role: "label"
                 Layout.topMargin: -8
             }
         }
     }
-    component Choice: Button {
+    component Choice: UI.Button {
+        highlighted: selected
         id: choice
         property bool selected: false
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         Layout.minimumWidth: 0
-        implicitHeight: 36
-        padding: 8
+        implicitHeight: Design.controlHeight
+        padding: Design.space8
         topInset: 0
         bottomInset: 0
         enabled: Theme.ready
-        hoverEnabled: true
         Accessible.checkable: true
         Accessible.checked: selected
-        HoverHandler { cursorShape: Qt.PointingHandCursor }
-        background: Rectangle {
-            radius: 8
-            color: choice.selected ? Theme.iris : choice.hovered ? Theme.highlightMed : Theme.overlay
-            border.color: choice.activeFocus ? Theme.text : "transparent"
-        }
-        contentItem: Text {
-            text: choice.text
-            color: choice.selected ? Theme.bg : Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-        }
+
     }
 
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
         Label {
             text: "Make it yours"
-            font.pixelSize: 22
+            role: "panel"
             font.bold: true
         }
         Label {
             Layout.fillWidth: false
             text: Theme.errorMessage ? "Could not save" : Theme.ready ? "Changes save automatically" : "Loading…"
-            color: Theme.errorMessage ? Theme.love : Theme.subtle
-            font.pixelSize: 10
+            color: Theme.errorMessage ? Design.danger : Design.textSecondary
+            role: "caption"
         }
     }
 
     Section {
         title: "Colors"
         description: "Choose a palette and a light or dark look."
-        GridLayout {
+        UI.GridLayout {
             Layout.fillWidth: true
             columns: width >= 560 ? 2 : 1
-            columnSpacing: 20
-            rowSpacing: 12
+            columnSpacing: Design.space20
+            rowSpacing: Design.space12
             ThemeDropdown {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 3
                 Layout.minimumWidth: 0
             }
-            ColumnLayout {
+            UI.ColumnLayout {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 2
                 Layout.minimumWidth: 0
-                spacing: 8
-                Label { text: "Color mode"; color: Theme.subtle; font.pixelSize: 11 }
-                RowLayout {
+                spacing: Design.space8
+                Label { text: "Color mode"; color: Design.textSecondary; role: "label" }
+                UI.RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
+                    spacing: Design.space4
                     Choice {
                         text: "Dark"
                         selected: Theme.mode === "dark"
@@ -139,19 +124,19 @@ ColumnLayout {
             objectName: "appearance-bar-preview"
             Layout.fillWidth: true
             implicitHeight: 104
-            radius: 10
-            color: Theme.bg
-            border.color: Theme.highlightMed
+            radius: Design.radiusCard
+            color: Design.background
+            border.color: Design.border
             clip: true
             readonly property bool vertical: Theme.verticalBar
             readonly property real edge: 8 + Theme.barTopMargin * 0.35
             readonly property real ends: 8 + Theme.barSideMargin * 0.35
-            Text {
+            UI.Text {
                 anchors.centerIn: parent
                 text: "Bar preview"
-                color: Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
+                color: Design.textSecondary
+                font.family: Design.fontFamily
+                role: "caption"
             }
             Rectangle {
                 id: sampleBar
@@ -159,30 +144,31 @@ ColumnLayout {
                 y: preview.vertical ? preview.ends : (Theme.barPosition === "top" ? preview.edge : preview.height - height - preview.edge)
                 width: preview.vertical ? 30 : preview.width - preview.ends * 2
                 height: preview.vertical ? preview.height - preview.ends * 2 : 30
-                color: Qt.rgba(Theme.overlay.r, Theme.overlay.g, Theme.overlay.b, Theme.barOpacity)
+                color: Qt.rgba(Design.surfaceRaised.r, Design.surfaceRaised.g, Design.surfaceRaised.b, Theme.barOpacity)
                 radius: Math.min(Theme.barRadius, 15)
-                border.color: Qt.rgba(Theme.iris.r, Theme.iris.g, Theme.iris.b, 0.4)
+                border.color: Qt.rgba(Design.accent.r, Design.accent.g, Design.accent.b, 0.4)
                 Row {
                     visible: !preview.vertical
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: Design.space8
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 5
+                    spacing: Design.space4
                     Repeater {
                         model: 3
                         Rectangle {
                             required property int index
                             width: index === 0 ? 18 : 6
                             height: 6
-                            radius: 3
-                            color: index === 0 ? Theme.iris : Theme.subtle
+                            radius: Design.radiusSmall
+                            color: index === 0 ? Design.accent : Design.textSecondary
                         }
                     }
                 }
-                Text {
+                UI.Text {
+                    role: "bar"
                     anchors.centerIn: parent
                     text: preview.vertical ? "12\n34" : "12:34"
-                    color: Theme.text
+                    color: Design.text
                     font.family: Theme.barFontFamily
                     font.pixelSize: Math.round(Theme.fontSize * 0.6)
                     horizontalAlignment: Text.AlignHCenter
@@ -190,16 +176,16 @@ ColumnLayout {
                 SettingsIcon {
                     visible: !preview.vertical
                     anchors.right: parent.right
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: Design.space8
                     anchors.verticalCenter: parent.verticalCenter
                     iconSize: 14
-                    color: Theme.iris
+                    color: Design.accent
                 }
             }
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: Design.space4
             Repeater {
                 model: ["top", "left", "bottom", "right"]
                 Choice {
@@ -212,12 +198,12 @@ ColumnLayout {
                 }
             }
         }
-        GridLayout {
+        UI.GridLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: 680
             columns: width >= 480 ? 2 : 1
-            columnSpacing: 24
-            rowSpacing: 12
+            columnSpacing: Design.space24
+            rowSpacing: Design.space12
             AppearanceSlider {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
@@ -281,11 +267,11 @@ ColumnLayout {
     Section {
         title: "Displays"
         description: "Choose where the bar appears. At least one display stays enabled."
-        GridLayout {
+        UI.GridLayout {
             Layout.fillWidth: true
             columns: width >= 560 ? 2 : 1
-            columnSpacing: 12
-            rowSpacing: 8
+            columnSpacing: Design.space12
+            rowSpacing: Design.space8
             Repeater {
                 model: Theme.connectedScreens
                 delegate: Rectangle {
@@ -295,11 +281,11 @@ ColumnLayout {
                     Layout.preferredWidth: 1
                     Layout.minimumWidth: 0
                     implicitHeight: 48
-                    color: Theme.overlay
-                    radius: 8
-                    RowLayout {
+                    color: Design.surfaceRaised
+                    radius: Design.radiusControl
+                    UI.RowLayout {
                         anchors.fill: parent
-                        anchors.margins: 10
+                        anchors.margins: Design.panelPadding
                         Label {
                             Layout.minimumWidth: 0
                             text: monitorCard.modelData.name
@@ -325,7 +311,7 @@ ColumnLayout {
     Label {
         visible: text.length > 0
         text: Theme.errorMessage
-        color: Theme.love
-        font.pixelSize: 11
+        color: Design.danger
+        role: "label"
     }
 }

@@ -1,14 +1,15 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
 import "../config"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
-    spacing: 14
+    spacing: Design.space12
     property string selectedMonitor: ""
     property string selectedMode: Theme.mode
     readonly property string wallpaperMode: Theme.separateWallpapers ? selectedMode : "shared"
@@ -43,14 +44,14 @@ ColumnLayout {
             }
         }
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: "Wallpapers"
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 19
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "panel"
             font.bold: true
         }
         NotificationButton {
@@ -61,7 +62,7 @@ ColumnLayout {
                 folderPicker.open();
             }
         }
-        NotificationButton {
+        UI.IconButton {
             text: "×"
             implicitWidth: 32
             visible: Theme.wallpaperFolder.length > 0
@@ -70,7 +71,7 @@ ColumnLayout {
             onClicked: Theme.setWallpaperFolder("")
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: Theme.wallpaperFolder.length > 0
         text: {
@@ -79,20 +80,20 @@ ColumnLayout {
         }
         elide: Text.ElideMiddle
         textFormat: Text.PlainText
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
+        color: Design.textSecondary
+        font.family: Design.fontFamily
+        role: "label"
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 12
-        Text {
+        spacing: Design.space12
+        UI.Text {
             Layout.fillWidth: true
             text: "Different wallpapers for light and dark"
             wrapMode: Text.WordWrap
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "body"
         }
         ControlSwitch {
             objectName: "wallpaper-separate-modes"
@@ -105,11 +106,11 @@ ColumnLayout {
             }
         }
     }
-    RowLayout {
+    UI.RowLayout {
         objectName: "wallpaper-mode-options"
         visible: Theme.separateWallpapers
         Layout.fillWidth: true
-        spacing: 8
+        spacing: Design.space8
         Repeater {
             model: ["light", "dark"]
             delegate: NotificationButton {
@@ -128,24 +129,24 @@ ColumnLayout {
         Layout.fillWidth: true
         wallpaperMode: root.wallpaperMode
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 10
-        Text {
+        spacing: Design.space8
+        UI.Text {
             Layout.fillWidth: true
             text: "Images" + (Theme.wallpaperFolder ? " · " + root.imageCount : "")
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 14
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "section"
             font.bold: true
         }
-        Text {
+        UI.Text {
             text: "Apply to"
-            color: Theme.subtle
-            font.family: Theme.fontFamily
-            font.pixelSize: 11
+            color: Design.textSecondary
+            font.family: Design.fontFamily
+            role: "label"
         }
-        ComboBox {
+        UI.ComboBox {
             id: monitorPicker
             objectName: "wallpaper-target"
             Layout.preferredWidth: Math.min(200, root.width * 0.4)
@@ -155,29 +156,17 @@ ColumnLayout {
             onActivated: index => root.selectedMonitor = Theme.connectedScreens[index].name
             enabled: Theme.connectedScreens.length > 0
             Accessible.name: "Monitor for gallery wallpaper"
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
-            palette.buttonText: Theme.text
-            palette.text: Theme.text
-            palette.window: Theme.surface
-            palette.base: Theme.surface
-            palette.highlight: Theme.overlay
-            palette.highlightedText: Theme.text
-            background: Rectangle {
-                radius: 8
-                color: Theme.surface
-                border.color: monitorPicker.activeFocus ? Theme.iris : Theme.highlightMed
-            }
+
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: !root.imageCount || root.folderLoading
         text: !Theme.wallpaperFolder ? "Choose a folder to browse its images here."
             : root.folderLoading ? "Loading images…" : "No supported images found. The folder may be empty or unavailable."
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.textSecondary
+        font.family: Design.fontFamily
+        role: "body"
         wrapMode: Text.WordWrap
     }
     GridView {
@@ -192,31 +181,24 @@ ColumnLayout {
         boundsBehavior: Flickable.StopAtBounds
         visible: count > 0
         model: folderLoader.item?.files || null
-        ScrollBar.vertical: ScrollBar {}
-        delegate: Button {
+        ScrollBar.vertical: UI.ScrollBar {}
+        delegate: UI.Button {
+        highlighted: Theme.wallpaperFor(root.activeMonitor, root.wallpaperMode) === fileUrl.toString()
             id: tile
             required property url fileUrl
             required property string fileName
             objectName: "wallpaper-image-" + fileName
             width: gallery.cellWidth - 10
             height: gallery.cellHeight - 10
-            padding: 5
+            padding: Design.space4
             topInset: 0
             bottomInset: 0
-            hoverEnabled: true
             enabled: Theme.ready && root.activeMonitor !== "" && thumbnail.status === Image.Ready
             Accessible.name: "Set " + fileName + " on " + root.activeMonitor + " for " + root.wallpaperMode
             onClicked: monitors.choose(root.activeMonitor, fileUrl)
-            HoverHandler { cursorShape: tile.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor }
-            background: Rectangle {
-                radius: 10
-                color: tile.hovered ? Theme.overlay : Theme.surface
-                border.width: 2
-                border.color: tile.activeFocus || Theme.wallpaperFor(root.activeMonitor, root.wallpaperMode) === tile.fileUrl.toString()
-                    ? Theme.iris : tile.hovered ? Theme.highlightHigh : Theme.highlightMed
-            }
+
             contentItem: Column {
-                spacing: 6
+                spacing: Design.space4
                 Image {
                     id: thumbnail
                     width: parent.width
@@ -226,23 +208,23 @@ ColumnLayout {
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                     clip: true
-                    Text {
+                    UI.Text {
                         anchors.centerIn: parent
                         visible: thumbnail.status !== Image.Ready
                         text: thumbnail.status === Image.Error ? "Unavailable" : "Loading…"
-                        color: Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.textSecondary
+                        font.family: Design.fontFamily
+                        role: "caption"
                     }
                 }
-                Text {
+                UI.Text {
                     width: parent.width
                     text: tile.fileName
                     textFormat: Text.PlainText
                     elide: Text.ElideMiddle
-                    color: Theme.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    color: Design.text
+                    font.family: Design.fontFamily
+                    role: "caption"
                 }
             }
         }

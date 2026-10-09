@@ -1,13 +1,14 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import "../config"
 import "../services"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
-    spacing: 14
+    spacing: Design.space12
     readonly property var target: AppTheming.targets.find(t => t.id === "hyprlock") || null
     property string candidate: ""
     property string errorMessage: ""
@@ -68,15 +69,15 @@ ColumnLayout {
         nameFilters: ["Pictures (*.png *.jpg *.jpeg *.webp)"]
         onAccepted: root.chooseImage(selectedFile.toString())
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: "Sync shell theme"
             wrapMode: Text.WordWrap
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 16
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "section"
         }
         ControlSwitch {
             objectName: "lock-theme-sync"
@@ -86,16 +87,16 @@ ColumnLayout {
             onChangeRequested: value => AppTheming.setEnabled("hyprlock", value)
         }
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
         visible: !!AppTheming.errorMessage || root.target?.state === "error" || (!!root.target && !root.target.available)
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: AppTheming.errorMessage || root.target?.message || ""
-            color: root.target?.state === "error" || AppTheming.errorMessage ? Theme.love : Theme.subtle
+            color: root.target?.state === "error" || AppTheming.errorMessage ? Design.danger : Design.textSecondary
             wrapMode: Text.WordWrap
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.family: Design.fontFamily
+            role: "body"
         }
         NotificationButton {
             text: "Retry"
@@ -104,9 +105,9 @@ ColumnLayout {
             onClicked: AppTheming.retry("hyprlock")
         }
     }
-    Text { text: "Background"; color: Theme.text; font.family: Theme.fontFamily; font.pixelSize: 16 }
-    RowLayout {
-        spacing: 8
+    UI.Text { text: "Background"; color: Design.text; font.family: Design.fontFamily; role: "section" }
+    UI.RowLayout {
+        spacing: Design.space8
         NotificationButton {
             objectName: "lock-background-theme"
             text: "Theme color"
@@ -129,43 +130,42 @@ ColumnLayout {
             }
         }
     }
-    RowLayout {
+    UI.RowLayout {
         visible: Theme.lockBackgroundMode === "color"
-        TextField {
+        UI.TextField {
             id: colorInput
             objectName: "lock-color-input"
             text: Theme.lockBackgroundColor
             placeholderText: "#RRGGBB"
             maximumLength: 7
-            color: Theme.text
-            font.family: Theme.fontFamily
             Accessible.name: "Lock-screen background color in hex"
             validator: RegularExpressionValidator { regularExpression: /#[0-9a-fA-F]{6}/ }
+            invalid: length > 0 && !acceptableInput
             onTextEdited: { if (acceptableInput) Theme.setLockBackground("color", text); }
             onEditingFinished: text = Qt.binding(() => Theme.lockBackgroundColor)
-            background: Rectangle { color: Theme.surface; border.color: colorInput.activeFocus ? Theme.iris : Theme.highlightMed; radius: 8 }
+
         }
-        Rectangle { width: 30; height: 30; radius: 6; color: Theme.lockBackgroundColor; border.color: Theme.highlightMed }
+        Rectangle { width: 30; height: 30; radius: Design.radiusControl; color: Theme.lockBackgroundColor; border.color: Design.border }
     }
-    RowLayout {
+    UI.RowLayout {
         visible: Theme.lockBackgroundMode === "image"
         Layout.fillWidth: true
         NotificationButton { text: "Choose picture…"; onClicked: picker.open() }
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: root.pictureName()
             textFormat: Text.PlainText
             elide: Text.ElideMiddle
-            color: Theme.subtle
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
+            color: Design.textSecondary
+            font.family: Design.fontFamily
+            role: "body"
         }
     }
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 210
-        color: Theme.lockBackgroundMode === "color" ? Theme.lockBackgroundColor : Theme.bg
-        radius: 10
+        color: Theme.lockBackgroundMode === "color" ? Theme.lockBackgroundColor : Design.background
+        radius: Design.radiusCard
         clip: true
         Image {
             anchors.fill: parent
@@ -176,28 +176,28 @@ ColumnLayout {
         }
         Rectangle {
             anchors.centerIn: parent
-            width: 260; height: 166; radius: 12
-            color: Theme.bg
+            width: 260; height: 166; radius: Design.radiusCard
+            color: Design.background
             Column {
                 anchors.centerIn: parent
-                spacing: 12
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "12:34"; color: Theme.text; font.pixelSize: 28; font.family: Theme.fontFamily }
+                spacing: Design.space12
+                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "12:34"; color: Design.text; font.pixelSize: 28; font.family: Design.fontFamily }
                 Rectangle {
-                    width: 210; height: 32; radius: 6; color: Theme.surface; border.color: Theme.iris
-                    Text { anchors.centerIn: parent; text: "Password"; color: Theme.text; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                    width: 210; height: 32; radius: Design.radiusControl; color: Design.surface; border.color: Design.accent
+                    UI.Text { anchors.centerIn: parent; text: "Password"; color: Design.text; font.family: Design.fontFamily; role: "label" }
                 }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Keyboard layout: …"; color: Theme.gold; font.family: Theme.fontFamily; font.pixelSize: 11 }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Caps Lock: off"; color: Theme.gold; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Keyboard layout: …"; color: Design.warning; font.family: Design.fontFamily; role: "label" }
+                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Caps Lock: off"; color: Design.warning; font.family: Design.fontFamily; role: "label" }
             }
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: root.errorMessage.length > 0
         text: root.errorMessage
-        color: Theme.love
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.danger
+        font.family: Design.fontFamily
+        role: "body"
         wrapMode: Text.WordWrap
     }
 }

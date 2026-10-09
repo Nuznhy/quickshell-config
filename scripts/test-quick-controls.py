@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise quick controls without changing desktop theme, DND or screen colors."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -100,6 +101,7 @@ Item {
         path.with_suffix('.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject {\n'+body+'\n}\n')
         with (path.parent/'qmldir').open('a') as f:
             f.write(f'singleton {path.name} 1.0 {path.name}.qml\n')
+    install_design(base)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software', XDG_RUNTIME_DIR=str(base/'runtime'))
     subprocess.run(['/usr/lib/qt6/bin/qmltestrunner', '-input', str(base)], env=env, check=True)
 

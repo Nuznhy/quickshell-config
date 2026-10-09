@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
@@ -115,7 +116,7 @@ Grid {
                 height: parent.height
                 x: -12 * (1 - wsSlot.reveal)
                 opacity: wsSlot.reveal
-                color: Theme.bg
+                color: Design.background
 
                 BarHoverIndicator {
                     anchors.fill: parent
@@ -160,12 +161,13 @@ Grid {
                     height: implicitHeight
                     x: Theme.verticalBar ? (parent.width - width) / 2 : 5
                     y: (parent.height - height) / 2
-                    spacing: 4
+                    spacing: Design.space4
 
                     // Workspace number
-                    Text {
+                    UI.Text {
+                        role: "bar"
                         text: wsRect.wsId
-                        color: wsRect.isActive ? Theme.love : Theme.text
+                        color: wsRect.isActive ? Design.danger : Design.text
                         font.pixelSize: Theme.fontSize
                         font.family: Theme.barFontFamily
                         Behavior on color {
@@ -186,24 +188,25 @@ Grid {
                         TextMetrics {
                             id: separatorMetrics
                             text: WorkspaceAppearance.separator
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Math.min(Theme.fontSize, 16)
+                            font.family: Design.fontFamily
+                            font.pixelSize: Math.min(Theme.fontSize, Design.iconSize)
                         }
                         Rectangle {
                             anchors.fill: parent
                             visible: parent.dot
-                            radius: 1.5
-                            color: wsRect.isActive ? Theme.love : Theme.text
+                            radius: Design.radiusSmall
+                            color: wsRect.isActive ? Design.danger : Design.text
                         }
-                        Text {
+                        UI.Text {
+                            role: "bar"
                             id: separatorText
                             anchors.fill: parent
                             visible: !parent.dot
                             text: WorkspaceAppearance.separator
                             textFormat: Text.PlainText
-                            color: wsRect.isActive ? Theme.love : Theme.text
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Math.min(Theme.fontSize, 16)
+                            color: wsRect.isActive ? Design.danger : Design.text
+                            font.family: Design.fontFamily
+                            font.pixelSize: Math.min(Theme.fontSize, Design.iconSize)
                             fontSizeMode: Text.Fit
                             minimumPixelSize: 8
                             horizontalAlignment: Text.AlignHCenter
@@ -211,16 +214,16 @@ Grid {
                         }
                     }
 
-                    Rectangle {
+                    UI.Capsule {
                         id: iconGroup
                         objectName: "workspace-icon-group-" + wsRect.wsId
-                        readonly property int inset: WorkspaceAppearance.capsule ? 6 : 0
+                        readonly property int inset: WorkspaceAppearance.capsule ? Design.space8 : 0
                         width: appIcons.implicitWidth + inset * 2
-                        height: appIcons.implicitHeight + (WorkspaceAppearance.capsule ? 8 : 0)
+                        height: appIcons.implicitHeight + (WorkspaceAppearance.capsule ? Design.space8 : 0)
                         visible: WorkspaceAppearance.showIcons && appIcons.count > 0
-                        color: WorkspaceAppearance.capsule ? Theme.surface : "transparent"
+                        color: WorkspaceAppearance.capsule ? Design.surface : "transparent"
                         border.width: WorkspaceAppearance.capsule ? 1 : 0
-                        border.color: wsRect.isActive ? Theme.iris : Theme.highlightMed
+                        border.color: wsRect.isActive ? Design.accent : Design.border
                         radius: Math.min(width, height) / 2
                         AnimatedAppIcons {
                             id: appIcons

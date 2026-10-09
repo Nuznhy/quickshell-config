@@ -16,7 +16,7 @@ DropdownWidget {
         height: parent.height
         SettingsIcon {
             anchors.centerIn: parent
-            color: root.dropdownOpen || ShellSettings.opened ? Theme.iris : Theme.text
+            color: root.dropdownOpen || ShellSettings.opened ? Design.accent : Design.text
         }
     }
     popupContent: QuickSettings {

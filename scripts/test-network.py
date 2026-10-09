@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the UI with fake networks. No system connection is changed."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -36,5 +37,6 @@ QtObject {
 }
 ''')
     shutil.copyfile(root / 'tests/network/tst_controls.qml', target / 'tst_controls.qml')
+    install_design(target)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', XDG_RUNTIME_DIR=str(target / 'runtime'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'), '-input', str(target)], env=env, check=True)

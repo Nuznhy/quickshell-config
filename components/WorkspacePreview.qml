@@ -1,4 +1,5 @@
 import QtQuick
+import "ui" as UI
 import Quickshell
 import Quickshell.Hyprland
 import "../config"
@@ -71,11 +72,8 @@ Item {
         color: "transparent"
         // Passive preview: never intercept clicks or grab keyboard focus.
         mask: Region {}
-        Rectangle {
+        UI.MenuSurface {
             anchors.fill: parent
-            radius: 12
-            color: Theme.bg
-            border.color: Theme.highlightMed
         }
         Loader {
             id: content

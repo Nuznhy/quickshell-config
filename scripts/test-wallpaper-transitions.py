@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Render wallpaper effects and test loading, rapid changes, and mode controls."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -35,5 +36,6 @@ QtObject {
     (base/'config/Settings.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { property int barHeight: 42 }\n')
     for name,color in [('red','#e03020'),('blue','#2040e0')]:
         (base/(name+'.svg')).write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340"><path fill="{color}" d="M0 0h600v340H0z"/><circle fill="white" cx="300" cy="170" r="50"/></svg>')
+    install_design(base)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(base/'runtime'))
     subprocess.run(['/usr/lib/qt6/bin/qmltestrunner','-input',str(base)],env=env,check=True)

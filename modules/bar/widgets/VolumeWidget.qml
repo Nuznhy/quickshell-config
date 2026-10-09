@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
@@ -36,12 +37,13 @@ Item {
         active: volumeWidget.popupOpen
     }
 
-    Text {
+    UI.Text {
+        role: "bar"
         id: volumeText
         anchors.centerIn: parent
         text: (Audio.volumeMuted ? "󰖁" : "󰕾") + (Theme.verticalBar ? "\n" : " ") + Audio.volumeLevel
         horizontalAlignment: Text.AlignHCenter
-        color: Audio.volumeMuted ? Theme.muted : Theme.text
+        color: Audio.volumeMuted ? Design.textMuted : Design.text
         font.pixelSize: Theme.fontSize
         font.family: Theme.barFontFamily
         font.bold: true
@@ -101,22 +103,19 @@ Item {
             anchors.fill: parent
             opened: volumeWidget.popupOpen
 
-            Rectangle {
+            UI.MenuSurface {
                 anchors.fill: parent
-                color: Theme.bg
-                radius: 12
-                border.color: Theme.highlightMed
 
                 focus: true
                 Keys.onEscapePressed: volumeWidget.popupOpen = false
 
-                ColumnLayout {
+                UI.ColumnLayout {
                     id: content
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: Settings.popupPadding
-                    spacing: 10
+                    spacing: Design.space8
 
                     AudioDeviceDropdown {
                         id: outputDropdown
@@ -163,13 +162,13 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    Text {
+                    UI.Text {
                         Layout.fillWidth: true
                         visible: text.length > 0
                         text: Audio.errorMessage || (Audio.switching ? "Switching output…" : (Audio.switchingMicrophone ? "Switching microphone…" : ""))
-                        color: Audio.errorMessage ? Theme.love : Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Audio.errorMessage ? Design.danger : Design.textSecondary
+                        font.family: Design.fontFamily
+                        role: "caption"
                         wrapMode: Text.WordWrap
                     }
                 }

@@ -1,4 +1,5 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -41,26 +42,26 @@ FocusScope {
             if (!BatteryState.changing && !BatteryState.errorMessage && BatteryState.actionKind === "limit") root.drafts = {};
         }
     }
-    component Label: Text {
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+    component Label: UI.Text {
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
-    ScrollView {
+    UI.ScrollView {
         anchors.fill: parent
         contentWidth: availableWidth
         clip: true
-        ColumnLayout {
+        UI.ColumnLayout {
             id: content
             width: parent.width
-            spacing: 12
-            Label { text: "Battery"; font.pixelSize: 16 }
+            spacing: Design.space12
+            Label { text: "Battery"; role: "section" }
             Label { text: "Power profile"; font.bold: true }
             Flow {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: Design.space4
                 Repeater {
                     model: BatteryState.powerProfiles.profiles
                     NotificationButton {
@@ -78,26 +79,25 @@ FocusScope {
             }
             Label {
                 Layout.fillWidth: true
-                color: Theme.subtle
-                font.pixelSize: 10
+                color: Design.textSecondary
+                role: "caption"
                 text: BatteryState.powerProfiles.available
                     ? "Controls your laptop's performance, power use and cooling. Authorization may be required."
                     : "Power profiles are not exposed by this device's firmware."
             }
             Repeater {
                 model: BatteryState.batteries
-                Rectangle {
+                UI.Card {
                     id: card
                     required property var modelData
                     Layout.fillWidth: true
-                    implicitHeight: details.implicitHeight + 24
-                    color: Theme.surface
-                    radius: 10
-                    ColumnLayout {
+                    implicitHeight: details.implicitHeight + Design.panelPadding * 2
+
+                    UI.ColumnLayout {
                         id: details
-                        x: 12; y: 12
-                        width: parent.width - 24
-                        spacing: 10
+                        x: Design.panelPadding; y: Design.panelPadding
+                        width: parent.width - Design.panelPadding * 2
+                        spacing: Design.space8
                         Label {
                             Layout.fillWidth: true
                             text: card.modelData.model + " · " + card.modelData.id
@@ -106,15 +106,15 @@ FocusScope {
                         Label {
                             Layout.fillWidth: true
                             text: (card.modelData.percent === null ? "Unknown charge" : card.modelData.percent + "%") + " · " + card.modelData.status
-                            color: Theme.iris
-                            font.pixelSize: 16
+                            color: Design.accent
+                            role: "section"
                         }
                         Label {
                             objectName: "battery-estimate-" + card.modelData.id
                             Layout.fillWidth: true
                             text: root.estimateText(card.modelData)
                             visible: text.length > 0
-                            color: Theme.subtle
+                            color: Design.textSecondary
                         }
                         Label {
                             Layout.fillWidth: true
@@ -125,8 +125,8 @@ FocusScope {
                             Layout.fillWidth: true
                             visible: card.modelData.full !== null && card.modelData.design !== null
                             text: Number(card.modelData.full).toFixed(1) + " / " + Number(card.modelData.design).toFixed(1) + " " + card.modelData.unit + " · full / design"
-                            color: Theme.subtle
-                            font.pixelSize: 10
+                            color: Design.textSecondary
+                            role: "caption"
                         }
                         AppearanceSlider {
                             objectName: "charge-limit-" + card.modelData.id
@@ -140,14 +140,14 @@ FocusScope {
                             value: root.drafts[card.modelData.id] ?? card.modelData.limit ?? 100
                             onValueEdited: value => root.edit(card.modelData.id, value)
                         }
-                        RowLayout {
+                        UI.RowLayout {
                             visible: card.modelData.limitSupported
                             Layout.fillWidth: true
                             Label {
                                 Layout.fillWidth: true
                                 text: "Current limit: " + card.modelData.limit + "%"
-                                color: Theme.subtle
-                                font.pixelSize: 10
+                                color: Design.textSecondary
+                                role: "caption"
                             }
                             NotificationButton {
                                 objectName: "apply-limit-" + card.modelData.id
@@ -164,19 +164,19 @@ FocusScope {
                             text: card.modelData.limitSupported
                                 ? "Hardware stops charging at the applied limit. 100% allows a full charge."
                                 : "Charge limiting is not supported by this battery driver."
-                            color: Theme.subtle
-                            font.pixelSize: 10
+                            color: Design.textSecondary
+                            role: "caption"
                         }
                     }
                 }
             }
-            Label { Layout.fillWidth: true; visible: !BatteryState.present; text: "No laptop battery detected."; color: Theme.subtle }
+            Label { Layout.fillWidth: true; visible: !BatteryState.present; text: "No laptop battery detected."; color: Design.textSecondary }
             Label {
                 Layout.fillWidth: true
                 visible: text.length > 0
                 text: BatteryState.changing ? "Applying… Authorize the request if prompted." : BatteryState.errorMessage || BatteryState.message
-                color: BatteryState.errorMessage ? Theme.love : Theme.subtle
-                font.pixelSize: 10
+                color: BatteryState.errorMessage ? Design.danger : Design.textSecondary
+                role: "caption"
             }
         }
     }

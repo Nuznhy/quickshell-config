@@ -1,9 +1,11 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import "../config"
 
-Slider {
+UI.Slider {
     id: root
+    showHandle: enabled
     property real mediaPosition: 0
     property real duration: 0
     property string trackKey: ""
@@ -13,7 +15,6 @@ Slider {
     from: 0
     to: Math.max(1, duration)
     stepSize: 1
-    implicitHeight: 24
     Accessible.name: "Playback position"
     Component.onCompleted: value = mediaPosition
     onMediaPositionChanged: { if (!pressed) value = mediaPosition; }
@@ -33,28 +34,5 @@ Slider {
             else value = mediaPosition;
             dirty = false;
         }
-    }
-    HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
-    background: Rectangle {
-        x: root.leftPadding
-        y: root.topPadding + root.availableHeight / 2 - height / 2
-        width: root.availableWidth
-        height: 4
-        radius: 2
-        color: Theme.overlay
-        Rectangle {
-            width: root.visualPosition * parent.width
-            height: parent.height
-            radius: 2
-            color: root.enabled ? Theme.iris : Theme.muted
-        }
-    }
-    handle: Rectangle {
-        x: root.leftPadding + root.visualPosition * (root.availableWidth - width)
-        y: root.topPadding + root.availableHeight / 2 - height / 2
-        width: 12; height: 12; radius: 6
-        visible: root.enabled
-        color: Theme.text
-        border.color: root.activeFocus ? Theme.iris : Theme.highlightHigh
     }
 }

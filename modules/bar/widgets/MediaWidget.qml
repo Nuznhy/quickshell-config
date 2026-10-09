@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Controls
 import Quickshell
 import QtQuick.Layouts
@@ -62,8 +63,8 @@ DropdownWidget {
             height: 32
             x: Theme.verticalBar ? (parent.width - width) / 2 : 0
             y: Theme.verticalBar ? 0 : (parent.height - height) / 2
-            radius: 5
-            color: Theme.surface
+            radius: Design.radiusControl
+            color: Design.surface
             clip: true
             Image {
                 id: artwork
@@ -75,12 +76,13 @@ DropdownWidget {
                 fillMode: Image.PreserveAspectCrop
                 visible: status === Image.Ready
             }
-            Text {
+            UI.Text {
+                role: "bar"
                 anchors.centerIn: parent
                 visible: artwork.status !== Image.Ready
                 text: "󰎆"
-                color: Theme.iris
-                font.family: Theme.fontFamily
+                color: Design.accent
+                font.family: Design.fontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 1.0)
             }
         }
@@ -90,26 +92,28 @@ DropdownWidget {
             x: Theme.verticalBar ? 0 : cover.width + 8
             y: Theme.verticalBar ? cover.height + 4 : (parent.height - implicitHeight) / 2
             width: parent.width - x
-            spacing: 1
-            Text {
+            spacing: Design.space2
+            UI.Text {
+                role: "bar"
                 width: parent.width
                 text: root.artist
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                color: Theme.subtle
+                color: Design.textSecondary
                 font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.5)
             }
-            Text {
+            UI.Text {
+                role: "bar"
                 width: parent.width
                 text: root.title
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                color: Theme.text
+                color: Design.text
                 font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.6)
                 font.weight: Font.Medium

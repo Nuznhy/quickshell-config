@@ -33,7 +33,7 @@ Item {
         id: revealAnimation
         target: root
         property: "progress"
-        duration: root.opened ? 180 : 130
+        duration: root.opened ? Design.durationNormal : Design.durationFast
         easing.type: root.opened ? Easing.OutCubic : Easing.InCubic
     }
 }

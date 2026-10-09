@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -17,25 +18,25 @@ FocusScope {
     }
     Component.onDestruction: { if (active) Brightness.openPanels--; }
     Keys.onEscapePressed: dismissed()
-    component Label: Text {
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+    component Label: UI.Text {
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
-    ScrollView {
+    UI.ScrollView {
         anchors.fill: parent
         anchors.margins: 0
         contentWidth: availableWidth
         clip: true
-        ColumnLayout {
+        UI.ColumnLayout {
             id: content
             width: parent.width
-            spacing: 12
-            RowLayout {
+            spacing: Design.space12
+            UI.RowLayout {
                 Layout.fillWidth: true
-                Label { text: "Brightness"; font.pixelSize: 16; Layout.fillWidth: true }
+                Label { text: "Brightness"; role: "section"; Layout.fillWidth: true }
                 NotificationButton {
                     text: Brightness.loading ? "Detecting…" : "Refresh"
                     enabled: !Brightness.loading && !Brightness.changing
@@ -44,24 +45,23 @@ FocusScope {
             }
             Repeater {
                 model: Brightness.displays
-                delegate: Rectangle {
+                delegate: UI.Card {
                     id: card
                     required property var modelData
                     Layout.fillWidth: true
-                    implicitHeight: details.implicitHeight + 20
-                    radius: 10
-                    color: Theme.surface
-                    ColumnLayout {
+                    implicitHeight: details.implicitHeight + Design.panelPadding * 2
+
+                    UI.ColumnLayout {
                         id: details
-                        x: 10; y: 10
-                        width: parent.width - 20
-                        spacing: 6
-                        RowLayout {
+                        x: Design.panelPadding; y: Design.panelPadding
+                        width: parent.width - Design.panelPadding * 2
+                        spacing: Design.space4
+                        UI.RowLayout {
                             Layout.fillWidth: true
                             Label { text: card.modelData.name; Layout.fillWidth: true }
-                            Label { text: card.modelData.supported ? Math.round(slider.value) + "%" : "Unavailable"; color: Theme.subtle }
+                            Label { text: card.modelData.supported ? Math.round(slider.value) + "%" : "Unavailable"; color: Design.textSecondary }
                         }
-                        Label { text: card.modelData.connection; color: Theme.subtle; font.pixelSize: 10; Layout.fillWidth: true }
+                        Label { text: card.modelData.connection; color: Design.textSecondary; role: "caption"; Layout.fillWidth: true }
                         AudioSlider {
                             id: slider
                             Layout.fillWidth: true
@@ -76,7 +76,7 @@ FocusScope {
                             Layout.fillWidth: true
                             visible: !card.modelData.supported
                             text: card.modelData.error || "Brightness control unavailable."
-                            color: Theme.muted
+                            color: Design.textMuted
                         }
                     }
                 }
@@ -85,13 +85,13 @@ FocusScope {
                 Layout.fillWidth: true
                 visible: !Brightness.displays.length
                 text: Brightness.loading ? "Finding display controls…" : "No hardware brightness controls found."
-                color: Theme.subtle
+                color: Design.textSecondary
             }
             Label {
                 Layout.fillWidth: true
                 visible: text.length > 0
                 text: Brightness.errorMessage || Brightness.statusError
-                color: Theme.love
+                color: Design.danger
             }
         }
     }

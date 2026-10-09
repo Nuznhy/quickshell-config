@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import "../../../config"
 import "../../../services"
 import "../../../components"
@@ -22,15 +23,17 @@ Item {
     Keys.onReturnPressed: DisplayMode.toggle()
     BarHoverIndicator {
         anchors.fill: parent
-        hovered: mouse.containsMouse || root.activeFocus
+        hovered: mouse.containsMouse
+        focused: root.activeFocus
     }
-    Text {
+    UI.Text {
+        role: "bar"
         anchors.centerIn: parent
         text: DisplayMode.mirrored ? "󰍺" : "󰍹"
-        color: DisplayMode.errorMessage ? Theme.love : !DisplayMode.available ? Theme.subtle
-            : DisplayMode.mirrored ? Theme.iris : Theme.text
+        color: DisplayMode.errorMessage ? Design.danger : !DisplayMode.available ? Design.textSecondary
+            : DisplayMode.mirrored ? Design.accent : Design.text
         opacity: DisplayMode.busy ? 0.5 : 1
-        font.family: Theme.fontFamily
+        font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }
     MouseArea {

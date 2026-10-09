@@ -53,7 +53,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.bg
+        color: Design.background
         radius: Theme.barRadius
         opacity: Theme.barOpacity
         // Fade the completed bar once, including overlapping backgrounds and text.

@@ -1,10 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 
-RowLayout {
+UI.RowLayout {
     id: root
     required property int level
     required property bool muted
@@ -12,7 +13,7 @@ RowLayout {
     property int maximum: microphone ? 100 : 150
     signal volumeRequested(real value)
     signal muteRequested
-    spacing: 8
+    spacing: Design.space8
 
     AudioSlider {
         id: slider
@@ -24,38 +25,31 @@ RowLayout {
         onVolumeRequested: value => root.volumeRequested(value)
     }
 
-    Text {
+    UI.Text {
         Layout.preferredWidth: 42
         text: root.enabled ? Math.round(slider.value) + "%" : "—"
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+        color: Design.textSecondary
+        font.family: Design.fontFamily
+        role: "body"
         horizontalAlignment: Text.AlignRight
     }
 
-    Button {
+    UI.Button {
+        highlighted: root.muted
         id: muteButton
         Layout.preferredWidth: 34
         Layout.preferredHeight: 32
-        hoverEnabled: true
         Accessible.name: (root.muted ? "Unmute " : "Mute ") + (root.microphone ? "microphone" : "output")
         onClicked: root.muteRequested()
-        HoverHandler {
-            enabled: muteButton.enabled
-            cursorShape: Qt.PointingHandCursor
-        }
-        contentItem: Text {
+
+        contentItem: UI.Text {
             text: root.microphone ? (root.muted ? "󰍭" : "󰍬") : (root.muted ? "󰖁" : "󰕾")
-            font.family: Theme.fontFamily
-            font.pixelSize: 21
-            color: root.muted ? Theme.bg : (root.enabled ? Theme.text : Theme.muted)
+            font.family: Design.fontFamily
+            font.pixelSize: Design.iconLarge
+            color: root.muted ? Design.textOnAccent : (root.enabled ? Design.text : Design.textMuted)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
-        background: Rectangle {
-            radius: 7
-            color: root.muted ? Theme.iris : (muteButton.hovered ? Theme.highlightMed : Theme.surface)
-            border.color: muteButton.activeFocus ? Theme.text : (root.muted ? Theme.iris : Theme.highlightMed)
-        }
+
     }
 }

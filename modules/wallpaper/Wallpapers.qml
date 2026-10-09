@@ -19,7 +19,7 @@ Variants {
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         WlrLayershell.namespace: "quickshell-wallpaper"
         mask: Region {}
-        color: Theme.bg
+        color: Design.background
         WallpaperTransition {
             id: transition
             anchors.fill: parent
@@ -27,7 +27,7 @@ Variants {
             mode: Theme.mode
             ready: Theme.ready
             style: Theme.wallpaperTransitionStyle
-            backgroundColor: Theme.bg
+            backgroundColor: Design.background
             pixelSize: Qt.size(
                 Math.ceil((wallpaperWindow.modelData.width || 1920) * (wallpaperWindow.modelData.devicePixelRatio || 1)),
                 Math.ceil((wallpaperWindow.modelData.height || 1080) * (wallpaperWindow.modelData.devicePixelRatio || 1)))

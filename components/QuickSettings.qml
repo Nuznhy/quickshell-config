@@ -1,56 +1,57 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 import "../services"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
     property bool active: false
     signal settingsRequested
-    spacing: 12
+    spacing: Design.space12
     onActiveChanged: { QuickControls.openPanels += active ? 1 : -1; }
     Component.onDestruction: { if (active) QuickControls.openPanels--; }
 
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 12
-        ColumnLayout {
+        spacing: Design.space12
+        UI.ColumnLayout {
             Layout.fillWidth: true
-            spacing: 3
-            Text {
+            spacing: Design.space2
+            UI.Text {
                 Layout.fillWidth: true
                 text: QuickControls.hostname || "System"
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 14
+                color: Design.text
+                font.family: Design.fontFamily
+                role: "section"
                 font.bold: true
             }
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 text: [QuickControls.osName, QuickControls.uptime].filter(Boolean).join(" · ")
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                color: Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
+                color: Design.textSecondary
+                font.family: Design.fontFamily
+                role: "caption"
             }
         }
-        NotificationButton {
+        UI.IconButton {
             objectName: "full-settings"
             text: "󰒓"
             implicitWidth: 34
-            implicitHeight: 34
+            implicitHeight: Design.controlHeight
             Accessible.name: "Open full settings"
             onClicked: root.settingsRequested()
         }
     }
 
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        spacing: 8
+        spacing: Design.space8
         QuickToggle {
             objectName: "night-shift-toggle"
             iconGlyph: "󰖔"
@@ -88,15 +89,15 @@ ColumnLayout {
         value: QuickControls.temperature
         onValueEdited: value => QuickControls.setStrength((6500 - value) / 50)
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: text.length > 0
         text: [QuickControls.errorMessage, QuickControls.settingsError].filter(Boolean).join("\n")
         textFormat: Text.PlainText
         wrapMode: Text.WordWrap
-        color: Theme.subtle
-        font.family: Theme.fontFamily
-        font.pixelSize: 10
+        color: Design.textSecondary
+        font.family: Design.fontFamily
+        role: "caption"
     }
 
     SystemInfoPanel {
@@ -104,46 +105,8 @@ ColumnLayout {
         active: root.active
     }
 
-    component QuickToggle: Button {
-        id: control
-        property string iconGlyph
-        // A separate glyph property keeps Qt's Button icon group untouched.
+    component QuickToggle: UI.ToggleTile {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
-        implicitHeight: 65
-        padding: 8
-        hoverEnabled: true
-        opacity: enabled ? 1 : 0.45
-        Accessible.name: text
-        Accessible.role: Accessible.CheckBox
-        Accessible.checkable: true
-        Accessible.checked: checked
-        HoverHandler { cursorShape: Qt.PointingHandCursor }
-        background: Rectangle {
-            radius: 9
-            color: control.checked ? Theme.iris : control.hovered ? Theme.highlightMed : Theme.overlay
-            border.color: control.activeFocus ? Theme.text : "transparent"
-            Behavior on color { ColorAnimation { duration: 120 } }
-        }
-        contentItem: ColumnLayout {
-            spacing: 5
-            Text {
-                Layout.fillWidth: true
-                text: control.iconGlyph
-                horizontalAlignment: Text.AlignHCenter
-                color: control.checked ? Theme.bg : Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 20
-            }
-            Text {
-                Layout.fillWidth: true
-                text: control.text
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                color: control.checked ? Theme.bg : Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
-            }
-        }
     }
 }

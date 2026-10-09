@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Shapes
 import "../config"
@@ -49,25 +50,11 @@ FocusScope {
         }
     }
 
-    component CalendarButton: Button {
+    component CalendarButton: UI.Button {
         id: control
-        hoverEnabled: true
-        font.family: Theme.fontFamily
-        font.pixelSize: 13
-        HoverHandler { cursorShape: Qt.PointingHandCursor }
-        background: Rectangle {
-            radius: 9
-            color: control.hovered ? Theme.highlightMed : Theme.surface
-            border.color: control.activeFocus ? Theme.iris : "transparent"
-            Behavior on color { ColorAnimation { duration: 120 } }
-        }
-        contentItem: Text {
-            text: control.text
-            font: control.font
-            color: Theme.text
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
+        font.family: Design.fontFamily
+        font.pixelSize: Design.bodySize
+
     }
 
     component MonthButton: CalendarButton {
@@ -89,7 +76,7 @@ FocusScope {
                 height: 12
                 rotation: navigation.direction < 0 ? 0 : 180
                 ShapePath {
-                    strokeColor: Theme.text
+                    strokeColor: Design.text
                     strokeWidth: 1.5
                     fillColor: "transparent"
                     capStyle: ShapePath.RoundCap
@@ -107,23 +94,23 @@ FocusScope {
         x: 0
         y: 0
         width: parent.width
-        spacing: 14
+        spacing: Design.space12
 
         Item {
             width: parent.width
             height: 32
-            Text {
+            UI.Text {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDate(root.displayedMonth, "MMMM yyyy")
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 15
+                color: Design.text
+                font.family: Design.fontFamily
+                role: "section"
                 font.bold: true
             }
             Row {
                 anchors.right: parent.right
-                spacing: 6
+                spacing: Design.space4
                 MonthButton { direction: -1 }
                 MonthButton { direction: 1 }
             }
@@ -131,20 +118,20 @@ FocusScope {
 
         Column {
             width: parent.width
-            spacing: 6
+            spacing: Design.space4
             Row {
                 width: parent.width
                 Repeater {
                     model: 7
-                    Text {
+                    UI.Text {
                         required property int index
                         width: content.width / 7
                         height: 22
                         text: Qt.locale().standaloneDayName((root.firstWeekday + index) % 7, Locale.ShortFormat)
                         horizontalAlignment: Text.AlignHCenter
-                        color: Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: Design.textSecondary
+                        font.family: Design.fontFamily
+                        role: "caption"
                     }
                 }
             }
@@ -152,7 +139,9 @@ FocusScope {
                 columns: 7
                 Repeater {
                     model: 42
-                    Button {
+                    UI.Button {
+                        highlighted: isToday || selected
+                        variant: "ghost"
                         id: dayCell
                         required property int index
                         readonly property date cellDate: root.dateAt(index)
@@ -161,7 +150,6 @@ FocusScope {
                         readonly property bool inMonth: cellDate.getMonth() === root.displayedMonth.getMonth()
                         width: content.width / 7
                         height: 38
-                        hoverEnabled: true
                         Accessible.name: Qt.formatDate(cellDate, "dddd, d MMMM yyyy")
                         Accessible.description: isToday ? "Today" : ""
                         onClicked: {
@@ -169,24 +157,14 @@ FocusScope {
                             if (!inMonth)
                                 root.displayedMonth = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
                         }
-                        HoverHandler { cursorShape: Qt.PointingHandCursor }
-                        background: Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 3
-                            radius: 9
-                            color: dayCell.isToday ? Theme.iris
-                                : dayCell.hovered || dayCell.selected ? Theme.highlightMed : "transparent"
-                            border.color: dayCell.activeFocus || (dayCell.selected && !dayCell.isToday)
-                                ? Theme.iris : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                        }
-                        contentItem: Text {
+
+                        contentItem: UI.Text {
                             text: dayCell.cellDate.getDate()
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
-                            color: dayCell.isToday ? Theme.bg : dayCell.inMonth ? Theme.text : Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 13
+                            color: dayCell.highlighted ? Design.textOnAccent : dayCell.inMonth ? Design.text : Design.textMuted
+                            font.family: Design.fontFamily
+                            role: "body"
                             font.bold: dayCell.isToday || dayCell.selected
                         }
                     }
@@ -194,21 +172,21 @@ FocusScope {
             }
         }
 
-        Rectangle { width: parent.width; height: 1; color: Theme.highlightMed }
+        UI.Divider { width: parent.width; height: implicitHeight }
 
         Item {
             width: parent.width
             height: 30
-            Text {
+            UI.Text {
                 anchors.left: parent.left
                 anchors.right: todayButton.left
-                anchors.rightMargin: 8
+                anchors.rightMargin: Design.space8
                 anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDate(root.selectedDate, "ddd, d MMM yyyy")
                 elide: Text.ElideRight
-                color: Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 11
+                color: Design.textSecondary
+                font.family: Design.fontFamily
+                role: "label"
             }
             CalendarButton {
                 id: todayButton

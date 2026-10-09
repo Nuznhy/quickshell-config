@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test the layout model, drag/drop UI, and section geometry in isolation."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -102,6 +103,7 @@ QtObject {
     for name in ['first image.svg', 'SECOND.SVG', 'subfolder/nested.svg']:
         shutil.copyfile(target / 'test wallpaper.svg', target / 'gallery' / name)
     (target / 'gallery/readme.txt').write_text('Not a wallpaper')
+    install_design(target)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', XDG_RUNTIME_DIR=str(target / 'runtime'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'), '-input', str(target)], env=env, check=True)
 

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -30,47 +31,46 @@ FocusScope {
             if (BluetoothState.prompt && promptBox.needsInput && root.active) pin.forceActiveFocus();
         }
     }
-    component Label: Text {
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+    component Label: UI.Text {
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         elide: Text.ElideRight
     }
     component SectionTitle: Label {
-        color: Theme.subtle
-        font.pixelSize: 10
+        color: Design.textSecondary
+        role: "caption"
         font.letterSpacing: 1
-        Layout.topMargin: 6
+        Layout.topMargin: Design.space4
     }
-    component Card: Rectangle {
+    component Card: UI.Card {
         Layout.fillWidth: true
-        radius: 10
-        color: Theme.surface
+
     }
     component DeviceCard: Card {
         id: deviceCard
         required property var device
-        implicitHeight: cardContent.implicitHeight + 20
-        ColumnLayout {
+        implicitHeight: cardContent.implicitHeight + Design.panelPadding * 2
+        UI.ColumnLayout {
             id: cardContent
-            x: 10; y: 10
-            width: parent.width - 20
-            spacing: 8
-            RowLayout {
+            x: Design.panelPadding; y: Design.panelPadding
+            width: parent.width - Design.panelPadding * 2
+            spacing: Design.space8
+            UI.RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: Design.space8
                 Label {
                     text: deviceCard.device.icon.indexOf("audio") >= 0 || deviceCard.device.icon.indexOf("head") >= 0 ? "󰋋"
                         : deviceCard.device.icon.indexOf("keyboard") >= 0 ? "󰌌"
                         : deviceCard.device.icon.indexOf("mouse") >= 0 ? "󰍽"
                         : deviceCard.device.icon.indexOf("phone") >= 0 ? "󰏲" : "󰂯"
-                    color: deviceCard.device.connected ? Theme.iris : Theme.subtle
-                    font.pixelSize: 22
+                    color: deviceCard.device.connected ? Design.accent : Design.textSecondary
+                    role: "panel"
                 }
-                ColumnLayout {
+                UI.ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: Design.space4
                     Label {
                         Layout.fillWidth: true
                         text: deviceCard.device.name || deviceCard.device.address
@@ -80,8 +80,8 @@ FocusScope {
                         Layout.fillWidth: true
                         text: BluetoothState.status(deviceCard.device)
                             + (deviceCard.device.batteryAvailable ? " · " + Math.round(deviceCard.device.battery * 100) + "% battery" : "")
-                        color: deviceCard.device.connected ? Theme.foam : Theme.subtle
-                        font.pixelSize: 10
+                        color: deviceCard.device.connected ? Design.success : Design.textSecondary
+                        role: "caption"
                     }
                 }
                 NotificationButton {
@@ -96,36 +96,36 @@ FocusScope {
                     }
                 }
             }
-            RowLayout {
+            UI.RowLayout {
                 Layout.fillWidth: true
                 Label {
                     Layout.fillWidth: true
                     text: deviceCard.device.address
-                    color: Theme.muted
-                    font.pixelSize: 10
+                    color: Design.textMuted
+                    role: "caption"
                 }
                 NotificationButton {
                     objectName: "forgetDevice"
                     visible: deviceCard.device.paired || deviceCard.device.bonded
                     enabled: !BluetoothState.busy
                     text: "Forget"
-                    implicitHeight: 24
+                    implicitHeight: Design.compactHeight
                     onClicked: root.forgetTarget = deviceCard.device
                 }
             }
         }
     }
-    ColumnLayout {
+    UI.ColumnLayout {
         id: content
         x: 0; y: 0
         width: parent.width
-        spacing: 12
-        RowLayout {
+        spacing: Design.space12
+        UI.RowLayout {
             Layout.fillWidth: true
             Label {
                 Layout.fillWidth: true
                 text: "Bluetooth"
-                font.pixelSize: 18
+                role: "panel"
                 font.bold: true
             }
             NotificationButton {
@@ -137,12 +137,12 @@ FocusScope {
         }
         Card {
             implicitHeight: 58
-            RowLayout {
+            UI.RowLayout {
                 anchors.fill: parent
-                anchors.margins: 10
-                ColumnLayout {
+                anchors.margins: Design.panelPadding
+                UI.ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: Design.space4
                     Label {
                         Layout.fillWidth: true
                         text: BluetoothState.adapter?.name || "Bluetooth"
@@ -151,8 +151,8 @@ FocusScope {
                         Layout.fillWidth: true
                         text: !BluetoothState.available ? "No Bluetooth adapter" : BluetoothState.blocked ? "Blocked by hardware"
                             : BluetoothState.enabled ? "On" : "Off"
-                        color: Theme.subtle
-                        font.pixelSize: 10
+                        color: Design.textSecondary
+                        role: "caption"
                     }
                 }
                 ControlSwitch {
@@ -166,9 +166,9 @@ FocusScope {
         }
         Card {
             implicitHeight: 46
-            RowLayout {
+            UI.RowLayout {
                 anchors.fill: parent
-                anchors.margins: 10
+                anchors.margins: Design.panelPadding
                 Label { Layout.fillWidth: true; text: "Allow discovery" }
                 ControlSwitch {
                     objectName: "allowDiscovery"
@@ -182,7 +182,7 @@ FocusScope {
         Flow {
             Layout.fillWidth: true
             visible: BluetoothState.adapters.length > 1
-            spacing: 6
+            spacing: Design.space4
             Repeater {
                 model: BluetoothState.adapters
                 NotificationButton {
@@ -195,17 +195,17 @@ FocusScope {
                 }
             }
         }
-        RowLayout {
+        UI.RowLayout {
             Layout.fillWidth: true
             visible: BluetoothState.errorMessage.length > 0 || BluetoothState.busy
             Label {
                 id: message
                 Layout.fillWidth: true
                 text: BluetoothState.errorMessage || BluetoothState.busyLabel
-                color: BluetoothState.errorMessage ? Theme.love : Theme.iris
+                color: BluetoothState.errorMessage ? Design.danger : Design.accent
                 wrapMode: Text.Wrap
                 maximumLineCount: 3
-                font.pixelSize: 11
+                role: "label"
             }
             NotificationButton {
                 visible: BluetoothState.busy && BluetoothState.operation === "pair" && !BluetoothState.prompt
@@ -217,13 +217,13 @@ FocusScope {
             id: promptBox
             readonly property bool needsInput: BluetoothState.prompt?.kind === "pin" || BluetoothState.prompt?.kind === "passkey"
             visible: BluetoothState.prompt !== null
-            implicitHeight: promptContent.implicitHeight + 20
-            border.color: Theme.iris
-            ColumnLayout {
+            implicitHeight: promptContent.implicitHeight + Design.panelPadding * 2
+            border.color: Design.accent
+            UI.ColumnLayout {
                 id: promptContent
-                x: 10; y: 10
-                width: parent.width - 20
-                spacing: 8
+                x: Design.panelPadding; y: Design.panelPadding
+                width: parent.width - Design.panelPadding * 2
+                spacing: Design.space8
                 Label {
                     Layout.fillWidth: true
                     text: BluetoothState.deviceName
@@ -235,39 +235,29 @@ FocusScope {
                         : BluetoothState.prompt?.kind === "display" ? "Type this code on your device, then press Enter"
                         : BluetoothState.prompt?.kind === "confirm" ? "Does this code match your device?" : "Allow this device to connect?"
                     wrapMode: Text.Wrap
-                    color: Theme.subtle
-                    font.pixelSize: 11
+                    color: Design.textSecondary
+                    role: "label"
                 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     visible: !!BluetoothState.prompt?.code
                     text: BluetoothState.prompt?.code || ""
-                    color: Theme.iris
-                    font.pixelSize: 26
+                    color: Design.accent
+                    role: "page"
                     font.letterSpacing: 4
                 }
-                TextField {
+                UI.TextField {
                     id: pin
                     objectName: "pairingInput"
                     Layout.fillWidth: true
                     visible: promptBox.needsInput
-                    implicitHeight: 34
                     maximumLength: BluetoothState.prompt?.kind === "passkey" ? 6 : 16
                     placeholderText: "PIN / passkey"
-                    color: Theme.text
-                    placeholderTextColor: Theme.muted
-                    selectionColor: Theme.iris
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 13
                     Accessible.name: "Bluetooth pairing code"
-                    background: Rectangle {
-                        color: Theme.overlay
-                        radius: 8
-                        border.color: pin.activeFocus ? Theme.iris : Theme.highlightMed
-                    }
+
                     onAccepted: BluetoothState.respond(true, text)
                 }
-                RowLayout {
+                UI.RowLayout {
                     Layout.alignment: Qt.AlignRight
                     NotificationButton {
                         text: "Cancel"
@@ -287,18 +277,18 @@ FocusScope {
         Card {
             id: forgetBox
             visible: root.forgetTarget !== null
-            implicitHeight: forgetContent.implicitHeight + 20
-            ColumnLayout {
+            implicitHeight: forgetContent.implicitHeight + Design.panelPadding * 2
+            UI.ColumnLayout {
                 id: forgetContent
-                x: 10; y: 10
-                width: parent.width - 20
-                spacing: 8
+                x: Design.panelPadding; y: Design.panelPadding
+                width: parent.width - Design.panelPadding * 2
+                spacing: Design.space8
                 Label {
                     Layout.fillWidth: true
                     text: "Forget " + (root.forgetTarget?.name || "device") + "?"
                     wrapMode: Text.Wrap
                 }
-                RowLayout {
+                UI.RowLayout {
                     Layout.alignment: Qt.AlignRight
                     NotificationButton { text: "Cancel"; onClicked: root.forgetTarget = null }
                     NotificationButton {
@@ -313,7 +303,7 @@ FocusScope {
                 }
             }
         }
-        ScrollView {
+        UI.ScrollView {
             id: scroll
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(deviceList.implicitHeight, Math.max(100, root.maximumHeight - 218
@@ -323,22 +313,22 @@ FocusScope {
             contentWidth: availableWidth
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            ColumnLayout {
+            UI.ColumnLayout {
                 id: deviceList
                 width: scroll.availableWidth
-                spacing: 10
+                spacing: Design.space8
                 Label {
                     Layout.fillWidth: true
                     visible: !BluetoothState.enabled
                     text: BluetoothState.available ? "Turn on Bluetooth to connect devices" : "Connect a Bluetooth adapter to get started"
-                    color: Theme.muted
+                    color: Design.textMuted
                     wrapMode: Text.Wrap
                 }
                 SectionTitle { visible: BluetoothState.enabled; text: "CONNECTED" }
                 Label {
                     visible: BluetoothState.enabled && BluetoothState.connectedDevices.length === 0
                     text: "No connected devices"
-                    color: Theme.muted
+                    color: Design.textMuted
                 }
                 Repeater {
                     model: BluetoothState.enabled ? BluetoothState.connectedDevices : []
@@ -348,7 +338,7 @@ FocusScope {
                 Label {
                     visible: BluetoothState.enabled && BluetoothState.savedDevices.length === 0
                     text: "No paired devices"
-                    color: Theme.muted
+                    color: Design.textMuted
                 }
                 Repeater {
                     model: BluetoothState.enabled ? BluetoothState.savedDevices : []
@@ -359,7 +349,7 @@ FocusScope {
                     Layout.fillWidth: true
                     visible: BluetoothState.enabled && BluetoothState.nearbyDevices.length === 0
                     text: BluetoothState.scanning ? "Searching for devices…" : "Scan to find devices in pairing mode"
-                    color: Theme.muted
+                    color: Design.textMuted
                     wrapMode: Text.Wrap
                 }
                 Repeater {

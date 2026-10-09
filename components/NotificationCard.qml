@@ -1,18 +1,18 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Layouts
 import Quickshell.Widgets
 import "../config"
 import "../services"
 
-Rectangle {
+UI.Card {
     id: root
     required property var entry
     property bool toast: false
-    implicitHeight: content.implicitHeight + 24
-    radius: 12
-    color: Theme.surface
-    border.color: entry.urgency === 2 ? Theme.love : Theme.highlightMed
+    implicitHeight: content.implicitHeight + Design.panelPadding * 2
+
+    border.color: entry.urgency === 2 ? Design.danger : Design.border
     signal dismissed
 
     HoverHandler {
@@ -25,68 +25,68 @@ Rectangle {
         const watcher = Notifications.watchers[entry.key];
         if (toast && watcher) watcher.hovered = false;
     }
-    ColumnLayout {
+    UI.ColumnLayout {
         id: content
-        x: 12; y: 12
-        width: parent.width - 24
-        spacing: 8
-        RowLayout {
+        x: Design.panelPadding; y: Design.panelPadding
+        width: parent.width - Design.panelPadding * 2
+        spacing: Design.space8
+        UI.RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: Design.space8
             IconImage {
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 24
                 source: Notifications.iconSource(root.entry.icon, root.entry.desktopEntry, root.entry.appName)
             }
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 text: root.entry.appName
                 textFormat: Text.PlainText
-                color: Theme.subtle
-                font.family: Theme.fontFamily
-                font.pixelSize: 11
+                color: Design.textSecondary
+                font.family: Design.fontFamily
+                role: "label"
                 elide: Text.ElideRight
             }
             Rectangle {
                 visible: !root.entry.read && !root.toast
-                implicitWidth: 6; implicitHeight: 6; radius: 3
-                color: Theme.iris
+                implicitWidth: 6; implicitHeight: 6; radius: Design.radiusSmall
+                color: Design.accent
             }
-            Text {
+            UI.Text {
                 text: Qt.formatDateTime(new Date(root.entry.timestamp), "d MMM, hh:mm")
-                color: Theme.muted
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
+                color: Design.textMuted
+                font.family: Design.fontFamily
+                role: "caption"
             }
-            NotificationButton {
+            UI.IconButton {
                 text: "×"
                 implicitWidth: 24
-                implicitHeight: 24
+                implicitHeight: Design.compactHeight
                 leftPadding: 0; rightPadding: 0
                 Accessible.name: root.toast ? "Dismiss notification" : "Remove from history"
                 onClicked: root.dismissed()
             }
         }
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: root.entry.summary
             textFormat: Text.PlainText
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "body"
             font.bold: true
             wrapMode: Text.Wrap
             maximumLineCount: root.toast ? 2 : 8
             elide: Text.ElideRight
         }
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             visible: text.length > 0
             text: root.entry.body
             textFormat: Text.PlainText
-            color: Theme.subtle
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
+            color: Design.textSecondary
+            font.family: Design.fontFamily
+            role: "body"
             wrapMode: Text.Wrap
             maximumLineCount: root.toast ? 4 : 100
             elide: Text.ElideRight
@@ -94,7 +94,7 @@ Rectangle {
         Flow {
             Layout.fillWidth: true
             visible: root.entry.actions.length > 0
-            spacing: 6
+            spacing: Design.space4
             Repeater {
                 model: root.entry.actions
                 NotificationButton {

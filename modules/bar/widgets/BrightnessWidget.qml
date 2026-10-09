@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import "../../../config"
@@ -16,11 +17,12 @@ DropdownWidget {
     Item {
         width: 24
         height: parent.height
-        Text {
+        UI.Text {
+            role: "bar"
             anchors.centerIn: parent
             text: "󰃠"
-            color: Theme.text
-            font.family: Theme.fontFamily
+            color: Design.text
+            font.family: Design.fontFamily
             font.pixelSize: Math.round(Theme.fontSize * 0.9)
         }
     }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isolated generators, recovery, controls, and real QML worker tests."""
 from pathlib import Path
+from design_test_support import install_design
 import struct
 import zlib
 import json
@@ -79,6 +80,7 @@ QtObject {
         + png_chunk(b'IHDR', struct.pack('!2I5B', 1, 1, 8, 2, 0, 0, 0))
         + png_chunk(b'IDAT', zlib.compress(b'\x00\x40\x60\x80')) + png_chunk(b'IEND', b''))
     (app / 'broken.png').write_text('not an image')
+    install_design(app)
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software', XDG_RUNTIME_DIR=str(app / 'runtime'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'), '-input', str(app)], env=env, check=True)
 

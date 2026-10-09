@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -23,135 +24,84 @@ Item {
             expanded = false;
     }
 
-    ColumnLayout {
+    UI.ColumnLayout {
         id: selectorLayout
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: 6
-        Text {
+        spacing: Design.space4
+        UI.Text {
             text: root.title
-            color: Theme.subtle
-            font.family: Theme.fontFamily
-            font.pixelSize: 11
+            color: Design.textSecondary
+            font.family: Design.fontFamily
+            role: "label"
             font.letterSpacing: 1
         }
 
-        Button {
+        UI.Button {
+            highlighted: root.expanded
             id: trigger
             Layout.fillWidth: true
-            implicitHeight: 40
-            leftPadding: 12
-            rightPadding: 10
+            implicitHeight: Design.selectorHeight
+            leftPadding: Design.space12
+            rightPadding: Design.space8
             enabled: root.devices.length > 0 && !root.busy
-            hoverEnabled: true
             Accessible.name: root.title + ": " + root.selectedDescription
             onClicked: root.expanded = !root.expanded
             Keys.onEscapePressed: root.expanded = false
-            HoverHandler {
-                enabled: trigger.enabled
-                cursorShape: Qt.PointingHandCursor
-            }
-            contentItem: RowLayout {
-                spacing: 8
-                Text {
+
+            contentItem: UI.RowLayout {
+                spacing: Design.space8
+                UI.Text {
                     Layout.fillWidth: true
                     text: root.busy ? "Switching…" : root.selectedDescription
                     elide: Text.ElideRight
-                    color: root.expanded ? Theme.bg : (trigger.enabled ? Theme.text : Theme.subtle)
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    color: root.expanded ? Design.textOnAccent : (trigger.enabled ? Design.text : Design.textSecondary)
+                    font.family: Design.fontFamily
+                    role: "body"
                 }
-                Text {
+                UI.Text {
                     text: root.expanded ? "▴" : "▾"
-                    color: root.expanded ? Theme.bg : Theme.subtle
-                    font.pixelSize: 15
+                    color: root.expanded ? Design.textOnAccent : Design.textSecondary
+                    role: "section"
                 }
             }
-            background: Rectangle {
-                radius: 8
-                color: root.expanded ? Theme.iris : (trigger.hovered ? Theme.overlay : Theme.surface)
-                border.color: root.expanded || trigger.activeFocus ? Theme.iris : Theme.highlightMed
-            }
+
         }
     }
 
-    Popup {
+    UI.Popup {
         id: devicePopup
         // Draw in the window overlay, outside the selector's layout.
-        popupType: Popup.Item
         parent: trigger
         x: 0
         property real slideOffset: 0
         y: trigger.height + 4 + slideOffset
         width: trigger.width
         height: Math.min(choices.implicitHeight, 170) + padding * 2
-        padding: 6
-        margins: 8
         visible: root.expanded
-        focus: true
-        enter: Transition {
-            ParallelAnimation {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: 140
-                    easing.type: Easing.OutCubic
-                }
-                NumberAnimation {
-                    target: devicePopup
-                    property: "slideOffset"
-                    from: -8
-                    to: 0
-                    duration: 160
-                    easing.type: Easing.OutCubic
-                }
-            }
-        }
-        exit: Transition {
-            ParallelAnimation {
-                NumberAnimation {
-                    property: "opacity"
-                    to: 0
-                    duration: 110
-                    easing.type: Easing.InCubic
-                }
-                NumberAnimation {
-                    target: devicePopup
-                    property: "slideOffset"
-                    to: -8
-                    duration: 110
-                    easing.type: Easing.InCubic
-                }
-            }
-        }
+
         // Let the trigger handle its own toggle instead of closing on press
         // and immediately reopening when its clicked signal arrives.
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
         onClosed: root.expanded = false
-        background: Rectangle {
-            color: Theme.bg
-            radius: 10
-            border.color: Theme.iris
-        }
-        contentItem: ScrollView {
+
+        contentItem: UI.ScrollView {
             contentWidth: availableWidth
             clip: true
-            ColumnLayout {
+            UI.ColumnLayout {
                 id: choices
                 width: parent.width
-                spacing: 4
+                spacing: Design.space4
                 Repeater {
                     model: devicePopup.visible ? root.devices : []
-                    Button {
+                    UI.Button {
+                        highlighted: selectedDevice
                         id: choice
                         required property var modelData
                         readonly property bool selectedDevice: modelData.name === root.selectedName
                         Layout.fillWidth: true
-                        implicitHeight: Math.max(38, label.implicitHeight + 16)
-                        leftPadding: 12
-                        rightPadding: 10
-                        hoverEnabled: true
+                        implicitHeight: Math.max(Design.selectorHeight, label.implicitHeight + Design.space16)
+                        leftPadding: Design.space12
+                        rightPadding: Design.space8
                         onClicked: {
                             const name = modelData.name;
                             root.expanded = false;
@@ -159,25 +109,18 @@ Item {
                                 root.selected(name);
                             trigger.forceActiveFocus();
                         }
-                        HoverHandler {
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        contentItem: Text {
+
+                        contentItem: UI.Text {
                             id: label
                             text: (choice.selectedDevice ? "✓  " : "") + choice.modelData.description
-                            color: choice.selectedDevice ? Theme.bg : Theme.text
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            color: choice.selectedDevice ? Design.textOnAccent : Design.text
+                            font.family: Design.fontFamily
+                            role: "body"
                             font.bold: choice.selectedDevice
                             wrapMode: Text.WordWrap
                             verticalAlignment: Text.AlignVCenter
                         }
-                        background: Rectangle {
-                            radius: 6
-                            color: choice.selectedDevice ? Theme.iris : (choice.hovered ? Theme.overlay : Theme.surface)
-                            border.width: choice.activeFocus ? 2 : 1
-                            border.color: choice.activeFocus ? Theme.text : (choice.selectedDevice ? Theme.iris : Theme.highlightMed)
-                        }
+
                     }
                 }
             }

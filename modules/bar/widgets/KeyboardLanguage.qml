@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import "../../../config"
 import "../../../services"
 import "../../../components"
@@ -13,12 +14,13 @@ Item {
         hovered: keyboardMouse.containsMouse
     }
 
-    Text {
+    UI.Text {
+        role: "bar"
         id: verticalLabel
         anchors.centerIn: parent
         visible: Theme.verticalBar
         text: "󰌌\n" + Keyboard.layoutName.toUpperCase()
-        color: Theme.text
+        color: Design.text
         font.family: Theme.barFontFamily
         font.pixelSize: Theme.fontSize
         font.bold: true
@@ -29,17 +31,18 @@ Item {
         visible: !Theme.verticalBar
         anchors.centerIn: parent
         height: parent.height
-        spacing: 8
+        spacing: Design.space8
 
-        Text {
+        UI.Text {
+            role: "bar"
             id: keyboardIcon
             readonly property rect inkBounds: iconMetrics.tightBoundingRect(text)
             width: Theme.fontSize + 12
             y: (content.height - inkBounds.height) / 2 - inkBounds.y - baselineOffset
             text: "󰌌"
-            color: Theme.text
+            color: Design.text
             font.pixelSize: Theme.fontSize + 8
-            font.family: Theme.fontFamily
+            font.family: Design.fontFamily
             horizontalAlignment: Text.AlignHCenter
             FontMetrics {
                 id: iconMetrics
@@ -47,14 +50,15 @@ Item {
             }
         }
 
-        Text {
+        UI.Text {
+            role: "bar"
             id: languageLabel
             readonly property rect inkBounds: labelMetrics.tightBoundingRect(text)
             width: implicitWidth
             // Center the visible letters, excluding the font's ascender/descender padding.
             y: (content.height - inkBounds.height) / 2 - inkBounds.y - baselineOffset
             text: Keyboard.layoutName.toUpperCase()
-            color: Theme.text
+            color: Design.text
             font.pixelSize: Theme.fontSize
             font.family: Theme.barFontFamily
             font.bold: true

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Live, click-through preview smoke test; never switches or focuses workspaces."""
 from pathlib import Path
+from design_test_support import install_design
 import os
 import shutil
 import subprocess
@@ -32,6 +33,7 @@ QtObject {
 }
 ''')
     (base/'config/Settings.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { property int popupPadding: 12; property int workspaceInterval: 500 }\n')
+    install_design(base)
     (base/'shell.qml').write_text('''import QtQuick
 import Quickshell
 import Quickshell.Wayland

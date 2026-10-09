@@ -1,14 +1,15 @@
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
 import "../services"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
     property bool active: false
     signal backRequested
-    spacing: 12
+    spacing: Design.space12
     onActiveChanged: SystemStats.panels += active ? 1 : -1
     Component.onDestruction: { if (active) SystemStats.panels--; }
     readonly property var entries: {
@@ -19,41 +20,40 @@ ColumnLayout {
         });
         return entries;
     }
-    component Label: Text {
-        color: Theme.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 12
+    component Label: UI.Text {
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "body"
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        NotificationButton { text: "‹"; Layout.preferredWidth: 32; Accessible.name: "Back to bar layout"; onClicked: root.backRequested() }
-        Label { text: "PC monitoring"; font.pixelSize: 18; Layout.fillWidth: true }
+        UI.IconButton { text: "‹"; Layout.preferredWidth: 32; Accessible.name: "Back to bar layout"; onClicked: root.backRequested() }
+        Label { text: "PC monitoring"; role: "panel"; Layout.fillWidth: true }
     }
     Repeater {
         model: root.entries
-        delegate: Rectangle {
+        delegate: UI.Card {
             id: card
             required property var modelData
             Layout.fillWidth: true
-            implicitHeight: row.implicitHeight + 24
-            color: Theme.surface
-            radius: 10
-            RowLayout {
+            implicitHeight: row.implicitHeight + Design.panelPadding * 2
+
+            UI.RowLayout {
                 id: row
-                x: 12; y: 12
-                width: parent.width - 24
-                spacing: 12
-                ColumnLayout {
+                x: Design.panelPadding; y: Design.panelPadding
+                width: parent.width - Design.panelPadding * 2
+                spacing: Design.space12
+                UI.ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: Design.space4
                     Label { text: card.modelData.label; Layout.fillWidth: true }
                     Label {
                         Layout.fillWidth: true
                         text: card.modelData.available ? SystemStats.format(card.modelData) + (card.modelData.source ? " · " + card.modelData.source : "") : card.modelData.reason
-                        color: Theme.subtle
-                        font.pixelSize: 11
+                        color: Design.textSecondary
+                        role: "label"
                     }
                 }
                 Repeater {
@@ -72,7 +72,7 @@ ColumnLayout {
         }
     }
     Label { text: "CPU temperature sensor"; Layout.fillWidth: true }
-    ComboBox {
+    UI.ComboBox {
         id: sensorChoice
         objectName: "monitoring-temperature-source"
         Layout.fillWidth: true
@@ -88,17 +88,11 @@ ColumnLayout {
         currentIndex: Math.max(0, model.findIndex(source => source.id === Monitoring.cpuSensor))
         onActivated: Monitoring.setCpuSensor(currentValue)
         wheelEnabled: false
-        palette.button: Theme.overlay
-        palette.buttonText: Theme.text
-        palette.base: Theme.surface
-        palette.text: Theme.text
-        palette.highlight: Theme.iris
-        palette.highlightedText: Theme.bg
     }
     Label {
         Layout.fillWidth: true
         visible: text !== ""
         text: Monitoring.errorMessage || SystemStats.errorMessage
-        color: Theme.love
+        color: Design.danger
     }
 }

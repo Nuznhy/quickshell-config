@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import "../../../config"
 import "../../../services"
 import "../../../components"
@@ -15,12 +16,13 @@ Item {
         hovered: hover.hovered
     }
 
-    Text {
+    UI.Text {
+        role: "bar"
         id: label
         anchors.centerIn: parent
         text: Theme.verticalBar ? "󰍛\n" + SystemStats.cpuUsage + "%" : SystemStats.cpuUsage + "% 󰍛"
         horizontalAlignment: Text.AlignHCenter
-        color: Theme.text
+        color: Design.text
         font.pixelSize: Theme.fontSize
         font.family: Theme.barFontFamily
         font.bold: true

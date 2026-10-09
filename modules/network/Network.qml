@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import "../../config"
@@ -18,12 +19,12 @@ DropdownWidget {
     Item {
         width: 30
         height: parent.height
-        Text {
+        UI.Text {
             anchors.centerIn: parent
             text: NetworkState.icon
-            color: NetworkState.vpnActive ? Theme.iris : NetworkState.connected ? Theme.text : Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: 22
+            color: NetworkState.vpnActive ? Design.accent : NetworkState.connected ? Design.text : Design.textMuted
+            font.family: Design.fontFamily
+            role: "panel"
         }
     }
     popupContent: NetworkCenter {

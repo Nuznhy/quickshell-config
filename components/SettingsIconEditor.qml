@@ -1,13 +1,14 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import "../config"
 
-ColumnLayout {
+UI.ColumnLayout {
     id: root
-    spacing: 10
+    spacing: Design.space8
     property string candidate: ""
     property string errorMessage: ""
     property bool customEditing: false
@@ -30,14 +31,14 @@ ColumnLayout {
         Theme.setSettingsIcon(presets[index].icon, "");
         glyph.text = Theme.settingsIcon;
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             text: "Settings button icon"
-            color: Theme.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
+            color: Design.text
+            font.family: Design.fontFamily
+            role: "body"
         }
         NotificationButton {
             objectName: "settings-icon-reset"
@@ -48,10 +49,11 @@ ColumnLayout {
     }
     Flow {
         Layout.fillWidth: true
-        spacing: 8
+        spacing: Design.space8
         Repeater {
             model: root.presets.concat([{name: "Custom", icon: "󰏫"}])
-            delegate: Button {
+            delegate: UI.Button {
+        highlighted: selected
                 id: option
                 required property var modelData
                 required property int index
@@ -61,11 +63,10 @@ ColumnLayout {
                 objectName: "settings-icon-option-" + modelData.name.toLowerCase()
                 width: 72
                 height: 64
-                padding: 6
+                padding: Design.space4
                 topInset: 0
                 bottomInset: 0
                 enabled: Theme.ready
-                hoverEnabled: true
                 Accessible.name: modelData.name + " settings icon"
                 Accessible.checkable: true
                 Accessible.checked: selected
@@ -75,16 +76,9 @@ ColumnLayout {
                         glyph.forceActiveFocus();
                     } else root.selectPreset(index);
                 }
-                HoverHandler { cursorShape: Qt.PointingHandCursor }
-                background: Rectangle {
-                    radius: 10
-                    color: option.selected || option.hovered ? Theme.overlay : Theme.surface
-                    border.width: option.selected ? 2 : 1
-                    border.color: option.selected || option.activeFocus ? Theme.iris : Theme.highlightMed
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                }
+
                 contentItem: Column {
-                    spacing: 4
+                    spacing: Design.space4
                     Item {
                         width: parent.width
                         height: 32
@@ -93,55 +87,43 @@ ColumnLayout {
                             glyph: option.modelData.icon
                             source: ""
                             iconSize: 24
-                            color: option.selected ? Theme.iris : Theme.text
+                            color: option.foreground
                         }
                     }
-                    Text {
+                    UI.Text {
                         width: parent.width
                         text: option.modelData.name
-                        color: option.selected ? Theme.text : Theme.subtle
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        color: option.foreground
+                        font.family: Design.fontFamily
+                        role: "caption"
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }
         }
     }
-    RowLayout {
+    UI.RowLayout {
         Layout.fillWidth: true
         visible: root.customSelected
-        spacing: 10
-        Rectangle {
-            implicitWidth: 40; implicitHeight: 40
-            color: Theme.surface; radius: 10
-            SettingsIcon { anchors.centerIn: parent; iconSize: 24; color: Theme.iris }
+        spacing: Design.space8
+        UI.Card {
+            implicitWidth: 40; implicitHeight: Design.selectorHeight
+            SettingsIcon { anchors.centerIn: parent; iconSize: 24; color: Design.accent }
         }
-        TextField {
+        UI.TextField {
             id: glyph
             objectName: "settings-icon-glyph"
             Layout.fillWidth: true
             Layout.minimumWidth: 50
-            implicitHeight: 36
             text: Theme.settingsIcon
             placeholderText: "Paste an icon glyph"
             maximumLength: 16
-            color: Theme.text
-            placeholderTextColor: Theme.subtle
-            selectionColor: Theme.iris
-            selectedTextColor: Theme.bg
-            font.family: Theme.fontFamily
-            font.pixelSize: 18
             enabled: Theme.ready
             Accessible.name: "Settings icon glyph"
             onEditingFinished: {
                 if (root.customSelected && text !== Theme.settingsIcon) Theme.setSettingsIcon(text, "");
             }
-            background: Rectangle {
-                radius: 8
-                color: Theme.surface
-                border.color: glyph.activeFocus ? Theme.iris : Theme.highlightMed
-            }
+
         }
         NotificationButton {
             text: "Image…"
@@ -149,14 +131,14 @@ ColumnLayout {
             onClicked: picker.open()
         }
     }
-    Text {
+    UI.Text {
         Layout.fillWidth: true
         visible: root.customSelected && root.errorMessage !== ""
         text: root.errorMessage
         wrapMode: Text.WordWrap
-        color: Theme.love
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
+        color: Design.danger
+        font.family: Design.fontFamily
+        role: "label"
     }
     FileDialog {
         id: picker

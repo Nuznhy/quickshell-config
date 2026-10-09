@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import QtQuick.Layouts
 import Quickshell
 import "../../../config"
@@ -20,23 +21,25 @@ DropdownWidget {
     focusGrabEnabled: !BatteryState.changing
     popupDismissEnabled: !BatteryState.changing
     onVisibleChanged: { if (!visible) dropdownOpen = false; }
-    GridLayout {
+    UI.GridLayout {
         id: cells
         anchors.verticalCenter: parent.verticalCenter
         columns: Theme.verticalBar ? 1 : 2
-        rowSpacing: 6
-        columnSpacing: 6
-        Text {
+        rowSpacing: Design.space4
+        columnSpacing: Design.space4
+        UI.Text {
+            role: "bar"
             Layout.alignment: Qt.AlignCenter
             text: BatteryState.icon
-            color: BatteryState.percent >= 0 && BatteryState.percent <= 15 && !BatteryState.charging ? Theme.love : Theme.text
-            font.family: Theme.fontFamily
+            color: BatteryState.percent >= 0 && BatteryState.percent <= 15 && !BatteryState.charging ? Design.danger : Design.text
+            font.family: Design.fontFamily
             font.pixelSize: Theme.fontSize
         }
-        Text {
+        UI.Text {
+            role: "bar"
             Layout.alignment: Qt.AlignCenter
             text: BatteryState.percent < 0 ? "—" : Math.round(BatteryState.percent) + "%"
-            color: Theme.text
+            color: Design.text
             font.family: Theme.barFontFamily
             font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
         }

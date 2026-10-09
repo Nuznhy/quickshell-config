@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ui" as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../config"
@@ -25,19 +26,19 @@ FocusScope {
         target: Notifications
         function onOpenRequested() { if (root.active) root.dismissed(); }
     }
-    ColumnLayout {
+    UI.ColumnLayout {
         id: content
         x: 0; y: 0
         width: parent.width
-        spacing: 12
-        RowLayout {
+        spacing: Design.space12
+        UI.RowLayout {
             Layout.fillWidth: true
-            Text {
+            UI.Text {
                 Layout.fillWidth: true
                 text: "Notifications"
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 18
+                color: Design.text
+                font.family: Design.fontFamily
+                role: "panel"
                 font.bold: true
             }
             NotificationButton {
@@ -46,69 +47,41 @@ FocusScope {
                 onClicked: Notifications.clearHistory()
             }
         }
-        Rectangle {
+        UI.Card {
             Layout.fillWidth: true
             implicitHeight: 46
-            radius: 10
-            color: Theme.surface
-            RowLayout {
+
+            UI.RowLayout {
                 anchors.fill: parent
-                anchors.margins: 10
-                Text {
+                anchors.margins: Design.panelPadding
+                UI.Text {
                     Layout.fillWidth: true
                     text: "Do Not Disturb"
-                    color: Theme.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 13
+                    color: Design.text
+                    font.family: Design.fontFamily
+                    role: "body"
                 }
-                Switch {
-                    id: dndSwitch
-                    implicitWidth: 40
-                    implicitHeight: 26
-                    padding: 0
-                    hoverEnabled: true
+                ControlSwitch {
                     Accessible.name: "Do Not Disturb"
-                    checked: Notifications.doNotDisturb
-                    onToggled: Notifications.setDoNotDisturb(checked)
-                    HoverHandler { cursorShape: Qt.PointingHandCursor }
-                    background: null
-                    contentItem: Item {}
-                    indicator: Rectangle {
-                        width: 40
-                        height: 22
-                        y: (dndSwitch.height - height) / 2
-                        radius: 11
-                        color: dndSwitch.checked ? Theme.iris : Theme.highlightMed
-                        border.color: dndSwitch.activeFocus || dndSwitch.hovered ? Theme.iris : "transparent"
-                        Behavior on color { ColorAnimation { duration: 140 } }
-                        Rectangle {
-                            x: dndSwitch.checked ? 21 : 3
-                            y: 3
-                            width: 16
-                            height: 16
-                            radius: 8
-                            color: dndSwitch.checked ? Theme.bg : Theme.text
-                            Behavior on x { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
-                            Behavior on color { ColorAnimation { duration: 140 } }
-                        }
-                    }
+                    value: Notifications.doNotDisturb
+                    onChangeRequested: value => Notifications.setDoNotDisturb(value)
                 }
             }
         }
-        Text {
+        UI.Text {
             Layout.fillWidth: true
             visible: Notifications.errorMessage.length > 0
             text: Notifications.errorMessage
-            color: Theme.love
-            font.family: Theme.fontFamily
-            font.pixelSize: 11
+            color: Design.danger
+            font.family: Design.fontFamily
+            role: "label"
             wrapMode: Text.Wrap
         }
-        Text {
+        UI.Text {
             text: "RECENT  ·  " + Notifications.history.length
-            color: Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: 10
+            color: Design.textMuted
+            font.family: Design.fontFamily
+            role: "caption"
             font.letterSpacing: 1
         }
         Item {
@@ -117,23 +90,23 @@ FocusScope {
             visible: Notifications.history.length === 0
             Column {
                 anchors.centerIn: parent
-                spacing: 10
-                Text {
+                spacing: Design.space8
+                UI.Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "󰂚"
-                    color: Theme.iris
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 32
+                    color: Design.accent
+                    font.family: Design.fontFamily
+                    font.pixelSize: Design.iconDisplay
                 }
-                Text {
+                UI.Text {
                     text: "You're all caught up"
-                    color: Theme.subtle
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    color: Design.textSecondary
+                    font.family: Design.fontFamily
+                    role: "body"
                 }
             }
         }
-        ScrollView {
+        UI.ScrollView {
             id: scroll
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(cards.implicitHeight, Math.max(120, root.maximumHeight - 172))
@@ -144,7 +117,7 @@ FocusScope {
             Column {
                 id: cards
                 width: scroll.availableWidth
-                spacing: 8
+                spacing: Design.space8
                 Repeater {
                     model: Notifications.history
                     NotificationCard {

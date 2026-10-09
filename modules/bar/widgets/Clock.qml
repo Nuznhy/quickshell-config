@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "../../../components/ui" as UI
 import Quickshell
 import "../../../config"
 import "../../../services"
@@ -14,13 +15,14 @@ DropdownWidget {
     sizeToContent: true
     showStem: false
 
-    Text {
+    UI.Text {
+        role: "bar"
         id: clockLabel
         height: parent.height
         text: Theme.verticalBar ? Qt.formatDateTime(Time.date, "hh\nmm") : Time.time
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: root.dropdownOpen ? Theme.iris : Theme.text
+        color: root.dropdownOpen ? Design.accent : Design.text
         font.pixelSize: Theme.fontSize - 2
         font.family: Theme.barFontFamily
         font.bold: true

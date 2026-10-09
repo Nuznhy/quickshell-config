@@ -6,8 +6,8 @@ Canvas {
     property var points: []
     property real maximum: 100
     property real endTime: points.length ? points[points.length - 1].time : Date.now()
-    property color lineColor: Theme.iris
-    property color gridColor: Theme.highlightMed
+    property color lineColor: Design.accent
+    property color gridColor: Design.border
     onPointsChanged: requestPaint()
     onMaximumChanged: requestPaint()
     onEndTimeChanged: requestPaint()

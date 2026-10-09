@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../components/ui" as UI
 import Quickshell
 import Quickshell.Io
 import "../../../config"
@@ -12,13 +13,14 @@ DropdownWidget {
     showStem: false
     stemAlignment: "right"
     property string errorMessage: ""
-    Text {
+    UI.Text {
+        role: "bar"
         width: 30
         height: Settings.barHeight
         text: ""
-        font.family: Theme.fontFamily
+        font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
-        color: Theme.love
+        color: Design.danger
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }
