@@ -21,6 +21,18 @@ Rectangle {
             mouseClick(findChild(panel, "app-theme-ghostty"));
             compare(AppTheming.lastEnabled, false);
         }
+        function test_hyprland_override_toggle() {
+            AppTheming.targets = [{id: "hyprland", name: "Hyprland appearance", available: true, enabled: false, state: "off", message: ""},
+                {id: "hyprland-colors", name: "Hyprland colors", available: true, enabled: false, state: "off", message: ""}];
+            wait(20);
+            mouseClick(findChild(panel, "app-theme-hyprland"));
+            compare(AppTheming.lastTarget, "hyprland");
+            verify(!AppTheming.targets.find(t => t.id === "hyprland-colors").enabled);
+            compare(AppTheming.lastEnabled, true);
+            wait(20);
+            mouseClick(findChild(panel, "app-theme-hyprland"));
+            compare(AppTheming.lastEnabled, false);
+        }
         function test_missing_dependency_cannot_enable() {
             const toggle = findChild(panel, "app-theme-discord");
             compare(toggle.enabled, false);

@@ -28,6 +28,10 @@ QtObject {
     property string mode: "dark"
     property var palette: ({bg: "#191724", surface: "#1f1d2e", overlay: "#26233a", muted: "#6e6a86", subtle: "#908caa", text: "#e0def4", love: "#eb6f92", gold: "#f6c177", rose: "#ebbcba", pine: "#31748f", foam: "#9ccfd8", iris: "#c4a7e7", highlightLow: "#21202e", highlightMed: "#403d52", highlightHigh: "#524f67"})
     property int barRadius: 0
+    property real barOpacity: 1
+    property int barTopMargin: 0
+    property int barSideMargin: 0
+    property bool verticalBar: false
     property string lockBackgroundMode: "theme"
     property string lockBackgroundColor: "#191724"
     property string lockBackgroundImage: ""
@@ -88,11 +92,13 @@ QtObject {
     shutil.copyfile(ROOT / 'services/AppTheming.qml', app / 'services/AppTheming.qml')
     for name in ['app-themes.py', 'app_theme_formats.py', 'hyprlock-status.py']:
         shutil.copyfile(ROOT / 'scripts' / name, app / 'scripts' / name)
-    for name in ['ghostty', 'pkill', 'hyprlock']:
+    for name in ['ghostty', 'pkill', 'hyprlock', 'hyprctl']:
         path = app / 'bin' / name
         path.write_text('#!/bin/sh\nsleep 0.15\nexit 0\n')
         path.chmod(0o700)
     config = base / 'userconfig'
+    (config / 'hypr').mkdir(parents=True)
+    (config / 'hypr/hyprland.lua').write_text('-- user styling\n')
     (config / 'ghostty').mkdir(parents=True)
     (config / 'ghostty/config').write_text('font-size=16\ntheme=before\n')
     env.update(HOME=str(base / 'home'), XDG_CONFIG_HOME=str(config), XDG_DATA_HOME=str(base / 'data'),
@@ -111,7 +117,14 @@ ShellRoot {
         function enable(): void { AppTheming.setEnabled("ghostty", true); }
         function disable(): void { AppTheming.setEnabled("ghostty", false); }
         function palette(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {bg: value}); }
+        function accent(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {iris: value}); }
         function unrelated(): void { Theme.barRadius += 1; }
+        function hyprEnable(): void { AppTheming.setEnabled("hyprland", true); }
+        function hyprColorsEnable(): void { AppTheming.setEnabled("hyprland-colors", true); }
+        function hyprColorsDisable(): void { AppTheming.setEnabled("hyprland-colors", false); }
+        function hyprDisable(): void { AppTheming.setEnabled("hyprland", false); }
+        function barStyle(radius: int): void { Theme.barRadius = radius; Theme.barOpacity = 0.7; Theme.barTopMargin = 10; Theme.barSideMargin = 24; }
+        function vertical(): void { Theme.verticalBar = true; }
         function lockEnable(): void { AppTheming.setEnabled("hyprlock", true); }
         function lockColor(value: string): void { Theme.lockScreen = {background: "color", color: value, image: ""}; }
     }
@@ -174,6 +187,51 @@ ShellRoot {
             ipc('lockColor', '#123456')
             settled()
             assert 'color = rgb(123456)' in lock.read_text()
+            ipc('enable')
+            settled(lambda r: next(t for t in r['targets'] if t['id'] == 'ghostty')['enabled'])
+            modified = path.stat().st_mtime_ns
+            ipc('hyprEnable')
+            settled(lambda r: next(t for t in r['targets'] if t['id'] == 'hyprland')['enabled'])
+            hypr = config / 'hypr/quickshell-appearance.lua'
+            ipc('barStyle', '12')
+            ipc('barStyle', '18')
+            time.sleep(.4)
+            settled()
+            content = hypr.read_text()
+            assert 'rounding = 18' in content and 'active_opacity = 0.7' in content, content
+            assert 'top = 10' in content and 'left = 24' in content, content
+            assert path.stat().st_mtime_ns == modified
+            ipc('vertical')
+            time.sleep(.4)
+            settled()
+            content = hypr.read_text()
+            assert 'top = 24' in content and 'left = 10' in content, content
+            ipc('hyprDisable')
+            settled(lambda r: not next(t for t in r['targets'] if t['id'] == 'hyprland')['enabled'])
+            ipc('barStyle', '8')
+            time.sleep(.4)
+            settled()
+            assert not hypr.exists()
+            assert (config / 'hypr/hyprland.lua').read_text() == '-- user styling\n'
+            ipc('hyprColorsEnable')
+            settled(lambda r: next(t for t in r['targets'] if t['id'] == 'hyprland-colors')['enabled'])
+            colors = config / 'hypr/quickshell-colors.lua'
+            assert colors.exists() and not hypr.exists()
+            modified = colors.stat().st_mtime_ns
+            ipc('barStyle', '16')
+            time.sleep(.4)
+            settled()
+            assert colors.stat().st_mtime_ns == modified
+            ipc('accent', '#556677')
+            time.sleep(.4)
+            settled()
+            assert 'rgb(556677)' in colors.read_text()
+            assert 'shadow' not in colors.read_text()
+            assert not hypr.exists()
+            ipc('hyprColorsDisable')
+            settled(lambda r: not next(t for t in r['targets'] if t['id'] == 'hyprland-colors')['enabled'])
+            assert not colors.exists()
+            assert (config / 'hypr/hyprland.lua').read_text() == '-- user styling\n'
             log.flush(); log.seek(0)
             output = log.read()
             assert not any(message in output for message in ['TypeError', 'ReferenceError', 'Binding loop']), output

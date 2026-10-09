@@ -15,6 +15,7 @@ TestCase {
     BatteryWidget { id: barBattery; y: 600; width: implicitWidth; height: implicitHeight }
     function init() {
         info.expanded = false; info.active = false; info.visible = true;
+        tryCompare(info, "revealProgress", 0);
         battery.visible = false; battery.drafts = {};
         BatteryState.batteries = [];
         BatteryState.powerProfiles = {available: false, current: "", profiles: []};
@@ -29,12 +30,34 @@ TestCase {
         verify(info.expanded);
         compare(SystemInfo.openPanels, 1);
         compare(BatteryState.openPanels, 1);
-        wait(50);
+        tryCompare(info, "revealProgress", 1);
         verify(info.implicitHeight > 200);
         grabImage(info).save('/tmp/quickshell-system-info.png');
         info.active = false;
         compare(SystemInfo.openPanels, 0);
         compare(BatteryState.openPanels, 0);
+    }
+    function test_info_reveal_and_reversal() {
+        const collapsedHeight = info.implicitHeight;
+        info.active = true;
+        info.expanded = true;
+        tryVerify(() => info.revealProgress > 0 && info.revealProgress < 1);
+        verify(info.implicitHeight > collapsedHeight);
+        tryCompare(info, "revealProgress", 1);
+        const expandedHeight = info.implicitHeight;
+        info.expanded = false;
+        compare(SystemInfo.openPanels, 0);
+        tryVerify(() => info.revealProgress > 0 && info.revealProgress < 1);
+        verify(info.implicitHeight < expandedHeight);
+        verify(info.implicitHeight > collapsedHeight);
+        // A second click reverses the running animation without snapping shut.
+        const partial = info.revealProgress;
+        info.expanded = true;
+        compare(info.revealProgress, partial);
+        tryCompare(info, "revealProgress", 1);
+        info.expanded = false;
+        tryCompare(info, "revealProgress", 0);
+        tryCompare(info, "implicitHeight", collapsedHeight);
     }
     function test_battery_limit_requires_apply() {
         info.visible = false; battery.visible = true;

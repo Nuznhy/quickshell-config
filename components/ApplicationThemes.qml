@@ -36,7 +36,7 @@ UI.ColumnLayout {
     }
     UI.Text {
         Layout.fillWidth: true
-        text: "Let your apps follow the shell’s colors."
+        text: "Let your apps and Hyprland follow the shell’s theme."
         color: Design.textSecondary
         font.family: Design.fontFamily
         role: "label"
@@ -99,9 +99,19 @@ UI.ColumnLayout {
                             objectName: "app-theme-" + card.modelData.id
                             value: card.modelData.enabled
                             enabled: !card.applying && (card.modelData.available || card.modelData.enabled)
-                            Accessible.name: "Sync " + card.modelData.name + " colors"
+                            Accessible.name: card.modelData.id === "hyprland" ? "Override Hyprland appearance" : "Sync " + card.modelData.name + " colors"
                             onChangeRequested: value => AppTheming.setEnabled(card.modelData.id, value)
                         }
+                    }
+                    UI.Text {
+                        Layout.fillWidth: true
+                        visible: card.modelData.id === "hyprland" || card.modelData.id === "hyprland-colors"
+                        text: card.modelData.id === "hyprland-colors"
+                            ? "Follow bar colors for window borders."
+                            : "Follow bar rounding, opacity, and margins, with shared spacing and blur."
+                        role: "caption"
+                        color: Design.textSecondary
+                        wrapMode: Text.WordWrap
                     }
                     UI.Button {
                         id: statusButton

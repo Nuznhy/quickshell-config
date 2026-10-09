@@ -13,6 +13,13 @@ Singleton {
     property var pending: ({})
     property var request: ({})
     property string errorMessage: ""
+    readonly property var hyprlandAppearance: ({
+        radius: Theme.barRadius, opacity: Theme.barOpacity,
+        verticalGap: Theme.verticalBar ? Theme.barSideMargin : Theme.barTopMargin,
+        horizontalGap: Theme.verticalBar ? Theme.barTopMargin : Theme.barSideMargin,
+        innerGap: Design.space8, borderWidth: Design.borderWidth
+    })
+    onHyprlandAppearanceChanged: { if (root.ready) hyprlandDebounce.restart(); }
     readonly property bool busy: worker.running
     readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/app-themes.py").toString().replace(/^file:\/\//, ""))
 
@@ -56,7 +63,7 @@ Singleton {
             discoverPending = false;
             next = { action: "discover" };
         } else return;
-        request = Object.assign({}, next, { palette: Theme.palette, mode: Theme.mode, lockScreen: Theme.lockScreen });
+        request = Object.assign({}, next, { palette: Theme.palette, mode: Theme.mode, lockScreen: Theme.lockScreen, hyprlandAppearance: root.hyprlandAppearance });
         errorMessage = "";
         worker.running = true;
     }
@@ -72,6 +79,17 @@ Singleton {
             if (root.targets.some(t => t.id === "hyprlock" && t.enabled)
                     || (root.busy && root.request.target === "hyprlock" && root.request.enabled === true))
                 root.retry("hyprlock");
+        }
+    }
+    Timer {
+        id: hyprlandDebounce
+        interval: 250
+        onTriggered: {
+            // Keep explicit toggles authoritative; they read the latest values.
+            if (root.pending.hyprland?.action === "set") return;
+            if (root.targets.some(t => t.id === "hyprland" && t.enabled)
+                    || (root.busy && root.request.target === "hyprland" && root.request.enabled === true))
+                root.retry("hyprland");
         }
     }
     Timer { id: debounce; interval: 250; onTriggered: root.pump() }

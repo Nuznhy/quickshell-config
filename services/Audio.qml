@@ -92,11 +92,11 @@ Singleton {
         id: streamCommandProc
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) root.errorMessage = "Could not change application audio. The stream may have closed.";
-            root.runNextStreamCommand();
-            root.refresh();
+            Qt.callLater(() => { root.runNextStreamCommand(); root.refresh(); });
         }
     }
 
+    // Exit handlers defer this until Process.running has settled.
     function refresh() {
         if (statusProc.running || commandsPending) return;
         statusProc.revision = audioRevision;
@@ -180,7 +180,7 @@ Singleton {
         command: ["bash", Qt.resolvedUrl("../scripts/audio-status.sh").toString().replace("file://", "")]
         Component.onCompleted: root.refresh()
         onExited: {
-            if (revision !== root.audioRevision) root.refresh();
+            if (revision !== root.audioRevision) Qt.callLater(root.refresh);
         }
         stdout: StdioCollector {
             onStreamFinished: {
@@ -209,15 +209,8 @@ Singleton {
                     root.volumeLevel = channels.length ? Math.round(channels.reduce((sum, channel) => sum + parseInt(channel.value_percent, 10), 0) / channels.length) : 0;
                     if (root.errorMessage === "Audio server unavailable.") root.errorMessage = "";
                 } catch (error) {
-                    root.outputs = [];
-                    root.microphones = [];
-                    root.defaultMicrophone = "";
-                    root.microphoneVolume = 0;
-                    root.microphoneMuted = false;
-                    streamModel.clear();
-                    root.defaultOutput = "";
-                    root.volumeLevel = 0;
-                    root.volumeMuted = false;
+                    // A failed check is not a device-removal event. Keep the last
+                    // confirmed controls until a successful snapshot replaces them.
                     root.errorMessage = "Audio server unavailable.";
                 }
             }
@@ -228,7 +221,7 @@ Singleton {
         id: switchProc
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) root.errorMessage = "Could not switch all audio. Check sound settings.";
-            root.refresh();
+            Qt.callLater(root.refresh);
         }
     }
 
@@ -241,7 +234,7 @@ Singleton {
         id: microphoneProc
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) root.errorMessage = "Could not switch all microphone audio. Check sound settings.";
-            root.refresh();
+            Qt.callLater(root.refresh);
         }
     }
 
@@ -249,8 +242,7 @@ Singleton {
         id: deviceCommandProc
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) root.errorMessage = "Could not change device audio. The device may have disconnected.";
-            root.runNextDeviceCommand();
-            root.refresh();
+            Qt.callLater(() => { root.runNextDeviceCommand(); root.refresh(); });
         }
     }
 

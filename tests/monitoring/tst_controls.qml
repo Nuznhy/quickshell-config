@@ -63,6 +63,37 @@ Rectangle {
             Monitoring.modes={}; settings.visible=false; widget.visible=true; wait(30);
             verify(widget.width > 0); verify(widget.height >= 42);
         }
+        function test_sensor_membership_changes() {
+            const original = SystemStats.metrics;
+            SystemStats.metrics = original.concat([{id: "gpu.hotplug.load", label: "GPU", unit: "%", value: 10, maximum: 100, available: true}]);
+            Monitoring.setMode("gpu.hotplug.load", "long");
+            wait(30);
+            verify(findChild(center, "monitoring-graph-gpu.hotplug.load") !== null);
+            verify(findChild(widget, "monitoring-cell-gpu.hotplug.load") !== null);
+            SystemStats.metrics = original;
+            wait(30);
+            compare(findChild(center, "monitoring-graph-gpu.hotplug.load"), null);
+            compare(findChild(widget, "monitoring-cell-gpu.hotplug.load"), null);
+        }
+        function test_samples_preserve_cards_and_bar_cells() {
+            settings.visible = false; center.visible = true; widget.visible = true;
+            wait(30);
+            const card = findChild(center, "monitoring-graph-cpu.load");
+            const cell = findChild(widget, "monitoring-cell-cpu.load");
+            verify(card !== null); verify(cell !== null);
+            const height = center.implicitHeight;
+            for (let sample = 0; sample < 3; sample++) {
+                SystemStats.metrics = SystemStats.metrics.map(entry =>
+                    entry.id === "cpu.load" ? Object.assign({}, entry, {value: 51 + sample}) : entry);
+                SystemStats.history = {"cpu.load": [{time: Date.now(), value: 51 + sample}]};
+                wait(30);
+                compare(findChild(center, "monitoring-graph-cpu.load"), card);
+                compare(findChild(widget, "monitoring-cell-cpu.load"), cell);
+                compare(card.metric.value, 51 + sample);
+                compare(cell.metric.value, 51 + sample);
+                compare(center.implicitHeight, height);
+            }
+        }
         function test_graphs_include_non_bar_metrics() {
             settings.visible=false; center.visible=true;
             const history={}, now=Date.now();

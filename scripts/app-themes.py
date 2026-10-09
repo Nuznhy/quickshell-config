@@ -24,7 +24,7 @@ from urllib.parse import unquote, urlsplit
 import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
-           ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'),
+           ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'), ('hyprland-colors', 'Hyprland colors'), ('hyprland', 'Hyprland appearance'),
            ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('hyprlock', 'Hyprlock')]
 
 
@@ -100,8 +100,15 @@ class Themes:
         if self.state.get('version') != 1 or not isinstance(self.state.get('journals'), dict):
             raise ValueError('Invalid app-theme recovery state; restore its backup before applying themes.')
         self.state.setdefault('reload_restore', [])
+        # Preserve the old combined opt-in. Discovery remains read-only; the next
+        # mutation persists this and rewrites the legacy file without colors.
+        self.migrating_hyprland = not self.state.get('hyprland_split', False) and 'hyprland' in self.state['enabled']
+        if self.migrating_hyprland and 'hyprland-colors' not in self.state['enabled']:
+            self.state['enabled'].append('hyprland-colors')
+        self.state['hyprland_split'] = True
         self.current = None
         self.lock_screen = {}
+        self.hyprland_appearance = None
 
     @staticmethod
     def run_command(args):
@@ -304,7 +311,20 @@ class Themes:
                 return version
         return None
 
+    def hyprland_config(self):
+        for name in ('hyprland.lua', 'hyprland.conf'):
+            path = self.config / 'hypr' / name
+            if path.is_file():
+                return path
+        raise RuntimeError('No hypr/hyprland.lua or hypr/hyprland.conf found. Custom --config paths are not supported.')
+
     def available(self, target):
+        if target in ('hyprland', 'hyprland-colors'):
+            try:
+                self.hyprland_config()
+            except RuntimeError as error:
+                return False, str(error)
+            return bool(self.which('hyprctl')), 'Requires hyprctl.'
         if target == 'gtk':
             themes = [self.data / 'themes', self.home / '.themes', Path('/usr/share/themes')]
             return (bool(self.which('gsettings')) and any((p / 'adw-gtk3').exists() for p in themes),
@@ -352,6 +372,25 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
+        if target in ('hyprland', 'hyprland-colors'):
+            path = self.hyprland_config()
+            lua = path.suffix == '.lua'
+            stem = 'quickshell-colors' if target == 'hyprland-colors' else 'quickshell-appearance'
+            generated = path.with_name(stem + path.suffix)
+            filename = str(generated)
+            if any(ord(char) < 32 for char in filename) or (not lua and any(char in filename for char in '$#{}')):
+                raise ValueError('Unsupported characters in the Hyprland config path.')
+            self.generated(generated, fmt.hyprland_colors(p, lua) if target == 'hyprland-colors'
+                           else fmt.hyprland(p, lua, self.hyprland_appearance))
+            marker = stem + '-override'
+            hook = ('dofile(' + json.dumps(filename, ensure_ascii=False) + ') -- ' + marker + '\n') if lua else ('source = ' + filename + ' # ' + marker + '\n')
+            self.lines(path, 'appearance-import', r'^.*(?:--|#) ' + re.escape(marker) + r'\s*$', [hook])
+            self.reload(target, remember=True)
+            if target == 'hyprland-colors':
+                return 'applied', 'Border colors follow the bar palette. Disable to restore your original colors.'
+            return 'applied', ('Follows bar rounding, opacity, and outer margins; window spacing and border width use shared design tokens. '
+                               'Soft blur is enabled. Shadow settings are left to your Hyprland config. Disable to restore your config styling. '
+                               'Custom --config paths are not supported.')
         if target == 'hyprlock':
             options = self.lock_screen
             if not isinstance(options, dict) or options.get('background', 'theme') not in ('theme', 'color', 'image'):
@@ -501,6 +540,11 @@ class Themes:
             self.run(['spicetify', '-q', 'apply', '--no-restart'])
         elif target == 'tmux':
             self.reload_tmux()
+        elif target in ('hyprland', 'hyprland-colors') and os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+            self.run(['hyprctl', 'reload'])
+            errors = self.run(['hyprctl', 'configerrors'])
+            if errors and errors.strip().lower() != 'ok':
+                raise RuntimeError('Hyprland configuration errors: ' + errors[-800:])
 
     def restore(self, target):
         self.current = target
@@ -561,6 +605,7 @@ class Themes:
 
     def handle(self, request):
         self.lock_screen = request.get('lockScreen', {})
+        self.hyprland_appearance = request.get('hyprlandAppearance')
         action = request.get('action', 'discover')
         if action not in ('discover', 'sync', 'set', 'retry'):
             raise ValueError('Unknown action')
@@ -583,6 +628,9 @@ class Themes:
                         self.state['pending_restore'].append(target)
                 self.save()
             targets = [target] if action in ('set', 'retry') else list(dict.fromkeys(self.state['enabled'] + self.state['pending_restore']))
+            if self.migrating_hyprland:
+                targets = list(dict.fromkeys(targets + [t for t in ('hyprland', 'hyprland-colors') if t in self.state['enabled']]))
+                self.migrating_hyprland = False
             for target in targets:
                 self.current = target
                 try:

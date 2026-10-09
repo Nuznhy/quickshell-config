@@ -86,6 +86,33 @@ def discover():
     return dict(displays=displays, error='\n'.join(warnings))
 
 
+def read_levels(identifiers):
+    """Read known devices without discovery or changes to their capabilities."""
+    if not isinstance(identifiers, list) or any(not isinstance(item, str) for item in identifiers):
+        raise ValueError('Expected a list of brightness device IDs.')
+
+    def read_one(identifier):
+        result = dict(id=identifier)
+        try:
+            if re.fullmatch(r'ddc:\d+', identifier):
+                current, maximum = ddc_level(identifier.split(':')[1])
+            elif re.fullmatch(r'backlight:[^/]+', identifier) and identifier.split(':')[1] not in ('.', '..'):
+                device = BACKLIGHT / identifier.split(':')[1]
+                current = int((device / 'brightness').read_text())
+                maximum = int((device / 'max_brightness').read_text())
+            else:
+                raise ValueError('Unknown brightness device.')
+            if maximum <= 0:
+                raise ValueError('Invalid maximum brightness.')
+            result['value'] = round(current * 100 / maximum)
+        except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as error:
+            result['error'] = str(error)
+        return result
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        return dict(levels=list(pool.map(read_one, identifiers)))
+
+
 def set_level(identifier, percent):
     percent = int(percent)
     if not 0 <= percent <= 100:
@@ -110,10 +137,12 @@ if __name__ == '__main__':
         if len(sys.argv) == 4 and sys.argv[1] == 'set':
             set_level(sys.argv[2], sys.argv[3])
             result = dict(ok=True)
+        elif len(sys.argv) == 3 and sys.argv[1] == 'levels':
+            result = read_levels(json.loads(sys.argv[2]))
         elif len(sys.argv) == 1:
             result = discover()
         else:
-            raise ValueError('Usage: brightness.py [set DEVICE PERCENT]')
+            raise ValueError('Usage: brightness.py [set DEVICE PERCENT | levels JSON_IDS]')
         print(json.dumps(result))
     except Exception as error:
         print(json.dumps(dict(error=str(error))))

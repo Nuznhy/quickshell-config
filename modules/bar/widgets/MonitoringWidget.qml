@@ -11,6 +11,8 @@ DropdownWidget {
     id: root
     barWindow: root.QsWindow.window
     readonly property var entries: SystemStats.metrics.filter(entry => Monitoring.mode(entry.id) !== "off")
+    // Keep delegates alive while sample values change.
+    readonly property string entryIds: JSON.stringify(entries.map(entry => entry.id))
     implicitWidth: cells.implicitWidth
     implicitHeight: Theme.verticalBar ? cells.implicitHeight : Settings.barHeight
     Layout.preferredHeight: implicitHeight
@@ -27,25 +29,27 @@ DropdownWidget {
         columnSpacing: Settings.widgetSpacing
         anchors.verticalCenter: parent.verticalCenter
         Repeater {
-            model: root.entries
+            model: JSON.parse(root.entryIds)
             delegate: Item {
                 id: cell
-                required property var modelData
+                required property string modelData
+                readonly property var metric: SystemStats.metric(modelData) || ({id: modelData, label: "", available: false, reason: ""})
+                objectName: "monitoring-cell-" + modelData
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                readonly property bool longMode: Monitoring.mode(modelData.id) === "long"
+                readonly property bool longMode: Monitoring.mode(modelData) === "long"
                 implicitWidth: Theme.verticalBar ? Math.max(26, longMode ? 48 : 26) : longMode ? Math.max(74, labelMetrics.advanceWidth + 26) : 38
                 implicitHeight: Theme.verticalBar ? (longMode ? Math.max(62, Theme.fontSize + 44) : Math.max(36, Theme.fontSize + 10)) : Settings.barHeight
                 TextMetrics {
                     id: labelMetrics
                     font.family: Theme.barFontFamily
                     font.pixelSize: Theme.fontSize
-                    text: cell.modelData.unit === "B" ? ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + "/" + ((cell.modelData.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + " GiB" : cell.modelData.unit === "W" ? "888.8 W" : "100 °C"
+                    text: cell.metric.unit === "B" ? ((cell.metric.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + "/" + ((cell.metric.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + " GiB" : cell.metric.unit === "W" ? "888.8 W" : "100 °C"
                 }
                 UI.Text {
                     role: "bar"
                     x: Theme.verticalBar ? (parent.width - width) / 2 : 0
                     y: Theme.verticalBar ? 0 : (parent.height - height) / 2 - 3
-                    text: SystemStats.icon(cell.modelData)
+                    text: SystemStats.icon(cell.metric)
                     color: Design.text
                     font.family: Design.fontFamily
                     font.pixelSize: Theme.fontSize
@@ -56,10 +60,10 @@ DropdownWidget {
                     x: Theme.verticalBar ? 0 : 24
                     y: Theme.verticalBar ? Math.max(23, Theme.fontSize + 5) : (parent.height - height) / 2 - 3
                     width: Theme.verticalBar ? parent.width : parent.width - 24
-                    text: Theme.verticalBar && cell.modelData.unit === "B" && cell.modelData.available
-                        ? (cell.modelData.value / 1073741824).toFixed(1) + "G\n/" + (cell.modelData.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.modelData)
+                    text: Theme.verticalBar && cell.metric.unit === "B" && cell.metric.available
+                        ? (cell.metric.value / 1073741824).toFixed(1) + "G\n/" + (cell.metric.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.metric)
                     horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                    color: cell.modelData.available ? Design.text : Design.textSecondary
+                    color: cell.metric.available ? Design.text : Design.textSecondary
                     font.family: Theme.barFontFamily
                     font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
                 }
@@ -71,15 +75,15 @@ DropdownWidget {
                     radius: Design.radiusSmall
                     color: Design.border
                     Rectangle {
-                        width: parent.width * (cell.modelData.available ? Math.max(0, Math.min(1, cell.modelData.value / SystemStats.maximum(cell.modelData))) : 0)
+                        width: parent.width * (cell.metric.available ? Math.max(0, Math.min(1, cell.metric.value / SystemStats.maximum(cell.metric))) : 0)
                         height: parent.height
                         radius: parent.radius
                         color: Design.accent
                         Behavior on width { NumberAnimation { duration: 180 } }
                     }
                 }
-                Accessible.name: cell.modelData.label
-                Accessible.description: cell.modelData.available ? SystemStats.format(cell.modelData) : cell.modelData.reason
+                Accessible.name: cell.metric.label
+                Accessible.description: cell.metric.available ? SystemStats.format(cell.metric) : cell.metric.reason
             }
         }
         UI.Text {

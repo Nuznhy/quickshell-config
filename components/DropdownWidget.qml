@@ -105,12 +105,24 @@ Item {
                 popup.width, popup.height, root.stemAlignment, cardRect.stemWidth, root.showStem);
             popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
         }
-        implicitWidth: root.widthToContent
-            ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + Settings.popupPadding * 2
-            : root.popupWidth
-        implicitHeight: root.sizeToContent
-            ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + Settings.popupPadding * 2
-            : root.popupHeight
+        // Layouts can publish intermediate sizes while removing delegates or
+        // showing sections. Commit only the settled size to the native popup.
+        Binding {
+            target: popup
+            property: "implicitWidth"
+            value: root.widthToContent
+                ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + Settings.popupPadding * 2
+                : root.popupWidth
+            delayed: true
+        }
+        Binding {
+            target: popup
+            property: "implicitHeight"
+            value: root.sizeToContent
+                ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + Settings.popupPadding * 2
+                : root.popupHeight
+            delayed: true
+        }
         color: "transparent"
 
         PopupReveal {

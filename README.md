@@ -570,8 +570,10 @@ target machine.
 ## Monitor brightness
 
 Click the sun icon beside the volume widget for a brightness slider per display.
-Displays are discovered automatically on opening, every 15 seconds while open,
-and with Refresh, including plugged/unplugged monitors. There are no configured
+Displays are discovered on opening and with Refresh, including plugged/unplugged
+monitors. While open, values are checked every 15 seconds and after writes without
+rediscovering devices or replacing their controls. A failed value check retains
+the last level and shows an error beside the affected monitor. There are no configured
 monitor names or I2C bus numbers. Slider writes are queued, keeping the latest
 requested value per monitor while slower hardware commands finish.
 
@@ -582,8 +584,8 @@ backlight devices and controlled with `brightnessctl`. Install these tools on
 each PC as needed. Unsupported monitors remain visible with an explanation.
 This adjusts hardware brightness; there is no software dimming fallback.
 
-Run `python3 -m unittest discover -s tests/brightness -v` to test discovery and
-hardware command handling with simulated displays, without changing brightness.
+Run `python3 scripts/test-brightness.py` to test discovery, queued writes,
+readback, and recovery with simulated displays, without changing brightness.
 
 ## Bluetooth control center
 
@@ -622,7 +624,10 @@ mute. Click outside or press Escape to dismiss the popup. Output-switching error
 The Microphone dropdown excludes speaker-monitor sources. Selecting a microphone
 sets the default input and moves existing recording streams to it. Opening the
 selector does not start recording. Device changes and disconnections refresh
-automatically; unavailable selectors are disabled.
+automatically; unavailable selectors are disabled. Pending switches keep labels,
+percentages, and layout steady, using a small indicator in the selector. Failed
+checks preserve the last confirmed state until a successful snapshot arrives.
+Run `python3 scripts/test-audio.py` for isolated switching and recovery checks.
 
 The Applications section lists active playback streams by application and media
 title. Each stream has a 0–150% volume slider and a mute/unmute button. All audio

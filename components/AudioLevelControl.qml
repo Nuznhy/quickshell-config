@@ -9,6 +9,7 @@ UI.RowLayout {
     id: root
     required property int level
     required property bool muted
+    property bool busy: false
     property bool microphone: false
     property int maximum: microphone ? 100 : 150
     signal volumeRequested(real value)
@@ -17,6 +18,8 @@ UI.RowLayout {
 
     AudioSlider {
         id: slider
+        enabled: !root.busy
+        opacity: root.enabled ? 1 : Design.disabledOpacity
         Layout.fillWidth: true
         level: root.level
         muted: root.muted
@@ -37,6 +40,8 @@ UI.RowLayout {
     UI.Button {
         highlighted: root.muted
         id: muteButton
+        enabled: !root.busy
+        opacity: root.enabled ? 1 : Design.disabledOpacity
         Layout.preferredWidth: 34
         Layout.preferredHeight: 32
         Accessible.name: (root.muted ? "Unmute " : "Mute ") + (root.microphone ? "microphone" : "output")

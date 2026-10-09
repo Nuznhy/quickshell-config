@@ -74,7 +74,7 @@ FocusScope {
                         }
                         Label {
                             Layout.fillWidth: true
-                            visible: !card.modelData.supported
+                            visible: !card.modelData.supported || !!card.modelData.error
                             text: card.modelData.error || "Brightness control unavailable."
                             color: Design.textMuted
                         }

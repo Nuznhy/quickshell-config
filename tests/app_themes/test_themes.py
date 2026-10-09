@@ -97,6 +97,126 @@ class ThemeTests(unittest.TestCase):
         self.assertEqual(before, list(self.home.rglob('*')))
         self.assertEqual(self.commands, [])
 
+    def test_hyprland_override_and_restore(self):
+        for extension in ('lua', 'conf'):
+            with self.subTest(extension=extension):
+                original = '-- original appearance\n' if extension == 'lua' else '# original appearance\n'
+                path = self.put('hypr/hyprland.' + extension, original)
+                with patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': 'test'}):
+                    result = self.apply('hyprland')
+                    self.assertEqual(self.status(result, 'hyprland')['state'], 'applied')
+                    generated = path.with_name('quickshell-appearance.' + extension)
+                    self.assertTrue(path.read_text().startswith(original))
+                    self.assertEqual(path.read_text().count('quickshell-appearance-override'), 1)
+                    self.assertNotIn('active_border', generated.read_text())
+                    changed = dict(self.palette, iris='#123456')
+                    self.apply('hyprland', palette=changed)
+                    self.assertNotIn('123456', generated.read_text())
+                    self.assertEqual(path.read_text().count('quickshell-appearance-override'), 1)
+                    # User changes outside the managed import survive disabling.
+                    extra = '-- new user setting\n' if extension == 'lua' else '# new user setting\n'
+                    path.write_text(path.read_text() + extra)
+                    self.assertEqual(self.status(self.apply('hyprland', False), 'hyprland')['state'], 'off')
+                    self.assertEqual(path.read_text(), original + extra)
+                    self.assertFalse(generated.exists())
+                    self.assertIn(['hyprctl', 'reload'], self.commands)
+                path.unlink()
+
+    def test_hyprland_toggles_restore_independently(self):
+        for extension in ('lua', 'conf'):
+            for first in ('hyprland', 'hyprland-colors'):
+                with self.subTest(extension=extension, first=first):
+                    path = self.put('hypr/hyprland.' + extension, '-- original\n' if extension == 'lua' else '# original\n')
+                    original = path.read_text()
+                    for target in ('hyprland', 'hyprland-colors'):
+                        self.assertEqual(self.status(self.apply(target), target)['state'], 'applied')
+                    appearance = path.with_name('quickshell-appearance.' + extension)
+                    colors = path.with_name('quickshell-colors.' + extension)
+                    self.assertNotIn('active_border', appearance.read_text())
+                    self.assertNotIn('color =', appearance.read_text())
+                    self.assertNotIn('shadow', appearance.read_text())
+                    self.assertNotIn('shadow', colors.read_text())
+                    self.assertNotIn('rounding', colors.read_text())
+                    self.assertNotIn('enabled =', colors.read_text())
+                    self.assertIn(self.palette['iris'][1:], colors.read_text())
+                    self.apply(first, False)
+                    other = 'hyprland-colors' if first == 'hyprland' else 'hyprland'
+                    remaining = colors if first == 'hyprland' else appearance
+                    self.assertTrue(remaining.exists())
+                    self.assertIn(other, self.engine.state['enabled'])
+                    self.apply(other, False)
+                    self.assertEqual(path.read_text(), original)
+                    self.assertFalse(appearance.exists())
+                    self.assertFalse(colors.exists())
+                    path.unlink()
+
+    def test_hyprland_combined_opt_in_migrates_without_losing_restore(self):
+        path = self.put('hypr/hyprland.lua', '-- original\n')
+        self.apply('hyprland')
+        generated = path.with_name('quickshell-appearance.lua')
+        # Simulate the previous combined override and its recovery journal.
+        self.engine.current = 'hyprland'
+        self.engine.generated(generated, formats.hyprland(self.palette, True) + formats.hyprland_colors(self.palette, True))
+        self.engine.state.pop('hyprland_split')
+        self.engine.save()
+        self.engine = module.Themes(self.state, self.home, self.config, self.data, self.run_command, lambda cmd: '/bin/' + cmd)
+        self.engine.available = lambda target: (True, '')
+        result = self.engine.handle({'action': 'discover'})
+        self.assertTrue(self.status(result, 'hyprland')['enabled'])
+        self.assertTrue(self.status(result, 'hyprland-colors')['enabled'])
+        self.assertIn('active_border', generated.read_text())  # Read-only discovery.
+        self.apply('hyprland', action='sync')
+        self.assertNotIn('active_border', generated.read_text())
+        self.assertTrue(path.with_name('quickshell-colors.lua').exists())
+        self.apply('hyprland-colors', False)
+        self.assertTrue(generated.exists())
+        self.apply('hyprland', False)
+        self.assertEqual(path.read_text(), '-- original\n')
+
+    def test_hyprland_discovery_and_conflicts(self):
+        self.assertFalse(module.Themes.available(self.engine, 'hyprland')[0])
+        path = self.put('hypr/hyprland.lua', '-- user config\n')
+        target = self.home / 'hyprland.lua'
+        path.rename(target)
+        path.symlink_to(target)
+        self.assertTrue(module.Themes.available(self.engine, 'hyprland')[0])
+        self.apply('hyprland')
+        self.assertTrue(path.is_symlink())
+        generated = path.with_name('quickshell-appearance.lua')
+        generated.write_text('-- manually edited\n')
+        result = self.apply('hyprland', action='retry')
+        self.assertEqual(self.status(result, 'hyprland')['state'], 'error')
+        self.assertEqual(generated.read_text(), '-- manually edited\n')
+
+    def test_hyprland_bar_appearance_mapping_and_validation(self):
+        appearance = dict(radius=18, opacity=0.7, verticalGap=10, horizontalGap=24, innerGap=8, borderWidth=1)
+        for lua in (True, False):
+            rendered = formats.hyprland(self.palette, lua, appearance)
+            self.assertIn('rounding = 18', rendered)
+            self.assertIn('active_opacity = 0.7', rendered)
+            self.assertIn('inactive_opacity = 0.7', rendered)
+            self.assertIn('border_size = 1', rendered)
+            self.assertIn('top = 10' if lua else 'gaps_out = 10, 24, 10, 24', rendered)
+        for bad in [dict(radius=-1), dict(opacity=float('nan')), dict(horizontalGap='injected'), dict(borderWidth=True)]:
+            with self.assertRaises(ValueError):
+                formats.hyprland(self.palette, True, dict(appearance, **bad))
+
+    def test_hyprland_reload_failure_can_restore(self):
+        path = self.put('hypr/hyprland.lua', '-- user config\n')
+        with patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': 'test'}):
+            self.engine.run = lambda args: 'test config error' if args[-1] == 'configerrors' else ''
+            result = self.apply('hyprland')
+            self.assertIn('test config error', self.status(result, 'hyprland')['message'])
+            self.engine.run = self.run_command
+            self.assertEqual(self.status(self.apply('hyprland', False), 'hyprland')['state'], 'off')
+            self.assertEqual(path.read_text(), '-- user config\n')
+
+    @unittest.skipUnless(shutil.which('lua'), 'Lua interpreter not installed')
+    def test_hyprland_lua_all_palettes(self):
+        for palette in palettes():
+            source = 'hl = {config = function(c) assert(c.general.gaps_in == 8); assert(c.decoration.rounding == 0) end}\n'
+            subprocess.run(['lua', '-'], input=source + formats.hyprland(palette, True), text=True, check=True)
+
     def test_hyprlock_palettes_warnings_and_restore_symlink(self):
         original = '# original lock screen\nbackground {\n color = rgb(123456)\n}\n'
         path = self.put('hypr/hyprlock.conf', original)

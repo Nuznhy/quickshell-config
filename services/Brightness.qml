@@ -11,7 +11,8 @@ Singleton {
     property int openPanels: 0
     property var pending: ({})
     property bool refreshAgain: false
-    readonly property bool loading: statusProc.running
+    property bool discoveryPending: false
+    readonly property bool loading: statusProc.running && statusProc.discovery
     readonly property bool changing: actionProc.running || Object.keys(pending).length > 0
     readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/brightness.py").toString().replace(/^file:\/\//, ""))
     onOpenPanelsChanged: { if (openPanels > 0) refresh(); }
@@ -43,9 +44,24 @@ Singleton {
         previous.forEach(entry => { if (!next.includes(entry)) entry.destroy(); });
     }
 
-    function refresh() {
+    // Readback only updates values/errors; discovery owns device membership.
+    function applyLevels(levels) {
+        levels.forEach(data => {
+            const entry = displays.find(item => item.deviceId === data.id);
+            if (!entry) return;
+            entry.error = data.error || "";
+            if (Number.isFinite(data.value) && !Object.prototype.hasOwnProperty.call(pending, data.id))
+                entry.value = data.value;
+        });
+    }
+    function refresh(discover = true) {
+        discoveryPending = discoveryPending || discover;
         if (statusProc.running || changing) { refreshAgain = true; return; }
         refreshAgain = false;
+        statusProc.discovery = discoveryPending || !displays.length;
+        discoveryPending = false;
+        statusProc.command = statusProc.discovery ? ["python3", helper]
+            : ["python3", helper, "levels", JSON.stringify(displays.filter(d => d.supported).map(d => d.deviceId))];
         statusProc.running = true;
     }
     function setBrightness(id, value) {
@@ -62,7 +78,7 @@ Singleton {
     function writeNext() {
         if (actionProc.running || statusProc.running) return;
         const ids = Object.keys(pending);
-        if (!ids.length) { refresh(); return; }
+        if (!ids.length) { refresh(false); return; }
         const id = ids[0];
         const next = Object.assign({}, pending);
         actionProc.command = ["python3", helper, "set", id, String(next[id])];
@@ -72,13 +88,14 @@ Singleton {
     }
     Process {
         id: statusProc
-        command: ["python3", root.helper]
+        property bool discovery: true
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const result = JSON.parse(text);
                     root.statusError = result.error || "";
                     if (result.displays) root.applySnapshot(result.displays);
+                    if (result.levels) root.applyLevels(result.levels);
                 } catch (error) { root.statusError = "Could not read monitor brightness."; }
             }
         }
@@ -86,7 +103,7 @@ Singleton {
         onExited: code => {
             if (code !== 0) root.statusError = root.statusError || "Brightness discovery failed.";
             if (Object.keys(root.pending).length) Qt.callLater(root.writeNext);
-            else if (root.refreshAgain) Qt.callLater(root.refresh);
+            else if (root.refreshAgain) Qt.callLater(() => root.refresh(false));
         }
     }
     Process {
@@ -107,6 +124,6 @@ Singleton {
         interval: 15000
         repeat: true
         running: root.openPanels > 0
-        onTriggered: root.refresh()
+        onTriggered: root.refresh(false)
     }
 }

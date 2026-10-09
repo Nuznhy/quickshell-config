@@ -132,7 +132,8 @@ Item {
                         Layout.fillWidth: true
                         level: Audio.volumeLevel
                         muted: Audio.volumeMuted
-                        enabled: Audio.available && !Audio.switching
+                        enabled: Audio.available
+                        busy: Audio.switching
                         onVolumeRequested: value => Audio.setOutputVolume(value)
                         onMuteRequested: Audio.toggleMute()
                     }
@@ -153,7 +154,8 @@ Item {
                         microphone: true
                         level: Audio.microphoneVolume
                         muted: Audio.microphoneMuted
-                        enabled: Audio.microphoneAvailable && !Audio.switchingMicrophone
+                        enabled: Audio.microphoneAvailable
+                        busy: Audio.switchingMicrophone
                         onVolumeRequested: value => Audio.setMicrophoneVolume(value)
                         onMuteRequested: Audio.toggleMicrophoneMute()
                     }
@@ -165,7 +167,7 @@ Item {
                     UI.Text {
                         Layout.fillWidth: true
                         visible: text.length > 0
-                        text: Audio.errorMessage || (Audio.switching ? "Switching output…" : (Audio.switchingMicrophone ? "Switching microphone…" : ""))
+                        text: Audio.errorMessage
                         color: Audio.errorMessage ? Design.danger : Design.textSecondary
                         font.family: Design.fontFamily
                         role: "caption"

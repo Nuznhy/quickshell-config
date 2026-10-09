@@ -45,6 +45,8 @@ Item {
             leftPadding: Design.space12
             rightPadding: Design.space8
             enabled: root.devices.length > 0 && !root.busy
+            // Pending work blocks input without fading the confirmed device label.
+            opacity: root.devices.length > 0 ? 1 : Design.disabledOpacity
             Accessible.name: root.title + ": " + root.selectedDescription
             onClicked: root.expanded = !root.expanded
             Keys.onEscapePressed: root.expanded = false
@@ -53,14 +55,14 @@ Item {
                 spacing: Design.space8
                 UI.Text {
                     Layout.fillWidth: true
-                    text: root.busy ? "Switching…" : root.selectedDescription
+                    text: root.selectedDescription
                     elide: Text.ElideRight
-                    color: root.expanded ? Design.textOnAccent : (trigger.enabled ? Design.text : Design.textSecondary)
+                    color: root.expanded ? Design.textOnAccent : (root.devices.length > 0 ? Design.text : Design.textSecondary)
                     font.family: Design.fontFamily
                     role: "body"
                 }
                 UI.Text {
-                    text: root.expanded ? "▴" : "▾"
+                    text: root.busy ? "◌" : root.expanded ? "▴" : "▾"
                     color: root.expanded ? Design.textOnAccent : Design.textSecondary
                     role: "section"
                 }

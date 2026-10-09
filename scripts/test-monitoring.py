@@ -177,7 +177,12 @@ import Quickshell
 import "config"
 import "services"
 import "modules/bar/widgets"
+import "components"
 ShellRoot {
+ id: fixture
+ property int contentHeight: 150
+ property int resizeCount: 0
+ property int actualHeight: 0
  property int step: 0
  FloatingWindow {
   id: window
@@ -185,6 +190,21 @@ ShellRoot {
   visible: true
   implicitWidth: 700; implicitHeight: 180
   color: Theme.bg
+  DropdownWidget {
+   id: resizing; x:300; width:32; height:32
+   barWindow: window; focusGrabEnabled: false; sizeToContent: true; showStem: false
+   popupContent: Item {
+    implicitHeight: fixture.contentHeight
+    readonly property var nativeWindow: QsWindow.window
+    Connections {
+     target: nativeWindow
+     function onHeightChanged() {
+      fixture.resizeCount++;
+      fixture.actualHeight = nativeWindow.height;
+     }
+    }
+   }
+  }
   MonitoringWidget { id: widget; x:20; y:20; focusGrabEnabled: false }
  }
  Timer {
@@ -192,12 +212,21 @@ ShellRoot {
   onTriggered: {
    if (!Monitoring.ready || SystemStats.metrics.length < 2) return;
    step++;
-   if (step===1) widget.dropdownOpen=true;
+   if (step===1) { widget.dropdownOpen=true; resizing.dropdownOpen=true; }
    if (step===2) {
     if (!widget.dropdownOpen || widget.width < 80) { console.error("MONITORING_FAILED native open"); Qt.quit(); }
-    window.closeAllPopups();
+    fixture.resizeCount = 0;
+    fixture.contentHeight = 0;
+    fixture.contentHeight = 80;
+    fixture.contentHeight = 220;
+    widget.dropdownOpen = false;
    }
-   if (step===3) { Theme.barPosition="left"; widget.dropdownOpen=true; }
+   if (step===3) {
+    if (fixture.resizeCount !== 1 || fixture.actualHeight !== 244 || !resizing.dropdownOpen) {
+     console.error("MONITORING_FAILED unsettled popup resize", fixture.resizeCount, fixture.actualHeight); Qt.quit(); return;
+    }
+    resizing.dropdownOpen = false;
+    Theme.barPosition="left"; widget.dropdownOpen=true; }
    if (step===4) {
     if (!widget.dropdownOpen || widget.width>64 || widget.height<90) { console.error("MONITORING_FAILED vertical"); Qt.quit(); }
     widget.dropdownOpen=false; Theme.barPosition="bottom";

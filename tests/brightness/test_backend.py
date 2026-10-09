@@ -50,6 +50,17 @@ Invalid display
                 with self.assertRaises(ValueError):
                     brightness.set_level('backlight:../outside', 50)
 
+    def test_value_checks_do_not_discover_or_change_capabilities(self):
+        with patch.object(brightness, 'ddc_level', return_value=(75, 150)), patch.object(brightness, 'discover') as discover:
+            result = brightness.read_levels(['ddc:24'])
+            self.assertEqual(result, {'levels': [{'id': 'ddc:24', 'value': 50}]})
+            discover.assert_not_called()
+        with patch.object(brightness, 'ddc_level', side_effect=RuntimeError('temporarily busy')):
+            result = brightness.read_levels(['ddc:24'])
+            self.assertEqual(result, {'levels': [{'id': 'ddc:24', 'error': 'temporarily busy'}]})
+        result = brightness.read_levels(['backlight:../outside'])
+        self.assertIn('error', result['levels'][0])
+
     def test_one_monitor_failure_does_not_hide_other_controls(self):
         display = dict(id='ddc:44', supported=True, value=0)
         with patch.object(brightness, 'ddc_level', side_effect=RuntimeError('Disconnected')):

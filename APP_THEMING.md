@@ -2,8 +2,9 @@
 
 Open **Settings → Appearance → Application themes** and enable the applications
 that should follow the bar. Every switch starts off. Changing the palette or
-Dark/Light updates enabled targets; changing bar geometry, widget order, or
-wallpapers does not regenerate app themes.
+Dark/Light updates enabled targets. Bar geometry and opacity changes update only
+the enabled Hyprland appearance target; widget order and wallpaper changes do
+not regenerate app themes.
 Lock-screen background changes update only the enabled Hyprlock target.
 
 Targets appear in a compact grid that adapts to the settings window width. Each
@@ -26,6 +27,8 @@ settings, custom CSS, extensions, and dotfile symlinks are preserved.
 | Foot | Adds/replaces a managed theme include. The generated theme defines both `colors-dark` and `colors-light` using the selected bar palette. | Open a new terminal; tested with Foot 1.28. |
 | Yazi | Generates a `quickshell-config.yazi` flavor and syntax palette, selecting it for both light/dark modes. | Reopen Yazi. |
 | btop | Generates `btop/themes/quickshell-config.theme` and selects it. | Reopen btop. |
+| Hyprland colors | Managed `hypr/quickshell-colors.lua` / `.conf` override for border colors. | Follows palette changes independently of appearance. Reloads Hyprland on apply/restore. |
+| Hyprland appearance | Managed `hypr/quickshell-appearance.lua` / `.conf` override for rounding, opacity, gaps, border width and blur. | Follows bar geometry and opacity independently of colors. Reloads Hyprland on apply/restore. |
 | Hyprtoolkit | Updates palette keys in `hypr/hyprtoolkit.conf`. | Uses the toolkit's configuration reload behavior. |
 | Hyprlock | Manages `hypr/hyprlock.conf` with the shell palette, persistent layout/Caps Lock indicators, and the background selected in Settings → Lock screen. Backs up the entire previous config and restores it when disabled. | Loads on the next lock. Uses standard PAM authentication; does not restart a running locker. |
 | Spotify | Generates a dedicated Spicetify theme and selects it, preserving extensions/custom apps. Runs `spicetify -q apply --no-restart`. | Reopen Spotify if needed. Existing Spotify/Spicetify setup and write access are required. |
@@ -37,6 +40,39 @@ These integrations use native user configuration locations. Flatpak sandbox
 permissions and custom client wrappers are not configured automatically. An app
 that ignores toolkit colors or has explicit color overrides can still differ
 from the shell. Noctalia and Matugen are not required.
+
+## Hyprland syncing
+
+Use the two independent switches under Application themes:
+
+- **Hyprland colors** follows the bar palette for active/inactive borders. It does not change spacing, opacity, rounding, blur, or shadows’
+  enabled state.
+- **Hyprland appearance** follows bar rounding and opacity. Outer gaps follow
+  bar margins: edge margin maps to top/bottom and side margin maps to left/right,
+  swapped for a vertical bar. Inner gaps use the shared 8 px spacing token;
+  borders use the shared 1 px border token. Soft blur (size 5, two passes) is enabled. This toggle does not set colors.
+
+Neither toggle overrides any shadow settings; your Hyprland config controls them.
+
+Both start off for new setups. An existing enabled combined Hyprland override
+migrates to both switches enabled, preserving its behavior and restore backups.
+Each switch has its own managed file and import, so disabling one restores that
+part of your original config while leaving the other active.
+
+Changes are debounced for 250 ms and update only Hyprland. There is no need to
+toggle sync again after editing bar appearance. Settings are read when each
+update starts, so rapid adjustments finish with the latest values.
+
+The managed imports load after your existing config. Input, keybindings, monitor
+layout, workspace rules, and animations are not changed. Disabling removes the
+import and generated file and reloads your original styling. Existing files are
+backed up; manual edits to managed files produce an error instead of being
+overwritten. Symlinked configs remain symlinked.
+
+Requires `hyprctl` and a standard config under `$XDG_CONFIG_HOME/hypr` (normally
+`~/.config/hypr`). Custom Hyprland `--config` paths are not supported. When no
+Hyprland session is running, the generated settings load at the next start.
+Reloading follows [Hyprland’s documented configuration reload](https://wiki.hypr.land/configuring/core/advanced-configuration/using-hyprctl/).
 
 ## Toolkit setup
 

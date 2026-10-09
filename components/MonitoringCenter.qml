@@ -10,6 +10,10 @@ FocusScope {
     property bool active: false
     property int maximumHeight: 600
     implicitHeight: Math.min(maximumHeight, content.implicitHeight)
+    // Only membership changes should recreate graph canvases.
+    readonly property string metricIds: JSON.stringify(SystemStats.metrics
+        .filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
+        .map(entry => entry.id))
     signal dismissed
     onActiveChanged: { if (active) forceActiveFocus(); }
     Keys.onEscapePressed: dismissed()
@@ -47,11 +51,12 @@ FocusScope {
                 columnSpacing: Design.space12
                 rowSpacing: Design.space12
                 Repeater {
-                    model: SystemStats.metrics.filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
+                    model: JSON.parse(root.metricIds)
                     delegate: UI.Card {
                         id: card
-                        required property var modelData
-                        objectName: "monitoring-graph-" + modelData.id
+                        required property string modelData
+                        readonly property var metric: SystemStats.metric(modelData) || ({id: modelData, label: "", available: false, reason: ""})
+                        objectName: "monitoring-graph-" + modelData
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         Layout.minimumWidth: 0
@@ -63,28 +68,28 @@ FocusScope {
                             spacing: Design.space4
                             Label {
                                 Layout.fillWidth: true
-                                text: card.modelData.label
+                                text: card.metric.label
                                 maximumLineCount: 2
                                 elide: Text.ElideRight
                                 role: "label"
                             }
-                            Label { text: SystemStats.format(card.modelData); role: "panel"; font.bold: true }
+                            Label { text: SystemStats.format(card.metric); role: "panel"; font.bold: true }
                             Label {
                                 Layout.fillWidth: true
-                                visible: !card.modelData.available
-                                text: card.modelData.reason || "Sensor unavailable"
+                                visible: !card.metric.available
+                                text: card.metric.reason || "Sensor unavailable"
                                 color: Design.textSecondary
                                 role: "label"
                             }
                             MonitoringGraph {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                points: SystemStats.history[card.modelData.id] || []
-                                maximum: SystemStats.maximum(card.modelData)
+                                points: SystemStats.history[card.metric.id] || []
+                                maximum: SystemStats.maximum(card.metric)
                             }
                             UI.RowLayout {
                                 Layout.fillWidth: true
-                                visible: card.modelData.available || (SystemStats.history[card.modelData.id] || []).some(point => point.value !== null)
+                                visible: card.metric.available || (SystemStats.history[card.metric.id] || []).some(point => point.value !== null)
                                 Label { text: "−10m"; role: "caption"; color: Design.textSecondary }
                                 Label {
                                     Layout.fillWidth: true
@@ -92,9 +97,9 @@ FocusScope {
                                     role: "caption"
                                     color: Design.textSecondary
                                     text: {
-                                        const max = SystemStats.maximum(card.modelData);
-                                        const range = card.modelData.unit === "B" ? (max / 1073741824).toFixed(1) + " GiB" : Math.round(max) + " " + card.modelData.unit;
-                                        return "0–" + range + (card.modelData.maximum > 0 ? "" : " · peak");
+                                        const max = SystemStats.maximum(card.metric);
+                                        const range = card.metric.unit === "B" ? (max / 1073741824).toFixed(1) + " GiB" : Math.round(max) + " " + card.metric.unit;
+                                        return "0–" + range + (card.metric.maximum > 0 ? "" : " · peak");
                                     }
                                 }
                                 Label { text: "Now"; role: "caption"; color: Design.textSecondary }

@@ -21,7 +21,7 @@ QtObject { property string fontFamily: "JetBrainsMono Nerd Font" }
     shutil.copyfile(root / 'config/Palettes.js', base / 'config/Palettes.js')
     shutil.copytree(root / 'tools/design-gallery', base / 'tools/design-gallery')
     for name in ['ControlSwitch.qml', 'AudioSlider.qml', 'MediaSeekSlider.qml', 'NotificationButton.qml',
-                 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
+                 'AudioLevelControl.qml', 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
         shutil.copyfile(root / 'components' / name, base / 'components' / name)
     for path in (root / 'tests/design_system').glob('tst_*.qml'):
         shutil.copyfile(path, base / path.name)
