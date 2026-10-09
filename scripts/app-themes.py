@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import shlex
 import stat
 import subprocess
 import sys
@@ -25,7 +26,7 @@ import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'), ('hyprland-colors', 'Hyprland colors'), ('hyprland', 'Hyprland appearance'),
-           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('hyprlock', 'Hyprlock')]
+           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('p10k', 'Powerlevel10k / Zsh'), ('hyprlock', 'Hyprlock')]
 
 
 def read(path):
@@ -318,7 +319,20 @@ class Themes:
                 return path
         raise RuntimeError('No hypr/hyprland.lua or hypr/hyprland.conf found. Custom --config paths are not supported.')
 
+    def p10k_config(self):
+        directory = Path(os.environ.get('ZDOTDIR') or self.home)
+        path = directory / '.p10k.zsh'
+        if not path.is_file():
+            raise RuntimeError('Requires an existing .p10k.zsh in ZDOTDIR or your home directory.')
+        return path
+
     def available(self, target):
+        if target == 'p10k':
+            try:
+                self.p10k_config()
+            except RuntimeError as error:
+                return False, str(error)
+            return bool(self.which('zsh')), 'Requires Zsh and an existing Powerlevel10k configuration.'
         if target in ('hyprland', 'hyprland-colors'):
             try:
                 self.hyprland_config()
@@ -372,6 +386,16 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
+        if target == 'p10k':
+            path = self.p10k_config()
+            generated = c / 'zsh/quickshell-p10k.zsh'
+            if any(char in str(generated) for char in '\r\n\x00'):
+                raise ValueError('Unsupported characters in the Zsh config path.')
+            self.generated(generated, fmt.p10k(p))
+            quoted = shlex.quote(str(generated))
+            self.lines(path, 'theme-import', r'^.*# quickshell-p10k-colors\s*$',
+                       [f'[[ ! -r {quoted} ]] || source {quoted} # quickshell-p10k-colors\n'])
+            return 'restart', 'Colors synced. Open a new Zsh shell or source your .p10k.zsh to refresh this prompt.'
         if target in ('hyprland', 'hyprland-colors'):
             path = self.hyprland_config()
             lua = path.suffix == '.lua'

@@ -15,6 +15,7 @@ Item {
     UI.Button {
         highlighted: root.expanded
         id: trigger
+        background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: menu.reveal }
         anchors.fill: parent
         enabled: Theme.ready
         leftPadding: Design.space12
@@ -51,8 +52,7 @@ Item {
         id: menu
         parent: trigger
         x: 0
-        property real slideOffset: 0
-        y: trigger.height + 4 + slideOffset
+        y: trigger.height - Design.borderWidth
         width: trigger.width
         height: Math.min(choices.implicitHeight + padding * 2, 160)
         visible: root.expanded

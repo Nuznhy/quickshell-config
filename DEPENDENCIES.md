@@ -92,7 +92,9 @@ Light/dark wallpaper transitions use Qt Quick animations and the existing image
 decoders; they need no additional package.
 Codex/Ghostty notification integration is optional; neither is a shell dependency.
 
-Application color syncing is optional and starts disabled. See
+Application color syncing is optional and starts disabled.
+Powerlevel10k sync requires `zsh` and an existing `.p10k.zsh` loaded by your shell.
+See
 [Application themes](APP_THEMING.md#dependencies) for per-target packages and
 setup. GTK syncing needs `adw-gtk-theme`, `gsettings-desktop-schemas`, `glib2`, and
 `dconf`; Qt uses the existing KDE platform integration or qt5ct/qt6ct. Spotify

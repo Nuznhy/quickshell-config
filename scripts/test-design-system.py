@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from design_test_support import install_design
 
@@ -35,8 +36,8 @@ QtObject {
         shutil.copyfile(root / 'components' / name, base / 'components' / name)
     for path in (root / 'tests/design_system').glob('tst_*.qml'):
         shutil.copyfile(path, base / path.name)
-    env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software',
+    env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND=os.environ.get('QT_QUICK_BACKEND', 'software'),
                XDG_RUNTIME_DIR=str(base / 'runtime'), XDG_CACHE_HOME=str(base / 'cache'),
                XDG_STATE_HOME=str(base / 'state'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'),
-                    '-input', str(base)], env=env, check=True)
+                    '-input', str(base), *sys.argv[1:]], env=env, check=True)

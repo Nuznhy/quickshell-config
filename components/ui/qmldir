@@ -27,3 +27,4 @@ Switch 1.0 Switch.qml
 Text 1.0 Text.qml
 TextField 1.0 TextField.qml
 ToggleTile 1.0 ToggleTile.qml
+SelectTriggerSurface 1.0 SelectTriggerSurface.qml

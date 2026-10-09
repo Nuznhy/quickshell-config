@@ -22,7 +22,7 @@ T.ComboBox {
     Binding { target: root; property: "enabled"; value: false; when: root.busy; restoreMode: Binding.RestoreBindingOrValue }
     onEnabledChanged: { if (!enabled) popup.close(); }
     HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
-    background: ControlSurface { control: root; selected: root.popup.visible }
+    background: SelectTriggerSurface { control: root; selected: root.popup.visible; reveal: root.popup.reveal }
     contentItem: UI.Text {
         text: root.displayText
         font: root.font
@@ -59,7 +59,7 @@ T.ComboBox {
         }
     }
     popup: SelectPopup {
-        y: root.height + Design.space4
+        y: root.height - Design.borderWidth
         width: root.width
         height: Math.min(list.contentHeight, 240) + topPadding + bottomPadding
         contentItem: ListView {

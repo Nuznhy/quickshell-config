@@ -32,6 +32,7 @@ UI.ColumnLayout {
     UI.Button {
         highlighted: root.expanded
         id: trigger
+        background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: menu.reveal }
         objectName: "bar-font-picker"
         Layout.fillWidth: true
         Layout.minimumWidth: 0
@@ -80,8 +81,7 @@ UI.ColumnLayout {
             id: menu
             parent: trigger
             x: 0
-            property real slideOffset: 0
-            y: trigger.height + 4 + slideOffset
+            y: trigger.height - Design.borderWidth
             width: trigger.width
             height: search.implicitHeight + Design.space16 + Math.min(Math.max(Design.controlHeight, choices.contentHeight), 160) + padding * 2
             visible: root.expanded

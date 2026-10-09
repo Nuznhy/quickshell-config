@@ -40,6 +40,7 @@ Item {
         UI.Button {
             highlighted: root.expanded
             id: trigger
+            background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: devicePopup.reveal }
             Layout.fillWidth: true
             implicitHeight: Design.selectorHeight
             leftPadding: Design.space12
@@ -76,8 +77,7 @@ Item {
         // Draw in the window overlay, outside the selector's layout.
         parent: trigger
         x: 0
-        property real slideOffset: 0
-        y: trigger.height + 4 + slideOffset
+        y: trigger.height - Design.borderWidth
         width: trigger.width
         height: Math.min(choices.implicitHeight, 170) + padding * 2
         visible: root.expanded

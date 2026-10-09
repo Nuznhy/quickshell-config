@@ -35,6 +35,14 @@ settings, custom CSS, extensions, and dotfile symlinks are preserved.
 | Discord | Generates a local CSS theme for detected Vencord/Vesktop installations and adds it to their enabled themes. | Reopen the client after first activation. No client mod is installed by this feature. |
 | Zen Browser | Generates `chrome/quickshell-config.css` and manages its import in each registered profile's `chrome/userChrome.css`. Replaces a recognized Noctalia Zen import while enabled and restores it when disabled. | Restart Zen after palette or Dark/Light changes and after disabling sync. |
 | tmux | Generates `tmux/quickshell-config.conf` with palette values consumed by the dotfiles' `tmux/theme.conf`. Preserves the two-line status layout, rounded segments, session/window labels and clock. | Updates integrated running servers live. Disabling restores the original Rosé Pine fallback, also live. |
+| Powerlevel10k / Zsh | Generates `zsh/quickshell-p10k.zsh` and appends a managed source line to `$ZDOTDIR/.p10k.zsh`, or `~/.p10k.zsh` when ZDOTDIR is unset. Syncs prompt, directory, VCS, status, context, and common segment colors. Preserves layout, icons, custom functions, and symlinks. | Open a new shell or source your `.p10k.zsh` after applying, changing palettes, or disabling sync. No commands are injected into running terminals. |
+
+Powerlevel10k sync starts disabled and requires `zsh` plus an existing `.p10k.zsh`
+that your shell already loads. Custom configuration filenames are not detected.
+The override preserves empty generic colors and array settings, and does not
+rewrite inline color escapes inside custom formatter functions. Disabling removes
+the managed source line and restores any previous generated file; unrelated edits
+remain intact. Manual edits to managed content are reported as conflicts.
 
 These integrations use native user configuration locations. Flatpak sandbox
 permissions and custom client wrappers are not configured automatically. An app

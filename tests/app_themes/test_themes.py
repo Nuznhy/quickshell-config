@@ -623,6 +623,61 @@ class ThemeTests(unittest.TestCase):
         self.put('zen/profile/user.js', f'user_pref("{key}", false);\n')
         self.assertFalse(self.engine.zen_styles_enabled(profile))
 
+    def test_p10k_toggle_sync_and_restore_symlink(self):
+        with patch.dict(os.environ, {'ZDOTDIR': str(self.home)}):
+            self.assertFalse(module.Themes.available(self.engine, 'p10k')[0])
+            original = "typeset -g POWERLEVEL9K_DIR_BACKGROUND=4\ntypeset -ga POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir vcs)\n"
+            real = self.home / 'p10k-dotfile'
+            real.write_text(original)
+            path = self.home / '.p10k.zsh'
+            path.symlink_to(real)
+            self.assertTrue(module.Themes.available(self.engine, 'p10k')[0])
+            self.assertEqual(self.status(self.apply('p10k'), 'p10k')['state'], 'restart')
+            generated = self.config / 'zsh/quickshell-p10k.zsh'
+            self.assertTrue(path.is_symlink())
+            self.assertTrue(real.read_text().startswith(original))
+            for palette in palettes():
+                self.engine.handle(dict(action='sync', palette=palette, mode='dark'))
+                self.assertIn(palette['iris'], generated.read_text())
+                self.assertEqual(real.read_text().count('# quickshell-p10k-colors'), 1)
+            # Unrelated edits made while syncing must survive disabling.
+            with real.open('a') as stream:
+                stream.write('# user note\n')
+            self.assertEqual(self.status(self.apply('p10k', False), 'p10k')['state'], 'off')
+            self.assertEqual(real.read_text(), original + '# user note\n')
+            self.assertFalse(generated.exists())
+            self.assertEqual(self.commands, [])
+
+    def test_p10k_preserves_manual_override_edits(self):
+        with patch.dict(os.environ, {'ZDOTDIR': str(self.home)}):
+            (self.home / '.p10k.zsh').write_text('# config\n')
+            self.apply('p10k')
+            generated = self.config / 'zsh/quickshell-p10k.zsh'
+            generated.write_text('# manual colors\n')
+            self.assertEqual(self.status(self.apply('p10k', False), 'p10k')['state'], 'error')
+            self.assertEqual(generated.read_text(), '# manual colors\n')
+
+    def test_p10k_renderer_in_real_zsh(self):
+        generated = self.home / 'colors.zsh'
+        for palette in palettes():
+            generated.write_text(formats.p10k(palette))
+            code = r"""
+                typeset -ga POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir vcs)
+                typeset -g POWERLEVEL9K_CUSTOM_BACKGROUND=4
+                typeset -g POWERLEVEL9K_CUSTOM_FOREGROUND=250
+                typeset -g POWERLEVEL9K_PROMPT_CHAR_BACKGROUND=''
+                typeset -ga POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND=(1 2 3)
+                p10k() { [[ $1 == reload ]] || return 1; }
+                source "$1" || exit 2
+                [[ $POWERLEVEL9K_LEFT_PROMPT_ELEMENTS == 'dir vcs' ]] || exit 3
+                [[ -z $POWERLEVEL9K_PROMPT_CHAR_BACKGROUND ]] || exit 4
+                [[ $POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND == '1 2 3' ]] || exit 5
+                print -r -- "$POWERLEVEL9K_DIR_BACKGROUND $POWERLEVEL9K_CUSTOM_FOREGROUND"
+            """
+            result = subprocess.run(['zsh', '-dfc', code, 'test', str(generated)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout.strip(), palette['iris'] + ' ' + palette['text'])
+
     def test_tmux_target_discovery_and_config_preservation(self):
         self.assertFalse(module.Themes.available(self.engine, 'tmux')[0])
         original = (ROOT / 'integrations/tmux/theme.conf').read_text()
