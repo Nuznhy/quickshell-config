@@ -8,6 +8,8 @@ def install_design(target):
     root = Path(__file__).resolve().parent.parent
     shutil.copytree(root / 'components/ui', target / 'components/ui', dirs_exist_ok=True)
     shutil.copyfile(root / 'config/Design.qml', target / 'config/Design.qml')
+    shutil.copyfile(root / 'config/WidgetStyle.js', target / 'config/WidgetStyle.js')
+    shutil.copyfile(root / 'config/WallpaperColors.js', target / 'config/WallpaperColors.js')
     registry = target / 'config/qmldir'
     content = registry.read_text()
     if 'singleton Design ' not in content:

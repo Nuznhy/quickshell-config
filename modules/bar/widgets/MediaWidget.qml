@@ -19,7 +19,6 @@ DropdownWidget {
     popupWidth: 350
     sizeToContent: true
     showStem: false
-    showHoverIndicator: false
     stemAlignment: "center"
     rightClickEnabled: true
     wheelEnabled: true

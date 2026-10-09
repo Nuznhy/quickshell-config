@@ -130,10 +130,10 @@ background {{
 # Opaque panel keeps the clock and warnings readable over any picture/color.
 shape {{
     monitor =
-    size = 480, 420
+    size = 480, 600
     color = {colors['bg']}
     rounding = 24
-    position = 0, 40
+    position = 0, 0
     halign = center
     valign = center
     zindex = 0
@@ -145,7 +145,7 @@ label {{
     color = {colors['text']}
     font_size = 64
     font_family = JetBrainsMono Nerd Font
-    position = 0, 160
+    position = 0, 210
     halign = center
     valign = center
     zindex = 1
@@ -166,7 +166,7 @@ input-field {{
     fade_on_empty = false
     placeholder_text = Password
     rounding = 10
-    position = 0, 30
+    position = 0, 60
     halign = center
     valign = center
     zindex = 1
@@ -178,7 +178,7 @@ label {{
     color = {colors['gold']}
     font_size = 14
     font_family = JetBrainsMono Nerd Font
-    position = 0, -40
+    position = 0, 0
     halign = center
     valign = center
     zindex = 1
@@ -190,10 +190,70 @@ label {{
     color = {colors['gold']}
     font_size = 14
     font_family = JetBrainsMono Nerd Font
-    position = 0, -80
+    position = 0, -28
     halign = center
     valign = center
     zindex = 1
+}}
+
+label {{
+    monitor =
+    text = cmd[update:60000] {command} date
+    color = {colors['subtle']}
+    font_size = 14
+    font_family = JetBrainsMono Nerd Font
+    position = 0, 150
+    halign = center
+    valign = center
+    zindex = 1
+}}
+
+shape {{
+    monitor =
+    size = 416, 80
+    color = {colors['surface']}
+    rounding = 12
+    position = 0, -104
+    halign = center
+    valign = center
+    zindex = 1
+}}
+
+label {{
+    monitor =
+    text = cmd[update:5000] {command} codex
+    color = {colors['iris']}
+    font_size = 12
+    font_family = JetBrainsMono Nerd Font
+    text_align = center
+    position = 0, -104
+    halign = center
+    valign = center
+    zindex = 2
+}}
+
+shape {{
+    monitor =
+    size = 416, 112
+    color = {colors['surface']}
+    rounding = 12
+    position = 0, -216
+    halign = center
+    valign = center
+    zindex = 1
+}}
+
+label {{
+    monitor =
+    text = cmd[update:3000] {command} media
+    color = {colors['text']}
+    font_size = 12
+    font_family = JetBrainsMono Nerd Font
+    text_align = center
+    position = 0, -216
+    halign = center
+    valign = center
+    zindex = 2
 }}
 '''
 

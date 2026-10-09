@@ -16,6 +16,21 @@ Singleton {
     property string pendingIconsJson: "{}"
     property var workspaceWindows: ({})
     property string windowsJson: "{}"
+    property bool refreshPending: false
+
+    function requestRefresh() {
+        refreshPending = true;
+        // Do not restart a running timer: continuous title events must not starve updates.
+        if (!windowsProc.running && !windowRefresh.running) windowRefresh.start();
+    }
+    Timer {
+        id: windowRefresh
+        interval: 100
+        onTriggered: {
+            root.refreshPending = false;
+            windowsProc.running = true;
+        }
+    }
 
     Timer {
         id: iconUpdateDebounce
@@ -98,14 +113,15 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: root.updateWindows(text)
         }
-        Component.onCompleted: running = true
+        Component.onCompleted: root.requestRefresh()
+        onExited: { if (root.refreshPending) Qt.callLater(root.requestRefresh); }
     }
 
     // Update on Hyprland events
     Connections {
         target: Hyprland
         function onRawEvent(event) {
-            windowsProc.running = true;
+            root.requestRefresh();
         }
     }
 
@@ -114,7 +130,7 @@ Singleton {
         interval: Settings.workspaceInterval
         running: true
         repeat: true
-        onTriggered: windowsProc.running = true
+        onTriggered: root.requestRefresh()
     }
 
     property int activeWorkspaceId: Hyprland.focusedWorkspace?.id ?? 1

@@ -27,6 +27,7 @@ QtObject {
     property bool ready: true
     property string mode: "dark"
     property var palette: ({bg: "#191724", surface: "#1f1d2e", overlay: "#26233a", muted: "#6e6a86", subtle: "#908caa", text: "#e0def4", love: "#eb6f92", gold: "#f6c177", rose: "#ebbcba", pine: "#31748f", foam: "#9ccfd8", iris: "#c4a7e7", highlightLow: "#21202e", highlightMed: "#403d52", highlightHigh: "#524f67"})
+    property var widgetStyle: ({lines: "animated", background: "off", duration: 300, strength: 12})
     property int barRadius: 0
     property real barOpacity: 1
     property int barTopMargin: 0
@@ -118,6 +119,7 @@ ShellRoot {
         function disable(): void { AppTheming.setEnabled("ghostty", false); }
         function palette(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {bg: value}); }
         function accent(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {iris: value}); }
+        function widgetStyle(): void { Theme.widgetStyle = {lines: "off", background: "instant", duration: 400, strength: 20}; }
         function unrelated(): void { Theme.barRadius += 1; }
         function hyprEnable(): void { AppTheming.setEnabled("hyprland", true); }
         function hyprColorsEnable(): void { AppTheming.setEnabled("hyprland-colors", true); }
@@ -193,6 +195,12 @@ ShellRoot {
             ipc('hyprEnable')
             settled(lambda r: next(t for t in r['targets'] if t['id'] == 'hyprland')['enabled'])
             hypr = config / 'hypr/quickshell-appearance.lua'
+            before_style = hypr.stat().st_mtime_ns
+            ipc('widgetStyle')
+            time.sleep(.4)
+            settled()
+            assert hypr.stat().st_mtime_ns == before_style
+            assert path.stat().st_mtime_ns == modified
             ipc('barStyle', '12')
             ipc('barStyle', '18')
             time.sleep(.4)

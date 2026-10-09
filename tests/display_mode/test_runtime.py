@@ -6,8 +6,11 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from design_test_support import install_design
 
 
 class RuntimeTests(unittest.TestCase):
@@ -90,12 +93,18 @@ ShellRoot {
                 DisplayMode.toggle();
                 phase = 2;
             } else if (phase === 2 && !DisplayMode.mirrored) {
+                DisplayMode.run("status");
+                const icon = button.children.find(child => child.objectName === "display-status-icon");
+                if (DisplayMode.changing || !icon || icon.opacity !== 1) throw new Error("status check changed icon appearance");
+                phase = 3;
+            } else if (phase === 3) {
                 console.log("DISPLAY_TEST_OK"); Qt.quit();
             }
         }
     }
 }
 ''')
+            install_design(base)
             env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software',
                        XDG_RUNTIME_DIR=str(base / 'runtime'), XDG_STATE_HOME=str(base / 'state'),
                        XDG_CACHE_HOME=str(base / 'cache'), HYPRLAND_INSTANCE_SIGNATURE='',

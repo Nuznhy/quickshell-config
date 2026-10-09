@@ -34,13 +34,10 @@ UI.ColumnLayout {
                 accent: root.confirmation === modelData.action
                 accentColor: modelData.action === "shutdown" ? Design.danger : Design.accent
                 Accessible.name: modelData.label
-                contentItem: UI.Text {
+                contentItem: UI.Icon {
+                    size: Design.iconHero
                     text: button.modelData.icon
                     color: button.accent ? button.foreground : button.modelData.action === "shutdown" ? Design.danger : Design.text
-                    font.family: Design.fontFamily
-                    role: "page"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
                 }
                 onClicked: {
                     if (modelData.action === "reboot" || modelData.action === "shutdown") root.confirmation = modelData.action;

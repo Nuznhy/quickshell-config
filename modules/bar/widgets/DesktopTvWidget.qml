@@ -12,7 +12,7 @@ Item {
     readonly property string actionText: DesktopTv.pending ? "Keep TV"
         : DesktopTv.mode === "tv" ? "Switch to Desktop" : "Switch to TV"
     readonly property string description: DesktopTv.errorMessage
-        || (DesktopTv.busy ? "Changing display layout…"
+        || (DesktopTv.changing ? "Changing display layout…"
         : !DesktopTv.available ? DesktopTv.reason
         : DesktopTv.pending ? "Press Enter within 15 seconds, or click here, to keep TV"
         : DesktopTv.mode === "tv"
@@ -30,12 +30,12 @@ Item {
         focused: root.activeFocus
     }
     UI.Text {
+        objectName: "display-status-icon"
         role: "bar"
         anchors.centerIn: parent
         text: DesktopTv.mode === "tv" ? "󰟴" : "󰍹"
         color: DesktopTv.errorMessage ? Design.danger : !DesktopTv.available ? Design.textSecondary
             : DesktopTv.mode === "tv" ? Design.accent : Design.text
-        opacity: DesktopTv.busy ? 0.5 : 1
         font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }

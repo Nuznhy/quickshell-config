@@ -114,6 +114,7 @@ UI.ColumnLayout {
                 }
             }
         }
+        WallpaperThemeSettings {}
     }
 
     Section {
@@ -245,6 +246,12 @@ UI.ColumnLayout {
                 onEditingFinished: Theme.save()
             }
         }
+    }
+
+    Section {
+        title: "Widget styling"
+        description: "Hover and active effects for bar widgets on every monitor."
+        WidgetStyleSettings { Layout.fillWidth: true }
     }
 
     Section {

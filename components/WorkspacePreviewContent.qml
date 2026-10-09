@@ -15,6 +15,8 @@ Item {
     property string highlightedAddress: ""
     property bool active: true
     readonly property var windows: Workspaces.getWsWindows(workspaceId)
+    // Titles, focus rank and geometry are data updates, not window identities.
+    readonly property string windowAddresses: JSON.stringify(windows.map(window => window.address).sort())
     readonly property var selectedWindow: windows.find(window => window.address === highlightedAddress)
     readonly property real previewWidth: Math.max(1, width)
     readonly property real previewHeight: previewWidth * monitorBounds.height / monitorBounds.width
@@ -44,21 +46,24 @@ Item {
             fillMode: Image.PreserveAspectCrop
         }
         Repeater {
-            model: root.windows
+            model: JSON.parse(root.windowAddresses)
             delegate: Rectangle {
                 id: window
-                required property var modelData
-                readonly property var rect: PreviewData.project(modelData, root.monitorBounds, desktop.width, desktop.height)
+                required property string modelData
+                readonly property var entry: root.windows.find(item => item.address === modelData)
+                    || {address: modelData, x: 0, y: 0, width: 0, height: 0, rank: 10000, title: "", floating: false, fullscreen: false}
+                objectName: "workspace-preview-window-" + modelData
+                readonly property var rect: PreviewData.project(entry, root.monitorBounds, desktop.width, desktop.height)
                 x: rect.x; y: rect.y; width: rect.width; height: rect.height
                 // Hyprland's recent-focus rank approximates stacking within layers.
-                z: (modelData.fullscreen ? 30000 : modelData.floating ? 20000 : 10000) - Math.min(9999, modelData.rank)
+                z: (entry.fullscreen ? 30000 : entry.floating ? 20000 : 10000) - Math.min(9999, entry.rank)
                 color: Design.surface
                 clip: true
                 ScreencopyView {
                     id: capture
-                    objectName: "workspace-preview-capture-" + window.modelData.address
+                    objectName: "workspace-preview-capture-" + window.entry.address
                     anchors.fill: parent
-                    captureSource: root.active ? Workspaces.captureSource(window.modelData.address) : null
+                    captureSource: root.active ? Workspaces.captureSource(window.entry.address) : null
                     live: false
                     paintCursor: false
                 }
@@ -70,11 +75,12 @@ Item {
                     IconImage {
                         anchors.horizontalCenter: parent.horizontalCenter
                         implicitSize: Math.min(26, window.height / 2)
-                        source: Workspaces.getWsIcons(root.workspaceId).find(icon => icon.address === window.modelData.address)?.source || ""
+                        source: Workspaces.getWsIcons(root.workspaceId).find(icon => icon.address === window.entry.address)?.source || ""
                     }
                     UI.Text {
                         width: parent.width
-                        text: window.modelData.title
+                        objectName: "workspace-preview-title-" + window.modelData
+                        text: window.entry.title
                         textFormat: Text.PlainText
                         color: Design.text
                         font.family: Design.fontFamily

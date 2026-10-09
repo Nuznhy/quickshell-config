@@ -199,9 +199,10 @@ ShellRoot {
                 font: Theme.barFontFamily, folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
                 separateWallpapers: Theme.separateWallpapers, wallpapers: Theme.wallpapers,
                 lightWallpapers: Theme.lightWallpapers, darkWallpapers: Theme.darkWallpapers,
-                lockScreen: Theme.lockScreen,
+                lockScreen: Theme.lockScreen, widgetStyle: Theme.widgetStyle,
                 error: Theme.errorMessage});
         }
+        function resetWidgetStyle(): void { Theme.resetWidgetStyle(); }
         function workspaceSettings(): bool {
             window.widgetSettings = "workspaces";
             return window.widgetSettings === "workspaces";
@@ -211,6 +212,10 @@ ShellRoot {
             WorkspaceAppearance.setOption("iconStyle", "nerd");
             WorkspaceAppearance.setOption("separator", "::");
             WorkspaceAppearance.setOption("capsule", true);
+            Theme.setWidgetStyle("lines", "off");
+            Theme.setWidgetStyle("background", "instant");
+            Theme.setWidgetStyle("duration", 420);
+            Theme.setWidgetStyle("strength", 23);
             Theme.setBarFontFamily("DejaVu Sans");
             Theme.setBarFontFamily("");
             Theme.setBarFontFamily(null);
@@ -301,6 +306,7 @@ ShellRoot {
             preferences = json.loads(ipc('test', 'status'))
             assert not preferences['error'], preferences
             assert preferences['workspace'] == dict(version=1, showIcons=False, iconStyle='nerd', separator='::', capsule=True)
+            assert preferences['widgetStyle'] == dict(lines='off', background='instant', duration=420, strength=23)
             assert preferences['font'] == 'DejaVu Sans'
             assert preferences['lockScreen']['background'] == 'color'
             assert preferences['lockScreen']['color'] == '#123abc'
@@ -319,8 +325,14 @@ ShellRoot {
                 if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
                 time.sleep(.05)
             assert not restored['error'], restored
-            for key in ['workspace', 'font', 'folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
+            for key in ['widgetStyle', 'workspace', 'font', 'folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
                 assert restored[key] == preferences[key], (key, restored, preferences)
+            ipc('test', 'resetWidgetStyle')
+            time.sleep(.4)
+            reset = json.loads(ipc('test', 'status'))
+            assert reset['widgetStyle'] == dict(lines='animated', background='off', duration=300, strength=12)
+            assert reset['font'] == restored['font']
+            print('PASS: widget styling persists and resets independently', flush=True)
             assert ipc('test', 'checkWallpaperModes') == 'true'
             print('PASS: shared/light/dark wallpapers persist, clear independently, and follow theme changes', flush=True)
             print('PASS: wallpaper folder and custom settings icon survive restart', flush=True)

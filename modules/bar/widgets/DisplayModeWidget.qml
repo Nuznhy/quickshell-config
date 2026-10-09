@@ -11,7 +11,7 @@ Item {
     activeFocusOnTab: true
     readonly property string actionText: DisplayMode.mirrored
         ? "Restore configured monitor layout" : "Duplicate laptop screen"
-    readonly property string description: DisplayMode.busy ? "Checking / changing displays…"
+    readonly property string description: DisplayMode.changing ? "Changing displays…"
         : DisplayMode.errorMessage || (!DisplayMode.available ? DisplayMode.reason
         : actionText + "\n" + DisplayMode.laptop + " → " + DisplayMode.outputs.join(", ")
             + (DisplayMode.mirrored ? "" : "\nAutomatic resolution"))
@@ -27,12 +27,12 @@ Item {
         focused: root.activeFocus
     }
     UI.Text {
+        objectName: "display-status-icon"
         role: "bar"
         anchors.centerIn: parent
         text: DisplayMode.mirrored ? "󰍺" : "󰍹"
         color: DisplayMode.errorMessage ? Design.danger : !DisplayMode.available ? Design.textSecondary
             : DisplayMode.mirrored ? Design.accent : Design.text
-        opacity: DisplayMode.busy ? 0.5 : 1
         font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }

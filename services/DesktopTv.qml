@@ -13,6 +13,7 @@ Singleton {
     property string errorMessage: ""
     property bool requestPending: false
     readonly property bool busy: requestPending || worker.running || mode === "transition"
+    readonly property bool changing: ((requestPending || worker.running) && worker.action !== "status") || mode === "transition"
     readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/desktop-tv.py").toString().replace(/^file:\/\//, ""))
 
     function run(action) {

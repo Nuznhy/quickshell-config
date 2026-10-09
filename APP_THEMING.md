@@ -110,6 +110,9 @@ Install only the optional tools for integrations you want:
 - Hyprtoolkit: an existing `~/.config/hypr/hyprtoolkit.conf`.
 - Hyprlock: `hyprlock` (validated against 0.9.6), `hyprctl`, and Python 3. See the
   [Hyprlock widget documentation](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/).
+  The media card also uses `busctl` (systemd); the Codex card reads local SQLite
+  session metadata and bounded event tails. Neither integration is required to
+  unlock, and unavailable status is displayed without changing authentication.
   The persistent Caps Lock label reads only keyboard modifier metadata; no
   keypresses or passwords are read. The password-border warning is native to
   Hyprlock and remains available even if `hyprctl` fails.

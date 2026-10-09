@@ -105,6 +105,21 @@ UI.ColumnLayout {
             onClicked: AppTheming.retry("hyprlock")
         }
     }
+    UI.RowLayout {
+        Layout.fillWidth: true
+        UI.Text {
+            Layout.fillWidth: true
+            text: "Clock, local Codex activity, and current media. Changes appear on the next lock."
+            wrapMode: Text.WordWrap
+            color: Design.textSecondary
+            role: "body"
+        }
+        NotificationButton {
+            text: "Reapply"
+            enabled: !!root.target?.enabled && !AppTheming.busy
+            onClicked: AppTheming.retry("hyprlock")
+        }
+    }
     UI.Text { text: "Background"; color: Design.text; font.family: Design.fontFamily; role: "section" }
     UI.RowLayout {
         spacing: Design.space8

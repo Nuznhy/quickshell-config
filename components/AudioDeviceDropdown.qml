@@ -71,7 +71,7 @@ Item {
         }
     }
 
-    UI.Popup {
+    UI.SelectPopup {
         id: devicePopup
         // Draw in the window overlay, outside the selector's layout.
         parent: trigger
@@ -92,16 +92,16 @@ Item {
             UI.ColumnLayout {
                 id: choices
                 width: parent.width
-                spacing: Design.space4
+                spacing: 0
                 Repeater {
                     model: devicePopup.visible ? root.devices : []
-                    UI.Button {
+                    UI.MenuItem {
                         highlighted: selectedDevice
                         id: choice
                         required property var modelData
                         readonly property bool selectedDevice: modelData.name === root.selectedName
                         Layout.fillWidth: true
-                        implicitHeight: Math.max(Design.selectorHeight, label.implicitHeight + Design.space16)
+                        implicitHeight: Math.max(Design.controlHeight, label.implicitHeight + Design.space16)
                         leftPadding: Design.space12
                         rightPadding: Design.space8
                         onClicked: {

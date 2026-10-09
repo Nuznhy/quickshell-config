@@ -8,7 +8,7 @@ import "modules/settings"
 import "services"
 
 ShellRoot {
-    Component.onCompleted: AppTheming.refresh()
+    Component.onCompleted: { AppTheming.refresh(); WallpaperTheme.initialize(); }
     SettingsWindow {}
     Wallpapers {}
     NotificationToasts {}

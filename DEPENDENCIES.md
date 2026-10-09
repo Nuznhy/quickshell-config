@@ -17,6 +17,7 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | Application icons | `hicolor-icon-theme`, `adwaita-icon-theme` | Icon lookup infrastructure and a recommended fallback theme. Apps supply their own desktop entries and icons. |
 | Helpers and statistics | `bash`, `coreutils`, `grep`, `procps-ng`, `jq`, `python` | Shell scripts, `head`, `free`, JSON processing, and Python helpers. Linux `/proc` and `/sys` must be available. |
 | PC monitoring | `python`, `btop`, an installed terminal | Standard-library collector reads `/proc` and `/sys`; right-click launches `btop`. No extra Python libraries or Qt Charts module are required. |
+| Wallpaper theme generation (optional) | `imagemagick`, `python` | `magick` decodes wallpaper pixels locally; the standard-library helper generates light/dark palettes. Existing and saved generated themes work without ImageMagick. |
 | Quick settings system info | `python`, `pciutils`, `systemd` | Standard library and Linux interfaces supply system details; `lspci` supplies GPU models and `udevadm` supplies cached installed RAM sizes. No pip packages are needed. |
 | Pending repository updates | `pacman-contrib` | `checkupdates` checks configured repositories in a separate database without installing packages. AUR updates are not included. |
 | Laptop battery | `python`, `polkit`, `coreutils` | Reads charge/discharge estimates from `/sys/class/power_supply`, with energy/power or charge/current fallbacks. Charge limits use the driver's threshold file; firmware power profiles use `/sys/firmware/acpi/platform_profile` and its reported choices. `pkexec` elevates `tee` for protected writes; an active polkit agent is needed. No power-profile daemon or extra Python library is required. |
@@ -202,8 +203,18 @@ Manual Lock/Sleep and the parent dotfiles' lid integration require:
 sudo pacman -S --needed hyprlock hypridle
 ```
 
-Its `hypr/config/binds.lua` binds `switch:on:Lid Switch` to
-`loginctl lock-session`, while `hypr/config/autostart.lua` starts Hypridle.
+Install the provided Hypridle config and enable its user service from your
+Hyprland session (for a new setup without an existing Hypridle config):
+
+```sh
+install -m 600 ~/.config/quickshell/integrations/hypridle/hypridle.conf ~/.config/hypr/hypridle.conf
+systemctl --user enable --now hypridle.service
+```
+
+The service starts with `graphical-session.target`; the session manager must
+provide `WAYLAND_DISPLAY` and `HYPRLAND_INSTANCE_SIGNATURE` to the user service
+manager. For setups without systemd session management, start Hypridle from the
+Hyprland startup configuration instead. Use only one startup mechanism.
 `~/.config/hypr/hyprlock.conf` supplies the lock screen, and
 `~/.config/hypr/hypridle.conf` handles `loginctl lock-session` and locking before
 sleep with `inhibit_sleep = 3` and
@@ -212,8 +223,9 @@ The launcher requires `hyprctl` and Python 3. It checks the compositor instead
 of a process ID, so a stale Hyprlock process after unlock cannot disable locking. See [Hypridle's sleep integration](https://wiki.hypr.land/hypr-ecosystem/user/hypridle/).
 After installing this setup into an existing session, restart the session's
 `hypridle` process to load its new `lock_cmd`, or log in again. No inactivity timeout is configured. The
-existing logind lid/suspend policy remains in effect; closing the lid also locks
-when the system stays awake, such as while docked. Test closing/reopening the
+existing logind lid/suspend policy remains in effect. To lock on lid closing
+when the system stays awake (for example while docked), bind the lid switch to
+`loginctl lock-session` in Hyprland. Test closing/reopening the
 lid and unlocking with the normal login password on each target laptop.
 
 Night Shift needs the [hyprsunset package](https://archlinux.org/packages/extra/x86_64/hyprsunset/).

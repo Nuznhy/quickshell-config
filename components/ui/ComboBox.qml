@@ -43,10 +43,14 @@ T.ComboBox {
         width: root.popup.availableWidth
         implicitHeight: Design.controlHeight
         padding: Design.space8
+        topInset: 0
+        bottomInset: 0
+        leftInset: 0
+        rightInset: 0
         text: root.textAt(index)
         highlighted: root.highlightedIndex === index
         hoverEnabled: true
-        background: ControlSurface { control: option; selected: option.highlighted || root.currentIndex === option.index }
+        background: ControlSurface { control: option; selected: option.highlighted || root.currentIndex === option.index; radius: 0 }
         contentItem: UI.Text {
             text: option.text
             color: option.highlighted || root.currentIndex === option.index ? Design.textOnAccent : Design.text
@@ -54,7 +58,7 @@ T.ComboBox {
             verticalAlignment: Text.AlignVCenter
         }
     }
-    popup: Popup {
+    popup: SelectPopup {
         y: root.height + Design.space4
         width: root.width
         height: Math.min(list.contentHeight, 240) + topPadding + bottomPadding

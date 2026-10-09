@@ -20,6 +20,7 @@ RadioButton 1.0 RadioButton.qml
 RowLayout 1.0 RowLayout.qml
 ScrollBar 1.0 ScrollBar.qml
 ScrollView 1.0 ScrollView.qml
+SelectPopup 1.0 SelectPopup.qml
 SegmentedControl 1.0 SegmentedControl.qml
 Slider 1.0 Slider.qml
 Switch 1.0 Switch.qml

@@ -15,13 +15,23 @@ with tempfile.TemporaryDirectory(prefix='qs-design-') as directory:
     (base / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\n')
     (base / 'config/Theme.qml').write_text('''pragma Singleton
 import QtQuick
-QtObject { property string fontFamily: "JetBrainsMono Nerd Font" }
+import "WidgetStyle.js" as WidgetStyle
+QtObject {
+    property string fontFamily: "JetBrainsMono Nerd Font"
+    property bool ready: true
+    property bool verticalBar: false
+    property int sideBarWidth: 64
+    property var widgetStyle: WidgetStyle.defaults()
+    function setWidgetStyle(key, value) { widgetStyle = WidgetStyle.normalize(Object.assign({}, widgetStyle, {[key]: value})); }
+    function resetWidgetStyle() { widgetStyle = WidgetStyle.defaults(); }
+    function save() {}
+}
 ''')
     install_design(base)
     shutil.copyfile(root / 'config/Palettes.js', base / 'config/Palettes.js')
     shutil.copytree(root / 'tools/design-gallery', base / 'tools/design-gallery')
     for name in ['ControlSwitch.qml', 'AudioSlider.qml', 'MediaSeekSlider.qml', 'NotificationButton.qml',
-                 'AudioLevelControl.qml', 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
+                 'BarHoverIndicator.qml', 'WidgetStyleSettings.qml', 'AppearanceSlider.qml', 'AudioLevelControl.qml', 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
         shutil.copyfile(root / 'components' / name, base / 'components' / name)
     for path in (root / 'tests/design_system').glob('tst_*.qml'):
         shutil.copyfile(path, base / path.name)

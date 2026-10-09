@@ -19,12 +19,11 @@ DropdownWidget {
     Item {
         width: 30
         height: parent.height
-        UI.Text {
+        UI.Icon {
             anchors.centerIn: parent
+            size: Design.iconLarge
             text: NetworkState.icon
             color: NetworkState.vpnActive ? Design.accent : NetworkState.connected ? Design.text : Design.textMuted
-            font.family: Design.fontFamily
-            role: "panel"
         }
     }
     popupContent: NetworkCenter {

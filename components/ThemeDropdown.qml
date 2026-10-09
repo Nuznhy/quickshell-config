@@ -47,7 +47,7 @@ Item {
         }
     }
 
-    UI.Popup {
+    UI.SelectPopup {
         id: menu
         parent: trigger
         x: 0
@@ -65,16 +65,16 @@ Item {
             UI.ColumnLayout {
                 id: choices
                 width: parent.width
-                spacing: Design.space4
+                spacing: 0
                 Repeater {
                     model: Theme.presets
-                    UI.Button {
+                    UI.MenuItem {
                         highlighted: selectedTheme
                         id: choice
                         required property var modelData
                         readonly property bool selectedTheme: modelData.id === Theme.preset
                         Layout.fillWidth: true
-                        implicitHeight: Design.selectorHeight
+                        implicitHeight: Design.controlHeight
                         leftPadding: Design.space8
                         rightPadding: Design.space8
                         Accessible.name: modelData.name

@@ -345,6 +345,22 @@ history, and settings-persistence checks.
 
 ## Customize
 
+In **Settings → Appearance → Colors**, **Theme from wallpaper** generates a
+shared palette from the selected monitor. Choose **Dominant**, **Vibrant**, or
+**Average** extraction and a **Neutral**, **Tonal**, or **Vivid** variant. Changing
+any of these controls generates and applies the Wallpaper theme automatically;
+light/dark swatches show the result. ImageMagick (`magick`) is required for
+generation; processing stays local.
+
+**Follow wallpaper changes** is off by default. When enabled, it updates colors
+while the Wallpaper theme is selected, including separate light/dark wallpapers.
+Selecting a built-in preset pauses automatic application. Missing images or
+disconnected source monitors keep the last applied palette and show an inline
+error. The saved palette remains available after restarting or removing the image.
+Already-enabled application theme syncs follow successfully applied palettes.
+Run `python3 scripts/test-wallpaper-colors.py` for extraction, contrast, UI,
+automatic-update, and persistence checks.
+
 - Open Settings → Appearance, then click the active-theme
   card to toggle a floating menu of names and color swatches. Choose Rosé Pine,
   Catppuccin, Gruvbox, Solarized, Everforest, or Neutral. Every preset supports
@@ -377,6 +393,15 @@ history, and settings-persistence checks.
   Enable individual targets under Application themes to sync app colors with the
   shell. See [Application themes](APP_THEMING.md) for supported apps, toolkit
   setup, and restoration. All app switches start off.
+- In **Appearance → Widget styling**, choose **Off**, **Instant**, or **Animated**
+  independently for bar edge lines and hover backgrounds. Edge lines move to the
+  left/right on vertical bars; Off also hides active-state lines. Defaults retain
+  animated lines (300 ms) and no hover background. Animation duration supports
+  100–600 ms; background strength supports 0–30% (12% by default).
+  The preview responds to hover, click, and keyboard focus. Settings apply across
+  all monitors and save automatically. Reset affects only widget styling.
+  Keyboard focus remains visible with effects off. There is no click flash;
+  popup controls, workspace movement, and external theme syncing are unaffected.
 - Change the keyboard device, launcher commands, spacing, and refresh intervals
   in `config/Settings.qml`. Defaults retain the previous configuration.
 - Reorder and show/hide widgets in Settings → Bar layout. New widget types are
@@ -533,8 +558,8 @@ The helper rejects Lock/Sleep if required tools or the Hypridle listener are
 missing. Reboot and shutdown use `systemctl reboot` and `systemctl poweroff`,
 respecting the system's normal permissions and inhibitors.
 
-The parent dotfiles start Hypridle with Hyprland and keep the existing
-lid/suspend policy. See [Dependencies and session setup](DEPENDENCIES.md#service-and-session-setup)
+Enable the Hypridle user service to start it with the graphical session.
+The existing lid/suspend policy stays in effect. See [Dependencies and session setup](DEPENDENCIES.md#service-and-session-setup)
 for packages, configuration, and activation. The shell no longer runs a separate
 Quickshell locker; all entry points share
 Hyprlock's appearance and authentication.
@@ -550,6 +575,19 @@ on/off status, even before typing. Caps Lock also highlights the password border
 The layout uses Hyprlock's native `$LAYOUT`; the Caps Lock label reads Hyprland's
 main keyboard every 500 ms and shows “unknown” if unavailable. An opaque themed
 panel keeps these indicators readable over pictures and custom colors.
+
+The clock/date, unlock field, and two compact cards share the theme palette.
+The media card reads local MPRIS players using `busctl` every three seconds,
+preferring playing over paused media, and shows the title and artist. No player
+controls or remote artwork downloads are used on the lock screen.
+The Codex card checks local session events every five seconds from
+`$CODEX_HOME` (default `~/.codex`). It shows recent activity, completion, or
+interruption, without exposing task titles, prompts, or responses. This is a
+best-effort adapter for local Codex session files, not a live app-server
+connection: activity older than two minutes becomes “Awaiting update”, and
+events older than a day are omitted. Missing or incompatible data is reported
+on the card. Use **Settings → Lock screen → Reapply** to regenerate the layout;
+the updated layout appears on the next lock.
 
 Sync uses a managed `hypr/hyprlock.conf` with standard PAM authentication. The
 previous configuration is backed up and restored when sync is disabled; manual

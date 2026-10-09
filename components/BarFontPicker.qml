@@ -76,14 +76,14 @@ UI.ColumnLayout {
                 role: "panel"
             }
         }
-        UI.Popup {
+        UI.SelectPopup {
             id: menu
             parent: trigger
             x: 0
             property real slideOffset: 0
             y: trigger.height + 4 + slideOffset
             width: trigger.width
-            height: search.implicitHeight + 8 + Math.min(Math.max(38, choices.contentHeight), 160) + padding * 2
+            height: search.implicitHeight + Design.space16 + Math.min(Math.max(Design.controlHeight, choices.contentHeight), 160) + padding * 2
             visible: root.expanded
 
             onOpened: {
@@ -98,10 +98,11 @@ UI.ColumnLayout {
             }
 
             contentItem: UI.ColumnLayout {
-                spacing: Design.space8
+                spacing: 0
                 UI.TextField {
                     id: search
                     objectName: "bar-font-search"
+                    Layout.margins: Design.space8
                     Layout.fillWidth: true
                     placeholderText: "Search installed fonts…"
                     Accessible.name: "Search installed bar fonts"
@@ -124,7 +125,7 @@ UI.ColumnLayout {
                     Layout.fillHeight: true
                     clip: true
                     model: root.matches
-                    spacing: Design.space4
+                    spacing: 0
                     keyNavigationEnabled: true
                     highlightMoveDuration: 0
                     ScrollBar.vertical: UI.ScrollBar {}
@@ -136,7 +137,7 @@ UI.ColumnLayout {
                         required property int index
                         width: choices.width
                         readonly property bool selectedFont: modelData === Theme.barFontFamily
-                        height: 38
+                        height: Design.controlHeight
                         leftPadding: Design.space8
                         rightPadding: Design.space8
                         highlighted: selectedFont || (choices.activeFocus && choices.currentIndex === index)

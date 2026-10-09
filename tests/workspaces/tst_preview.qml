@@ -66,6 +66,31 @@ Rectangle {
             wait(350);
             grabImage(content.parent).save("/tmp/quickshell-workspace-capsule.png");
         }
+        function test_title_bursts_preserve_captures_and_labels() {
+            const capture = findChild(content, "workspace-preview-capture-0xabc");
+            const card = findChild(content, "workspace-preview-window-0xabc");
+            const title = findChild(content, "workspace-preview-title-0xabc");
+            verify(capture !== null); verify(card !== null); verify(title !== null);
+            content.highlightedAddress = "0xabc";
+            for (let i = 0; i < 40; i++) {
+                const changed = Workspaces.previewWindows.map(entry => Object.assign({}, entry,
+                    entry.address === "0xabc" ? {title: "Codex task " + i, x: 1920 + i, rank: i % 2} : {}));
+                // Client-list order may change along with focus; identity must not.
+                Workspaces.previewWindows = i % 2 ? changed.reverse() : changed;
+                wait(5);
+                compare(findChild(content, "workspace-preview-capture-0xabc"), capture);
+                compare(findChild(content, "workspace-preview-window-0xabc"), card);
+                compare(findChild(content, "workspace-preview-title-0xabc"), title);
+                compare(title.text, "Codex task " + i);
+                verify(title.visible);
+                compare(content.selectedWindow.title, title.text);
+                compare(card.x, i * 380 / 1920);
+            }
+            Workspaces.previewWindows = Workspaces.previewWindows.filter(entry => entry.address !== "0xabc");
+            wait(20);
+            compare(findChild(content, "workspace-preview-capture-0xabc"), null);
+            verify(!findChild(content, "workspace-preview-highlight").visible);
+        }
         function test_geometry_uses_monitor_origin_and_logical_scale() {
             const monitor={x:-1920,y:-100,width:3840,height:2160,scale:2,lastIpcObject:{transform:0}};
             const bounds=Data.bounds(monitor,null);

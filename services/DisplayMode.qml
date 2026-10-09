@@ -14,6 +14,7 @@ Singleton {
     property var outputs: []
     property bool requestPending: false
     readonly property bool busy: requestPending || worker.running
+    readonly property bool changing: busy && worker.action !== "status"
     readonly property string helper: decodeURIComponent(Qt.resolvedUrl("../scripts/display-mode.py").toString().replace(/^file:\/\//, ""))
 
     function run(action) {

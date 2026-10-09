@@ -13,16 +13,12 @@ DropdownWidget {
     showStem: false
     stemAlignment: "right"
     property string errorMessage: ""
-    UI.Text {
-        role: "bar"
+    UI.Icon {
         width: 30
         height: Settings.barHeight
+        size: Theme.fontSize
         text: ""
-        font.family: Design.fontFamily
-        font.pixelSize: Theme.fontSize
         color: Design.danger
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
     }
     popupContent: PowerMenu {
         active: root.dropdownOpen
