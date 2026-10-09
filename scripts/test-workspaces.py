@@ -36,6 +36,13 @@ Item {
     (base / 'components/AnimatedAppIcons.qml').write_text(source.replace('import Quickshell.Widgets\n',''))
     (base / 'components/IconImage.qml').write_text('import QtQuick\nItem { property url source; readonly property int status: Image.Null; property int implicitSize: 20; implicitWidth: implicitSize; implicitHeight: implicitSize }\n')
     (base / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\nsingleton Settings 1.0 Settings.qml\n')
+    with (base / 'config/qmldir').open('a') as stream:
+        stream.write('singleton WorkspaceAppearance 1.0 WorkspaceAppearance.qml\n')
+    for name in ['WorkspaceAppearanceData.js', 'AppGlyphs.js']:
+        shutil.copyfile(root / 'config' / name, base / 'config' / name)
+    appearance = (root / 'config/WorkspaceAppearance.qml').read_text().split('    Timer {')[0]
+    appearance = appearance.replace('import Quickshell\n', '').replace('import Quickshell.Io\n', '').replace('Singleton {', 'QtObject {').replace('property bool ready: false', 'property bool ready: true').replace('saveTimer.restart();', '')
+    (base / 'config/WorkspaceAppearance.qml').write_text(appearance + '}\n')
     (base / 'config/Settings.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { property int barHeight: 42 }\n')
     (base / 'config/Theme.qml').write_text('''pragma Singleton
 import QtQuick

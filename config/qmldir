@@ -3,3 +3,4 @@ singleton Icons 1.0 Icons.qml
 singleton Settings 1.0 Settings.qml
 singleton BarLayout 1.0 BarLayout.qml
 singleton Monitoring 1.0 Monitoring.qml
+singleton WorkspaceAppearance 1.0 WorkspaceAppearance.qml

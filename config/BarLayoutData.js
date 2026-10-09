@@ -2,7 +2,7 @@
 
 var sections = ["start", "center", "end"];
 var widgets = [
-    { id: "workspaces", label: "Workspaces", section: "start", source: "widgets/WorkspaceBar.qml" },
+    { id: "workspaces", label: "Workspaces", section: "start", source: "widgets/WorkspaceBar.qml", settings: true },
     { id: "tray", label: "System tray", section: "start", source: "widgets/Tray.qml" },
     { id: "media", label: "Media", section: "start", source: "widgets/MediaWidget.qml" },
     { id: "clock", label: "Clock", section: "center", source: "widgets/Clock.qml" },

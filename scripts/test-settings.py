@@ -14,11 +14,17 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     for subdir in ['config', 'components', 'modules/settings', 'modules/bar/widgets', 'runtime']:
         (target / subdir).mkdir(parents=True, exist_ok=True, mode=0o700)
     for name in ['ControlSwitch.qml', 'NotificationButton.qml', 'WallpaperSelector.qml',
-                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml', 'BarFontPicker.qml']:
+                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml', 'BarFontPicker.qml', 'WorkspaceSettingsPanel.qml']:
         shutil.copyfile(root / 'components' / name, target / 'components' / name)
     for path in ['config/BarLayoutData.js', 'modules/settings/BarLayoutEditor.qml', 'modules/bar/BarSection.qml']:
         shutil.copyfile(root / path, target / path)
     (target / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\nsingleton BarLayout 1.0 BarLayout.qml\nsingleton Settings 1.0 Settings.qml\n')
+    with (target / 'config/qmldir').open('a') as stream:
+        stream.write('singleton WorkspaceAppearance 1.0 WorkspaceAppearance.qml\n')
+    shutil.copyfile(root / 'config/WorkspaceAppearanceData.js', target / 'config/WorkspaceAppearanceData.js')
+    appearance = (root / 'config/WorkspaceAppearance.qml').read_text().split('    Timer {')[0]
+    appearance = appearance.replace('import Quickshell\n', '').replace('import Quickshell.Io\n', '').replace('Singleton {', 'QtObject {').replace('property bool ready: false', 'property bool ready: true').replace('saveTimer.restart();', '')
+    (target / 'config/WorkspaceAppearance.qml').write_text(appearance + '}\n')
     theme_source = (root / 'config/Theme.qml').read_text()
     wallpaper_functions = theme_source[theme_source.index('    function wallpaperMode('):theme_source.index('    function setWallpaperFolder(')]
     (target / 'config/Theme.qml').write_text('''pragma Singleton
@@ -187,14 +193,22 @@ ShellRoot {
         }
         function status(): string {
             return JSON.stringify({visible: window.visible, opened: ShellSettings.opened,
-                ready: Theme.ready && BarLayout.ready, disabled: BarLayout.state.disabled.length,
+                ready: Theme.ready && BarLayout.ready && WorkspaceAppearance.ready, workspace: WorkspaceAppearance.state, disabled: BarLayout.state.disabled.length,
                 font: Theme.barFontFamily, folder: Theme.wallpaperFolder, icon: Theme.settingsIcon, iconSource: Theme.settingsIconSource,
                 separateWallpapers: Theme.separateWallpapers, wallpapers: Theme.wallpapers,
                 lightWallpapers: Theme.lightWallpapers, darkWallpapers: Theme.darkWallpapers,
                 lockScreen: Theme.lockScreen,
                 error: Theme.errorMessage});
         }
+        function workspaceSettings(): bool {
+            window.widgetSettings = "workspaces";
+            return window.widgetSettings === "workspaces";
+        }
         function preferences(): void {
+            WorkspaceAppearance.setOption("showIcons", false);
+            WorkspaceAppearance.setOption("iconStyle", "nerd");
+            WorkspaceAppearance.setOption("separator", "::");
+            WorkspaceAppearance.setOption("capsule", true);
             Theme.setBarFontFamily("DejaVu Sans");
             Theme.setBarFontFamily("");
             Theme.setBarFontFamily(null);
@@ -229,8 +243,8 @@ ShellRoot {
             return valid;
         }
         function monitoring(): bool {
-            window.monitoringSettings = true;
-            return window.monitoringSettings;
+            window.widgetSettings = "monitoring";
+            return window.widgetSettings === "monitoring";
         }
         function monitoringPanels(): int { return SystemStats.panels; }
     }
@@ -267,6 +281,8 @@ ShellRoot {
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'open')  # Reuses the same window.
+            assert ipc('test', 'workspaceSettings') == 'true'
+            assert ipc('test', 'monitoringPanels') == '0'
             assert ipc('test', 'monitoring') == 'true'
             assert ipc('test', 'monitoringPanels') == '1'
             ipc('test', 'hideAll')
@@ -282,6 +298,7 @@ ShellRoot {
             time.sleep(.4)
             preferences = json.loads(ipc('test', 'status'))
             assert not preferences['error'], preferences
+            assert preferences['workspace'] == dict(version=1, showIcons=False, iconStyle='nerd', separator='::', capsule=True)
             assert preferences['font'] == 'DejaVu Sans'
             assert preferences['lockScreen']['background'] == 'color'
             assert preferences['lockScreen']['color'] == '#123abc'
@@ -300,7 +317,7 @@ ShellRoot {
                 if time.monotonic() >= deadline: raise AssertionError('Settings restart timed out')
                 time.sleep(.05)
             assert not restored['error'], restored
-            for key in ['font', 'folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
+            for key in ['workspace', 'font', 'folder', 'icon', 'iconSource', 'separateWallpapers', 'wallpapers', 'lightWallpapers', 'darkWallpapers', 'lockScreen']:
                 assert restored[key] == preferences[key], (key, restored, preferences)
             assert ipc('test', 'checkWallpaperModes') == 'true'
             print('PASS: shared/light/dark wallpapers persist, clear independently, and follow theme changes', flush=True)

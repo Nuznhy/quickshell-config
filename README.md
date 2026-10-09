@@ -315,7 +315,12 @@ history, and settings-persistence checks.
   It uses the same theme setting as Appearance, including application theme sync.
 - Dropdowns share the same outer padding, controlled by `popupPadding` in
   `config/Settings.qml` (12 px by default).
-- Workspace icons come from application desktop entries and the system icon theme,
+- In Settings → Bar layout, click the gear beside **Workspaces** to hide app icons,
+  choose app images or Nerd Font symbols, customize the separator (including none),
+  and add a rounded capsule around the icons. Changes apply to all bars and survive
+  restarts. Reset restores the original look. Unknown apps use a generic Nerd Font
+  symbol, and each icon still focuses its own window.
+- By default, workspace icons come from application desktop entries and the system icon theme,
   displayed in their original colors at full opacity. Every window gets its own
   icon, including multiple windows of the same app on a workspace. Lookup matches desktop IDs, StartupWMClass, and the initial
   window class automatically; apps without a usable icon get a generic fallback.

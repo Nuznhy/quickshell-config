@@ -311,6 +311,45 @@ class ThemeTests(unittest.TestCase):
                 self.assertEqual((self.config / path).read_text(), text)
         self.assertEqual(sum(cmd[:4] == ['spicetify', '-q', 'apply', '--no-restart'] for cmd in self.commands), 2)
 
+    def test_btop_reformatted_selection_syncs_and_restores(self):
+        original = 'color_theme="noctalia"\nupdate_ms=1000\n'
+        path = self.put('btop/btop.conf', original)
+        self.apply('btop')
+        # Simulate a legacy journal and btop's subsequent config rewrite.
+        record = next(r for r in self.engine.state['journals']['btop'] if r['kind'] == 'lines')
+        record['after'] = ['color_theme="quickshell-config"\n']
+        self.engine.save()
+        path.write_text('color_theme = "quickshell-config"\nupdate_ms=2000\n')
+        self.engine = module.Themes(self.state, self.home, self.config, self.data,
+                                   self.run_command, lambda cmd: '/bin/' + cmd)
+        result = self.apply('btop', palette=list(palettes())[2], action='retry')
+        self.assertEqual(self.status(result, 'btop')['state'], 'restart')
+        self.assertEqual(path.read_text(), 'color_theme = "quickshell-config"\nupdate_ms=2000\n')
+        path.write_text('color_theme  =  "quickshell-config"  \nupdate_ms=2000\n')
+        self.assertEqual(self.status(self.apply('btop', False), 'btop')['state'], 'off')
+        self.assertEqual(path.read_text(), original.replace('1000', '2000'))
+
+    def test_btop_reformatted_original_theme_can_be_restored(self):
+        path = self.put('btop/btop.conf', 'color_theme="noctalia"\n')
+        self.apply('btop')
+        path.write_text('color_theme = "noctalia"\n')
+        self.assertEqual(self.status(self.apply('btop', False), 'btop')['state'], 'off')
+        self.assertEqual(path.read_text(), 'color_theme="noctalia"\n')
+
+    def test_btop_different_or_duplicate_selections_are_preserved(self):
+        path = self.put('btop/btop.conf', 'color_theme="noctalia"\n')
+        self.apply('btop')
+        for edited in ['color_theme = "another-theme"\n',
+                       'color_theme = "quickshell-config"\ncolor_theme = "quickshell-config"\n']:
+            for enabled in [True, False]:
+                with self.subTest(edited=edited, enabled=enabled):
+                    path.write_text(edited)
+                    result = self.status(self.apply('btop', enabled), 'btop')
+                    self.assertEqual(result['state'], 'error')
+                    self.assertIn('changed manually', result['message'])
+                    self.assertEqual(path.read_text(), edited)
+                    self.assertTrue((self.config / 'btop/themes/quickshell-config.theme').exists())
+
     def test_restart_state_and_missing_dependency(self):
         self.put('ghostty/config', 'theme=old\n')
         self.apply('ghostty')

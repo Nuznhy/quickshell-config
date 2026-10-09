@@ -175,26 +175,65 @@ Grid {
                         }
                     }
 
-                    // Separator dot when there are icons
-                    Rectangle {
-                        width: 3
-                        height: 3
-                        radius: 1.5
-                        color: wsRect.isActive ? Theme.love : Theme.text
-                        visible: appIcons.count > 0
+                    Item {
+                        objectName: "workspace-separator-" + wsRect.wsId
+                        readonly property bool dot: WorkspaceAppearance.separator === "·"
+                        width: dot ? 3 : Theme.verticalBar
+                            ? Math.min(separatorMetrics.advanceWidth, Theme.sideBarWidth - 26) : separatorMetrics.advanceWidth
+                        height: dot ? 3 : separatorMetrics.boundingRect.height
+                        visible: iconGroup.visible && WorkspaceAppearance.separator !== ""
                         opacity: 0.6
+                        TextMetrics {
+                            id: separatorMetrics
+                            text: WorkspaceAppearance.separator
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Math.min(Theme.fontSize, 16)
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            visible: parent.dot
+                            radius: 1.5
+                            color: wsRect.isActive ? Theme.love : Theme.text
+                        }
+                        Text {
+                            id: separatorText
+                            anchors.fill: parent
+                            visible: !parent.dot
+                            text: WorkspaceAppearance.separator
+                            textFormat: Text.PlainText
+                            color: wsRect.isActive ? Theme.love : Theme.text
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Math.min(Theme.fontSize, 16)
+                            fontSizeMode: Text.Fit
+                            minimumPixelSize: 8
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
                     }
 
-                    AnimatedAppIcons {
-                        id: appIcons
-                        icons: wsRect.windowIcons
-                        activeWorkspace: wsRect.isActive
-                        visible: count > 0
-                        onHoveredAddressChanged: {
-                            if (workspaceHover.hovered && wsSlot.present)
-                                preview.request(wsRect.wsId, wsRect, hoveredAddress);
+                    Rectangle {
+                        id: iconGroup
+                        objectName: "workspace-icon-group-" + wsRect.wsId
+                        readonly property int inset: WorkspaceAppearance.capsule ? 6 : 0
+                        width: appIcons.implicitWidth + inset * 2
+                        height: appIcons.implicitHeight + (WorkspaceAppearance.capsule ? 8 : 0)
+                        visible: WorkspaceAppearance.showIcons && appIcons.count > 0
+                        color: WorkspaceAppearance.capsule ? Theme.surface : "transparent"
+                        border.width: WorkspaceAppearance.capsule ? 1 : 0
+                        border.color: wsRect.isActive ? Theme.iris : Theme.highlightMed
+                        radius: Math.min(width, height) / 2
+                        AnimatedAppIcons {
+                            id: appIcons
+                            anchors.centerIn: parent
+                            icons: wsRect.windowIcons
+                            nerdFontIcons: WorkspaceAppearance.iconStyle === "nerd"
+                            activeWorkspace: wsRect.isActive
+                            onHoveredAddressChanged: {
+                                if (workspaceHover.hovered && wsSlot.present)
+                                    preview.request(wsRect.wsId, wsRect, hoveredAddress);
+                            }
+                            onWindowClicked: preview.close()
                         }
-                        onWindowClicked: preview.close()
                     }
                 }
             }

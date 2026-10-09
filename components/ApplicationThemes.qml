@@ -81,13 +81,15 @@ ColumnLayout {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 Layout.minimumWidth: 0
-                implicitHeight: 82
+                Layout.alignment: Qt.AlignTop
+                implicitHeight: Math.max(82, cardContent.implicitHeight + 24)
                 radius: 10
                 color: Theme.surface
                 border.color: modelData.state === "error" ? Theme.love : Theme.highlightMed
                 ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 12
+                    id: cardContent
+                    x: 12; y: 12
+                    width: parent.width - 24
                     spacing: 6
                     RowLayout {
                         Layout.fillWidth: true
@@ -127,11 +129,12 @@ ColumnLayout {
                         id: statusButton
                         objectName: "app-theme-details-" + card.modelData.id
                         Layout.fillWidth: true
-                        implicitHeight: 20
+                        implicitHeight: Math.max(20, contentItem.implicitHeight)
                         padding: 0
                         hoverEnabled: true
                         enabled: card.hasDetails
-                        text: card.applying ? "Applying…" : card.modelData.state === "error" ? "Needs attention"
+                        text: card.applying ? "Applying…" : card.modelData.state === "error"
+                            ? card.modelData.message || "Theme update failed. No error details were reported."
                             : !card.modelData.available ? "Unavailable" : !card.modelData.enabled ? "Off"
                             : card.modelData.state === "restart" ? "Restart app" : "Synced"
                         Accessible.name: card.modelData.name + ": " + text + (card.hasDetails ? ". Show details" : "")
@@ -147,12 +150,16 @@ ColumnLayout {
                                     : card.modelData.enabled ? Theme.iris : Theme.subtle
                             }
                             Text {
+                                objectName: "app-theme-status-" + card.modelData.id
                                 Layout.fillWidth: true
+                                Layout.minimumWidth: 0
                                 text: statusButton.text
+                                textFormat: Text.PlainText
                                 color: card.modelData.state === "error" ? Theme.love : Theme.subtle
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
-                                elide: Text.ElideRight
+                                wrapMode: card.modelData.state === "error" ? Text.Wrap : Text.NoWrap
+                                elide: card.modelData.state === "error" ? Text.ElideNone : Text.ElideRight
                             }
                             Text {
                                 visible: card.hasDetails

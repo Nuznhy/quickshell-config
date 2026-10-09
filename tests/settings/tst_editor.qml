@@ -49,6 +49,14 @@ Item {
             verify(!editor.dragging);
             verify(!BarLayout.isEnabled("monitoring"));
         }
+        function test_workspace_gear_opens_settings() {
+            settingsSpy.clear();
+            mouseClick(control("settings-workspaces"));
+            compare(settingsSpy.count, 1);
+            compare(settingsSpy.signalArguments[0][0], "workspaces");
+            verify(!editor.dragging);
+            verify(BarLayout.isEnabled("workspaces"));
+        }
         function test_drag_between_sections_and_empty_target() {
             dragTo("clock", "start", 70);
             compare(BarLayout.ids("start"), ["workspaces", "clock", "tray", "media"]);

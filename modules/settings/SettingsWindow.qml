@@ -9,7 +9,7 @@ import "../../components"
 
 FloatingWindow {
     id: root
-    property bool monitoringSettings: false
+    property string widgetSettings: ""
     title: "Quickshell Settings"
     implicitWidth: 900
     implicitHeight: 720
@@ -55,7 +55,7 @@ FloatingWindow {
             NotificationButton {
                 text: "Bar layout"
                 accent: pages.currentIndex === 0
-                onClicked: { root.monitoringSettings = false; pages.currentIndex = 0; }
+                onClicked: { root.widgetSettings = ""; pages.currentIndex = 0; }
             }
             NotificationButton {
                 text: "Appearance"
@@ -81,10 +81,10 @@ FloatingWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             StackLayout {
-                currentIndex: root.monitoringSettings ? 1 : 0
+                currentIndex: root.widgetSettings === "monitoring" ? 1 : root.widgetSettings === "workspaces" ? 2 : 0
                 BarLayoutEditor {
                     id: editor
-                    onSettingsRequested: widgetId => { if (widgetId === "monitoring") root.monitoringSettings = true; }
+                    onSettingsRequested: widgetId => { root.widgetSettings = widgetId; }
                 }
                 ScrollView {
                     id: monitoringScroll
@@ -97,8 +97,22 @@ FloatingWindow {
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     MonitoringSettings {
                         width: monitoringScroll.availableWidth
-                        active: root.visible && pages.currentIndex === 0 && root.monitoringSettings
-                        onBackRequested: root.monitoringSettings = false
+                        active: root.visible && pages.currentIndex === 0 && root.widgetSettings === "monitoring"
+                        onBackRequested: root.widgetSettings = ""
+                    }
+                }
+                ScrollView {
+                    id: workspaceScroll
+                    clip: true
+                    leftPadding: 16
+                    rightPadding: 16
+                    topPadding: 4
+                    bottomPadding: 16
+                    contentWidth: availableWidth
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    WorkspaceSettingsPanel {
+                        width: workspaceScroll.availableWidth
+                        onBackRequested: root.widgetSettings = ""
                     }
                 }
             }

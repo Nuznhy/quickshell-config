@@ -24,11 +24,47 @@ Rectangle {
         }
         function init() {
             Theme.verticalBar=false;
+            WorkspaceAppearance.reset();
             content.highlightedAddress="";
             Workspaces.previewWindows=Data.windows([sample("0xabc",1920,960),sample("0xdef",2880,960)])[1];
             Workspaces.workspaceIcons={"1":[{appId:"ghostty",source:"",address:"0xabc",addresses:["0xabc"]},{appId:"ghostty",source:"",address:"0xdef",addresses:["0xdef"]}]};
             mouseMove(content.parent,650,450);
             wait(300);
+        }
+        function test_workspace_appearance_keeps_icons_clickable_and_hides_spacing() {
+            const slot = findChild(bar, "workspace-slot-1");
+            const group = findChild(bar, "workspace-icon-group-1");
+            const separator = findChild(bar, "workspace-separator-1");
+            const initialWidth = slot.width;
+            WorkspaceAppearance.setOption("capsule", true);
+            WorkspaceAppearance.setOption("iconStyle", "nerd");
+            WorkspaceAppearance.setOption("separator", "|");
+            tryVerify(() => slot.width > initialWidth);
+            compare(group.border.width, 1);
+            verify(separator.visible);
+            const glyph = findChild(bar, "workspace-app-glyph-0xdef");
+            verify(glyph.visible);
+            compare(glyph.text, "");
+            compare(findChild(bar, "workspace-app-image-0xdef").source.toString(), "");
+            const second = findChild(bar, "workspace-window-0xdef");
+            mouseClick(second, second.width / 2, second.height / 2);
+            compare(Workspaces.lastFocused, "0xdef");
+            Theme.verticalBar = true;
+            wait(300);
+            verify(group.width <= slot.width);
+            verify(group.height > second.height);
+            WorkspaceAppearance.setOption("showIcons", false);
+            tryCompare(group, "visible", false);
+            verify(!separator.visible);
+            Theme.verticalBar = false;
+            tryVerify(() => slot.width < initialWidth);
+            WorkspaceAppearance.setOption("showIcons", true);
+            WorkspaceAppearance.setOption("separator", "");
+            tryCompare(group, "visible", true);
+            verify(!separator.visible);
+            verify(findChild(bar, "workspace-window-0xabc") !== null);
+            wait(350);
+            grabImage(content.parent).save("/tmp/quickshell-workspace-capsule.png");
         }
         function test_geometry_uses_monitor_origin_and_logical_scale() {
             const monitor={x:-1920,y:-100,width:3840,height:2160,scale:2,lastIpcObject:{transform:0}};

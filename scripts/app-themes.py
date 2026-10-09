@@ -145,6 +145,25 @@ class Themes:
         if current != content:
             atomic(path, content)
 
+    def matches_lines(self, record, current):
+        if current in (record['before'], record['after']):
+            return True
+        # btop rewrites its config with spaces around '='. Compare the quoted
+        # theme value, including for journals created before this fix. Keep
+        # rejecting different themes and duplicate assignments.
+        identity = 'lines:' + str(self.config / 'btop/btop.conf') + ':None:color_theme'
+        if self.current != 'btop' or record['id'] != identity:
+            return False
+
+        def theme_value(lines):
+            if len(lines) != 1:
+                return None
+            match = re.fullmatch(r'\s*color_theme\s*=\s*("[^"\r\n]*")\s*', lines[0])
+            return match[1] if match else None
+
+        value = theme_value(current)
+        return value is not None and value in (theme_value(record['before']), theme_value(record['after']))
+
     def lines(self, path, identity, pattern, replacement, section=None, prepend=False, reconcile_imports=False):
         text = read(path)
         current = [line for _, line in selected_lines(text, pattern, section)]
@@ -155,7 +174,7 @@ class Themes:
         # the original restore snapshot and reject any unfamiliar edited line.
         known_imports = (reconcile_imports and identity == 'theme-import'
                          and all(line in record['before'] + record['after'] for line in current))
-        if current not in (record['before'], record['after']) and not known_imports:
+        if not self.matches_lines(record, current) and not known_imports:
             raise RuntimeError(f'Theme setting changed manually: {path} ({identity})')
         record['after'] = replacement
         self.save()
@@ -421,7 +440,8 @@ class Themes:
                 self.field(c / 'yazi/theme.toml', mode_key, json.dumps(name), 'flavor')
         elif target == 'btop':
             self.generated(c / 'btop/themes' / (name + '.theme'), fmt.btop(p))
-            self.field(c / 'btop/btop.conf', 'color_theme', json.dumps(name))
+            self.lines(c / 'btop/btop.conf', 'None:color_theme', r'^\s*color_theme\s*=',
+                       [f'color_theme = {json.dumps(name)}\n'])
         elif target == 'hyprtoolkit':
             values = dict(background='bg', base='surface', text='text', alternate_base='overlay',
                           bright_text='text', accent='iris', accent_secondary='foam')
@@ -515,7 +535,7 @@ class Themes:
                     elif kind == 'lines':
                         text = read(path)
                         current = [line for _, line in selected_lines(text, record['pattern'], record['section'])]
-                        if current not in (record['before'], record['after']):
+                        if not self.matches_lines(record, current):
                             raise RuntimeError(f'Theme setting changed manually: {path}')
                         updated = edit_lines(text, record['pattern'], record['before'], record['section'], record['prepend'])
                         if updated != text:

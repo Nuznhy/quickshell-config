@@ -33,6 +33,34 @@ Rectangle {
             mouseClick(toggle);
             compare(AppTheming.lastEnabled, false);
         }
+        function test_error_is_visible_and_wraps_without_opening_details() {
+            const message = "Permission denied: /home/user/.config/ghostty/config\nCould not write <theme> colors. Check the file permissions and retry.";
+            AppTheming.targets = AppTheming.targets.map(t => t.id === "ghostty"
+                ? Object.assign({}, t, {enabled: true, state: "error", message: message}) : t);
+            panel.width = 280;
+            const card = findChild(panel, "app-theme-card-ghostty");
+            const status = findChild(panel, "app-theme-status-ghostty");
+            tryCompare(status, "text", message);
+            compare(status.textFormat, Text.PlainText);
+            compare(panel.detailsId, "");
+            tryVerify(() => status.height > 20 && card.height > 82);
+            verify(!status.truncated);
+            verify(status.mapToItem(card, 0, status.height).y <= card.height - 12);
+            verify(findChild(panel, "app-theme-retry-ghostty").visible);
+            const next = findChild(panel, "app-theme-card-discord");
+            tryVerify(() => next.y >= card.y + card.height);
+            grabImage(panel.parent).save("/tmp/quickshell-app-theme-error.png");
+            AppTheming.targets = AppTheming.targets.map(t => t.id === "ghostty"
+                ? Object.assign({}, t, {state: "applied", message: "Applied"}) : t);
+            tryCompare(findChild(panel, "app-theme-status-ghostty"), "text", "Synced");
+            tryCompare(findChild(panel, "app-theme-card-ghostty"), "height", 82);
+        }
+        function test_error_without_message_has_fallback() {
+            AppTheming.targets = AppTheming.targets.map(t => t.id === "ghostty"
+                ? Object.assign({}, t, {state: "error", message: ""}) : t);
+            tryCompare(findChild(panel, "app-theme-status-ghostty"), "text",
+                "Theme update failed. No error details were reported.");
+        }
         function test_adaptive_grid_and_details() {
             AppTheming.targets = AppTheming.targets.concat([
                 {id: "gtk", name: "GTK 3 / 4", available: true, enabled: true, state: "restart", message: "Reopen GTK apps to load colors."},

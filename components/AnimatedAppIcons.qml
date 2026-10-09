@@ -2,14 +2,17 @@ import QtQuick
 import QtQuick.Window
 import "../config"
 import "../services"
+import "../config/AppGlyphs.js" as AppGlyphs
 
 Grid {
     id: root
     columns: Theme.verticalBar ? 1 : Math.max(1, iconModel.count)
     required property var icons
     required property bool activeWorkspace
+    property bool nerdFontIcons: false
     readonly property int count: iconModel.count
     property string hoveredAddress: ""
+    onVisibleChanged: { if (!visible) hoveredAddress = ""; }
     signal windowClicked
     spacing: 6
 
@@ -108,26 +111,31 @@ Grid {
             Image {
                 id: systemIcon
                 anchors.fill: parent
-                source: appIcon.modelData.source
+                objectName: "workspace-app-image-" + appIcon.windowAddress
+                source: root.nerdFontIcons ? "" : appIcon.modelData.source
                 // Keep enough detail for hover zoom and scaled displays without
                 // reloading the image on every animation frame.
                 readonly property int textureSize: Math.ceil(width * Screen.devicePixelRatio * 2)
                 sourceSize: Qt.size(textureSize, textureSize)
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
-                visible: status === Image.Ready
+                visible: !root.nerdFontIcons && status === Image.Ready
                 scale: appIcon.iconScale
             }
 
             Text {
-                anchors.centerIn: parent
-                visible: systemIcon.status !== Image.Ready
-                text: "󰏗"
+                id: glyph
+                objectName: "workspace-app-glyph-" + appIcon.windowAddress
+                x: (parent.width - glyphMetrics.tightBoundingRect.width) / 2 - glyphMetrics.tightBoundingRect.x
+                y: (parent.height - glyphMetrics.tightBoundingRect.height) / 2 - glyphMetrics.tightBoundingRect.y - baselineOffset
+                visible: root.nerdFontIcons || systemIcon.status !== Image.Ready
+                text: root.nerdFontIcons ? AppGlyphs.resolve(appIcon.modelData.appId) : "󰏗"
                 font.family: Theme.fontFamily
                 font.pixelSize: appIcon.height
                 color: root.activeWorkspace ? Theme.love : Theme.text
                 scale: appIcon.iconScale
             }
+            TextMetrics { id: glyphMetrics; font: glyph.font; text: glyph.text }
 
             Rectangle {
                 anchors.top: parent.top

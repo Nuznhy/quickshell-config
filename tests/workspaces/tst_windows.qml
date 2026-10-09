@@ -19,6 +19,7 @@ Item {
         function pair() { return Windows.build([client("0xabc",1),client("0xdef",1)],icon)[1]; }
         function init() {
             first.icons = []; second.icons = []; Theme.verticalBar = false;
+            first.nerdFontIcons = false;
             Workspaces.lastFocused = ""; Workspaces.urgent = [];
             wait(250);
         }
@@ -30,6 +31,16 @@ Item {
             compare(result[1][0].addresses,["0xabc"]); compare(result[1][1].addresses,["0xdef"]);
             clients[0].focusHistoryID = 10;
             compare(JSON.stringify(Windows.build(clients,icon)),JSON.stringify(result));
+        }
+        function test_nerd_icons_map_apps_and_unknown_apps_have_fallback() {
+            first.nerdFontIcons = true;
+            first.icons = Windows.build([client("0xabc", 1, "org.telegram.desktop"),
+                client("0xdef", 1, "unknown-app")], icon)[1];
+            wait(250);
+            compare(findChild(first, "workspace-app-glyph-0xabc").text, "");
+            compare(findChild(first, "workspace-app-glyph-0xdef").text, "󰏗");
+            first.nerdFontIcons = false;
+            compare(first.count, 2);
         }
         function test_filtering_and_normalization() {
             const unmapped=client("0xbbb",2); unmapped.mapped=false;
