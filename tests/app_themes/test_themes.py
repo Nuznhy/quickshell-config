@@ -623,6 +623,168 @@ class ThemeTests(unittest.TestCase):
         self.put('zen/profile/user.js', f'user_pref("{key}", false);\n')
         self.assertFalse(self.engine.zen_styles_enabled(profile))
 
+    def test_codex_cli_discovery_outside_desktop_path(self):
+        self.engine.which = lambda command: None
+        home = self.home / 'custom codex'
+        with patch.dict(os.environ, {'CODEX_HOME': str(home)}):
+            self.assertIn('home directory', module.Themes.available(self.engine, 'codex-cli')[1])
+            home.mkdir()
+            self.assertIn('executable', module.Themes.available(self.engine, 'codex-cli')[1])
+            binary = home / 'packages/standalone/current/bin/codex'
+            binary.parent.mkdir(parents=True)
+            binary.write_text('#!/bin/sh\nexit 0\n')
+            binary.chmod(0o600)
+            self.assertFalse(module.Themes.available(self.engine, 'codex-cli')[0])
+            binary.chmod(0o700)
+            self.assertEqual(self.engine.codex_executable(), str(binary))
+            self.assertTrue(module.Themes.available(self.engine, 'codex-cli')[0])
+            shim = self.home / '.local/bin/codex'
+            shim.parent.mkdir(parents=True)
+            shim.symlink_to(binary)
+            self.assertEqual(self.engine.codex_executable(), str(shim))
+            self.engine.which = lambda command: '/custom/codex'
+            self.assertEqual(self.engine.codex_executable(), '/custom/codex')
+            self.engine.which = lambda command: None
+            binary.unlink()
+            self.assertFalse(module.Themes.available(self.engine, 'codex-cli')[0])
+
+    def test_codex_cli_theme_sync_and_restore(self):
+        home = self.home / 'custom codex'
+        home.mkdir()
+        with patch.dict(os.environ, {'CODEX_HOME': str(home)}):
+            config = home / 'config.toml'
+            original = 'model="unchanged-model"\n[tui]\nnotifications=true\ntheme = "gruvbox-dark"\n[features]\nexample=true\n'
+            real = home / 'real-config.toml'
+            real.write_text(original)
+            config.symlink_to(real)
+            self.assertTrue(module.Themes.available(self.engine, 'codex-cli')[0])
+            self.assertEqual(self.status(self.apply('codex-cli'), 'codex-cli')['state'], 'restart')
+            for palette in palettes():
+                self.engine.handle(dict(action='sync', palette=palette, mode='light'))
+                theme = plistlib.loads((home / 'themes/quickshell-config.tmTheme').read_bytes())
+                self.assertEqual(theme['settings'][0]['settings']['background'], palette['bg'])
+                self.assertEqual(theme['settings'][0]['settings']['foreground'], palette['text'])
+                self.assertTrue(any(x.get('scope') == 'markup.deleted' for x in theme['settings']))
+                saved = tomllib.loads(real.read_text())
+                expected = tomllib.loads(original)
+                expected['tui']['theme'] = 'quickshell-config'
+                self.assertEqual(saved, expected)
+            self.assertTrue(config.is_symlink())
+            self.assertEqual(self.status(self.apply('codex-cli', False), 'codex-cli')['state'], 'off')
+            self.assertEqual(real.read_text(), original)
+            self.assertFalse((home / 'themes/quickshell-config.tmTheme').exists())
+            self.assertEqual(self.commands, [])
+
+    def test_codex_cli_missing_table_and_conflict(self):
+        home = self.home / '.codex'
+        home.mkdir()
+        with patch.dict(os.environ, {'CODEX_HOME': str(home)}):
+            config = home / 'config.toml'
+            config.write_text('model="unchanged"\n')
+            self.apply('codex-cli')
+            self.assertEqual(tomllib.loads(config.read_text())['tui']['theme'], 'quickshell-config')
+            config.write_text(config.read_text().replace('quickshell-config', 'user-choice'))
+            self.assertEqual(self.status(self.apply('codex-cli', False), 'codex-cli')['state'], 'error')
+            self.assertEqual(tomllib.loads(config.read_text())['tui']['theme'], 'user-choice')
+
+    def test_codex_cli_unsupported_toml_is_not_modified(self):
+        home = self.home / '.codex'
+        home.mkdir()
+        with patch.dict(os.environ, {'CODEX_HOME': str(home)}):
+            config = home / 'config.toml'
+            for original in ['tui={theme="old"}\n', 'tui.theme="old"\n', '[tui] # comment\ntheme="old"\n', 'invalid[']:
+                config.write_text(original)
+                self.assertEqual(self.status(self.apply('codex-cli'), 'codex-cli')['state'], 'error')
+                self.assertEqual(config.read_text(), original)
+                self.assertFalse((home / 'themes/quickshell-config.tmTheme').exists())
+
+    def test_nvim_discovery_with_bob_outside_desktop_path(self):
+        self.engine.which = lambda command: None
+        self.put('nvim/init.lua', '-- existing config\n')
+        self.assertIn('executable', module.Themes.available(self.engine, 'nvim')[1])
+        shim = self.data / 'bob/nvim-bin/nvim'
+        shim.parent.mkdir(parents=True)
+        binary = self.data / 'bob-version'
+        binary.write_text('#!/bin/sh\nexit 0\n')
+        binary.chmod(0o600)
+        shim.symlink_to(binary)
+        self.assertFalse(module.Themes.available(self.engine, 'nvim')[0])
+        binary.chmod(0o700)
+        self.assertEqual(self.engine.nvim_executable(), str(shim))
+        self.assertTrue(module.Themes.available(self.engine, 'nvim')[0])
+        self.engine.which = lambda command: '/custom/nvim'
+        self.assertEqual(self.engine.nvim_executable(), '/custom/nvim')
+        (self.config / 'nvim/init.lua').unlink()
+        self.assertIn('configuration not found', module.Themes.available(self.engine, 'nvim')[1])
+
+    def test_nvim_sync_restore_preserves_init(self):
+        self.assertFalse(module.Themes.available(self.engine, 'nvim')[0])
+        init = self.put('nvim/init.lua', 'vim.cmd.colorscheme("old-theme")\n')
+        real = self.home / 'init-dotfile.lua'
+        init.rename(real)
+        init.symlink_to(real)
+        self.assertTrue(module.Themes.available(self.engine, 'nvim')[0])
+        self.assertEqual(self.status(self.apply('nvim'), 'nvim')['state'], 'restart')
+        for palette in palettes():
+            self.engine.handle(dict(action='sync', palette=palette, mode='light'))
+            self.assertIn(palette['iris'], (self.config / 'nvim/colors/quickshell-config.lua').read_text())
+        self.assertEqual(real.read_text().count('-- quickshell-nvim-colors'), 1)
+        with real.open('a') as stream:
+            stream.write('-- user note\n')
+        self.assertEqual(self.status(self.apply('nvim', False), 'nvim')['state'], 'off')
+        self.assertTrue(init.is_symlink())
+        self.assertEqual(real.read_text(), 'vim.cmd.colorscheme("old-theme")\n-- user note\n')
+        self.assertFalse((self.config / 'nvim/colors/quickshell-config.lua').exists())
+        self.assertFalse((self.config / 'nvim/quickshell-theme.lua').exists())
+
+    def test_nvim_manual_edits_are_preserved(self):
+        self.put('nvim/init.lua', '-- config\n')
+        self.apply('nvim')
+        colors = self.config / 'nvim/colors/quickshell-config.lua'
+        colors.write_text('-- manual theme\n')
+        self.assertEqual(self.status(self.apply('nvim', False), 'nvim')['state'], 'error')
+        self.assertEqual(colors.read_text(), '-- manual theme\n')
+
+    def test_nvim_native_palette_focus_reload_and_restore(self):
+        init = self.put('nvim/init.lua', 'vim.o.number = true\nvim.cmd.colorscheme("before")\n')
+        self.put('nvim/colors/before.lua', 'vim.g.colors_name = "before"\nvim.api.nvim_set_hl(0, "Normal", {fg="#abcdef"})\n')
+        self.apply('nvim')
+        color_path = self.config / 'nvim/colors/quickshell-config.lua'
+        replacement = self.home / 'replacement.lua'
+        palette = list(palettes())[1]
+        replacement.write_text(formats.nvim(palette, 'light'))
+        check = self.home / 'check.lua'
+        check.write_text("""
+            assert(vim.g.colors_name == 'quickshell-config')
+            assert(vim.o.number and vim.o.termguicolors)
+            assert(vim.api.nvim_get_hl(0, {name='Normal', link=false}).bg == nil)
+            assert(vim.api.nvim_get_hl(0, {name='@function', link=false}).fg)
+            assert(vim.api.nvim_get_hl(0, {name='DiagnosticUnderlineError', link=false}).undercurl)
+            local target = vim.env.QS_TEST_COLORS
+            vim.fn.writefile(vim.fn.readfile(vim.env.QS_TEST_REPLACEMENT), target)
+            vim.api.nvim_exec_autocmds('FocusGained', {})
+            assert(vim.o.background == 'light')
+            assert(vim.api.nvim_get_hl(0, {name='Normal', link=false}).fg == tonumber(vim.env.QS_TEST_TEXT:sub(2), 16))
+            vim.cmd.colorscheme('before')
+            vim.api.nvim_exec_autocmds('FocusGained', {})
+            assert(vim.g.colors_name == 'before')
+            vim.cmd('QuickshellThemeReload')
+            assert(vim.g.colors_name == 'quickshell-config')
+            vim.fn.delete(target)
+            vim.api.nvim_exec_autocmds('FocusGained', {})
+            assert(vim.g.colors_name == 'before')
+            assert(vim.fn.exists(':QuickshellThemeReload') == 0)
+            vim.cmd('qa!')
+        """)
+        env = dict(os.environ, QS_TEST_NVIM=str(init.parent), QS_TEST_COLORS=str(color_path),
+                   QS_TEST_REPLACEMENT=str(replacement), QS_TEST_TEXT=palette['text'],
+                   XDG_STATE_HOME=str(self.home / 'nvim-state'), XDG_CACHE_HOME=str(self.home / 'cache'))
+        result = subprocess.run(['nvim', '--headless', '--noplugin', '-n', '-i', 'NONE',
+                                 '--cmd', 'lua vim.opt.rtp:prepend(vim.env.QS_TEST_NVIM)',
+                                 '-u', str(init), '-l', str(check)], env=env, capture_output=True, text=True, timeout=15)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('Error', result.stderr)
+
     def test_p10k_toggle_sync_and_restore_symlink(self):
         with patch.dict(os.environ, {'ZDOTDIR': str(self.home)}):
             self.assertFalse(module.Themes.available(self.engine, 'p10k')[0])

@@ -61,6 +61,7 @@ Rectangle {
             verify(findChild(panel, "app-theme-retry-ghostty").visible);
             const next = findChild(panel, "app-theme-card-discord");
             tryVerify(() => next.y >= card.y + card.height);
+            tryVerify(() => next.height === card.height);
             grabImage(panel.parent).save("/tmp/quickshell-app-theme-error.png");
             AppTheming.targets = AppTheming.targets.map(t => t.id === "ghostty"
                 ? Object.assign({}, t, {state: "applied", message: "Applied"}) : t);
@@ -78,12 +79,18 @@ Rectangle {
                 {id: "gtk", name: "GTK 3 / 4", available: true, enabled: true, state: "restart", message: "Reopen GTK apps to load colors."},
                 {id: "qt", name: "Qt / KDE", available: true, enabled: true, state: "applied", message: "Applied"},
                 {id: "zen", name: "Zen Browser", available: true, enabled: true, state: "restart", message: "Restart Zen to load colors."},
+                {id: "hyprland", name: "Hyprland appearance", available: true, enabled: false, state: "off", message: ""},
                 {id: "tmux", name: "tmux", available: true, enabled: true, state: "applied", message: "Applied"}]);
             const grid = findChild(panel, "app-themes-grid");
             tryCompare(grid, "columns", 3);
             const first = findChild(panel, "app-theme-card-ghostty");
             const second = findChild(panel, "app-theme-card-discord");
             tryVerify(() => second.x > first.x && second.y === first.y);
+            for (const target of AppTheming.targets) {
+                const card = findChild(panel, "app-theme-card-" + target.id);
+                tryVerify(() => card.height === first.height);
+                verify(Math.abs(card.width - first.width) <= 1);
+            }
             mouseClick(findChild(panel, "app-theme-details-gtk"));
             compare(panel.detailTarget.name, "GTK 3 / 4");
             compare(findChild(panel, "app-theme-details-panel").visible, true);

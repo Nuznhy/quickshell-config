@@ -91,7 +91,7 @@ QtObject {
 
     # Native service + helper, with only a fake Ghostty and a fake reload hook.
     shutil.copyfile(ROOT / 'services/AppTheming.qml', app / 'services/AppTheming.qml')
-    for name in ['app-themes.py', 'app_theme_formats.py', 'hyprlock-status.py']:
+    for name in ['app-themes.py', 'app_theme_formats.py', 'hyprlock-status.py', 'nvim-theme-loader.lua']:
         shutil.copyfile(ROOT / 'scripts' / name, app / 'scripts' / name)
     for name in ['ghostty', 'pkill', 'hyprlock', 'hyprctl']:
         path = app / 'bin' / name

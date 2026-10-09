@@ -94,6 +94,10 @@ Codex/Ghostty notification integration is optional; neither is a shell dependenc
 
 Application color syncing is optional and starts disabled.
 Powerlevel10k sync requires `zsh` and an existing `.p10k.zsh` loaded by your shell.
+Codex CLI sync requires `codex` and an existing `$CODEX_HOME` (default `~/.codex`);
+it generates a standard `.tmTheme` without additional Python packages.
+Neovim sync requires `nvim` and a standard `nvim/init.lua`; native colorscheme
+tests use headless Neovim (validated with 0.12.2). No extra theme plugin is required.
 See
 [Application themes](APP_THEMING.md#dependencies) for per-target packages and
 setup. GTK syncing needs `adw-gtk-theme`, `gsettings-desktop-schemas`, `glib2`, and

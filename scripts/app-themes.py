@@ -20,13 +20,14 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from urllib.parse import unquote, urlsplit
 
 import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'), ('hyprland-colors', 'Hyprland colors'), ('hyprland', 'Hyprland appearance'),
-           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('p10k', 'Powerlevel10k / Zsh'), ('hyprlock', 'Hyprlock')]
+           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('p10k', 'Powerlevel10k / Zsh'), ('nvim', 'Neovim'), ('codex-cli', 'Codex CLI'), ('hyprlock', 'Hyprlock')]
 
 
 def read(path):
@@ -326,7 +327,46 @@ class Themes:
             raise RuntimeError('Requires an existing .p10k.zsh in ZDOTDIR or your home directory.')
         return path
 
+    def codex_home(self):
+        return Path(os.environ.get('CODEX_HOME') or self.home / '.codex')
+
+    def codex_executable(self):
+        executable = self.which('codex')
+        if executable:
+            return executable
+        # The standalone installer adds a user-local symlink; desktop services
+        # may have neither that directory nor the active package in their PATH.
+        for path in (self.home / '.local/bin/codex', self.home / 'bin/codex',
+                     self.codex_home() / 'packages/standalone/current/bin/codex'):
+            if path.is_file() and os.access(path, os.X_OK):
+                return str(path)
+        return None
+
+    def nvim_executable(self):
+        executable = self.which('nvim')
+        if executable:
+            return executable
+        # Desktop services don't inherit PATH additions from interactive .zshrc.
+        # Bob's active-version shim lives under XDG_DATA_HOME by default.
+        for path in (self.data / 'bob/nvim-bin/nvim',
+                     self.home / '.local/bin/nvim', self.home / 'bin/nvim'):
+            if path.is_file() and os.access(path, os.X_OK):
+                return str(path)
+        return None
+
     def available(self, target):
+        if target == 'codex-cli':
+            if not self.codex_home().is_dir():
+                return False, f'Codex home directory not found: {self.codex_home()}'
+            if not self.codex_executable():
+                return False, 'Codex CLI executable not found in the shell PATH, ~/.local/bin, ~/bin, or the standalone installation.'
+            return True, ''
+        if target == 'nvim':
+            if not (self.config / 'nvim/init.lua').is_file():
+                return False, f'Neovim configuration not found: {self.config / "nvim/init.lua"}'
+            if not self.nvim_executable():
+                return False, 'Neovim executable not found in the shell PATH, Bob installation, ~/.local/bin, or ~/bin.'
+            return True, ''
         if target == 'p10k':
             try:
                 self.p10k_config()
@@ -386,6 +426,41 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
+        if target == 'codex-cli':
+            home = self.codex_home()
+            config = home / 'config.toml'
+            original = read(config)
+            # Validate both documents before changing anything. Unsupported inline
+            # or dotted TUI tables must not produce conflicting TOML definitions.
+            try:
+                before = tomllib.loads(original)
+                proposed = edit_lines(original, r'^\s*theme\s*=',
+                                      ['theme="quickshell-config"\n'], 'tui')
+                after = tomllib.loads(proposed)
+                expected = dict(before)
+                expected['tui'] = dict(before.get('tui', {}), theme='quickshell-config')
+                if after != expected:
+                    raise ValueError('Unexpected configuration change')
+            except (ValueError, TypeError):
+                raise ValueError('Codex config must be valid TOML with theme in a plain [tui] table. Other settings were left unchanged.') from None
+            self.generated(home / 'themes/quickshell-config.tmTheme', fmt.codex_cli(p))
+            self.field(config, 'theme', '"quickshell-config"', 'tui')
+            return 'restart', 'CLI syntax and diff colors synced. Restart Codex CLI to load changes; /theme can select quickshell-config. Desktop appearance is unchanged.'
+        if target == 'nvim':
+            init = c / 'nvim/init.lua'
+            if not init.is_file():
+                raise RuntimeError('Requires an existing nvim/init.lua configuration.')
+            colors = c / 'nvim/colors/quickshell-config.lua'
+            loader = c / 'nvim/quickshell-theme.lua'
+            if any(ord(char) < 32 for char in str(loader)):
+                raise ValueError('Unsupported characters in the Neovim config path.')
+            self.generated(colors, fmt.nvim(p, mode))
+            template = read(Path(__file__).with_name('nvim-theme-loader.lua'))
+            self.generated(loader, template.replace('__COLOR_PATH__', json.dumps(str(colors), ensure_ascii=False)))
+            quoted = json.dumps(str(loader), ensure_ascii=False)
+            self.lines(init, 'theme-import', r'^.*-- quickshell-nvim-colors\s*$',
+                       [f'if vim.fn.filereadable({quoted}) == 1 then dofile({quoted}) end -- quickshell-nvim-colors\n'])
+            return 'restart', 'Open Neovim once to activate. Later palette changes reload on focus or :QuickshellThemeReload. Disable and refocus to restore the previous colorscheme.'
         if target == 'p10k':
             path = self.p10k_config()
             generated = c / 'zsh/quickshell-p10k.zsh'

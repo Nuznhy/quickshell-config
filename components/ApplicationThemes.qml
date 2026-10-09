@@ -47,6 +47,9 @@ UI.ColumnLayout {
         objectName: "app-themes-grid"
         Layout.fillWidth: true
         columns: Math.max(1, Math.floor((width + columnSpacing) / 230))
+        uniformCellWidths: true
+        uniformCellHeights: true
+        readonly property real cellHeight: Math.ceil(Math.max(82, ...children.map(item => item.implicitHeight || 0)))
         columnSpacing: Design.space8
         rowSpacing: Design.space8
         Repeater {
@@ -58,10 +61,12 @@ UI.ColumnLayout {
                 readonly property bool applying: AppTheming.isApplying(modelData.id)
                 readonly property bool hasDetails: !!modelData.message && modelData.message !== "Applied"
                 Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: grid.cellHeight
+                Layout.maximumHeight: grid.cellHeight
                 Layout.preferredWidth: 1
                 Layout.minimumWidth: 0
-                Layout.alignment: Qt.AlignTop
-                implicitHeight: Math.max(82, cardContent.implicitHeight + Design.panelPadding * 2)
+                implicitHeight: Math.ceil(Math.max(82, cardContent.implicitHeight + Design.panelPadding * 2))
 
                 border.color: modelData.state === "error" ? Design.danger : Design.border
                 UI.ColumnLayout {

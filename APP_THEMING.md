@@ -36,6 +36,26 @@ settings, custom CSS, extensions, and dotfile symlinks are preserved.
 | Zen Browser | Generates `chrome/quickshell-config.css` and manages its import in each registered profile's `chrome/userChrome.css`. Replaces a recognized Noctalia Zen import while enabled and restores it when disabled. | Restart Zen after palette or Dark/Light changes and after disabling sync. |
 | tmux | Generates `tmux/quickshell-config.conf` with palette values consumed by the dotfiles' `tmux/theme.conf`. Preserves the two-line status layout, rounded segments, session/window labels and clock. | Updates integrated running servers live. Disabling restores the original Rosé Pine fallback, also live. |
 | Powerlevel10k / Zsh | Generates `zsh/quickshell-p10k.zsh` and appends a managed source line to `$ZDOTDIR/.p10k.zsh`, or `~/.p10k.zsh` when ZDOTDIR is unset. Syncs prompt, directory, VCS, status, context, and common segment colors. Preserves layout, icons, custom functions, and symlinks. | Open a new shell or source your `.p10k.zsh` after applying, changing palettes, or disabling sync. No commands are injected into running terminals. |
+| Neovim | Generates `nvim/colors/quickshell-config.lua` and a small reload helper, loaded through a managed line at the end of `nvim/init.lua`. Covers editor UI, syntax, Treesitter, LSP diagnostics, terminal colors, and common plugin groups. | Restart once after enabling. Later changes load on `FocusGained` or `:QuickshellThemeReload`. Disabling removes the managed files/import; refocusing restores the previously active colorscheme. |
+| Codex CLI | Generates `$CODEX_HOME/themes/quickshell-config.tmTheme` and selects `quickshell-config` using `[tui].theme` in `config.toml`. Defaults to `~/.codex`; preserves all other config fields and symlinks. | Restart the CLI to load changed colors. `/theme` can select the generated theme. Disabling restores the previous theme choice and generated file. Desktop appearance is not modified. |
+
+Codex CLI sync uses the documented [custom TextMate theme format](https://learn.chatgpt.com/docs/cli-customization)
+for syntax highlighting and diffs. Terminal chrome still follows the terminal's
+colors. The target starts disabled and requires `codex` plus an existing Codex
+home directory. A plain `[tui]` table is supported (or added when absent); inline,
+dotted, or otherwise unsupported TOML layouts are rejected before writing any
+files. Invalid TOML and manual changes to managed fields are preserved and reported.
+
+Neovim sync starts disabled and requires an existing standard `nvim/init.lua`
+configuration. It does not install plugins or modify their specifications, keymaps,
+or layout. `init.vim`, custom `-u` files and alternate `NVIM_APPNAME` configurations
+are not supported. The generated colorscheme retains a transparent Normal
+background when the previous colorscheme has one; set `vim.g.quickshell_transparent`
+to `true` or `false` before loading it to override that choice. Statuslines using
+automatic colors (including this repository's lualine config) can follow the theme;
+explicit plugin colors may still override these highlights. Selecting another
+colorscheme manually pauses focus-based syncing until you reload the generated
+theme. Restart Neovim after disabling if your terminal does not send focus events.
 
 Powerlevel10k sync starts disabled and requires `zsh` plus an existing `.p10k.zsh`
 that your shell already loads. Custom configuration filenames are not detected.
