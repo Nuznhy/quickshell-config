@@ -120,26 +120,28 @@ when first expanded, then at most every 30 minutes while viewed, or on refresh.
 The count covers configured Arch repositories, not AUR packages. Errors and the
 last successful check time remain visible.
 
-## Duplicate laptop screen
+## Desktop / TV switch
 
-Click the monitor button to duplicate the active laptop screen on connected
-external monitors. Click again to restore your saved Hyprland configuration,
-including resolution, refresh rate, scale, placement, and color settings.
-The button is enabled by default and can be moved or hidden as **Duplicate laptop
-screen** in Settings → Bar layout. The icon highlights mirroring and turns red on errors.
+Click the monitor button, or press **Super+Shift+F2**, to switch between the
+configured DP-1 + DP-2 desktop and HDMI-A-1 TV. The switcher first enables the
+destination, moves workspaces and apps, and then disables the source displays.
+Switching back restores each workspace to its previous monitor; workspaces
+created on TV go to DP-1, except workspace 9 which goes to DP-2 when available.
+The bar button is enabled by default and can be moved or hidden as
+**Desktop / TV switch** in Settings → Bar layout.
 
-Mirroring uses each external monitor's preferred resolution and automatic scale;
-the laptop resolution stays unchanged. Hyprland scales the mirrored image to the
-external output, so different aspect ratios may stretch it. See
-[Hyprland monitor modes](https://wiki.hypr.land/configuring/core/monitors/modes/).
-This uses the Lua monitor API (Hyprland 0.55+). Restoring runs `hyprctl reload`,
-which reloads the whole Hyprland configuration and resets other temporary config
-overrides too. No config files are edited. A manual Hyprland reload also restores
-the configured layout. Monitor state is shared between bars and read back after
-changes; reconnects and external configuration changes are picked up automatically.
+After switching to TV, press **Enter** within 15 seconds or click **Keep TV**
+on the bar. Without confirmation, Desktop is restored automatically. Pressing
+**Super+Shift+F2** again during the countdown cancels the TV switch immediately.
 
-Run `python3 -m unittest discover -s tests/display_mode -v` for isolated display
-discovery, mirroring, restoration, and failure checks without changing displays.
+If the TV is disconnected, the desktop remains active and Hyprland shows an
+error. If the TV is unplugged in TV mode, the desktop is restored. If DP-2 is
+disconnected, Desktop still works on DP-1. A Hyprland config
+reload starts in Desktop mode and ends any in-progress TV session. The button
+reads the active outputs rather than trusting a saved mode.
+
+Run `python3 -m unittest discover -s tests/display_mode -v` for isolated
+backend and widget checks without changing the live displays.
 
 ## Battery
 
