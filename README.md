@@ -56,6 +56,93 @@ components may use config, but should not depend on a particular bar widget.
 Services are singletons, so adding screens does not add another CPU, memory,
 audio, keyboard, or workspace poller. Popup and hover state stay in each widget.
 
+## iCalendar feed
+
+The clock popup displays one private **HTTPS iCalendar (.ics) feed**, including
+Google Calendar's **Secret address in iCal format**. There is no Google account
+login, OAuth, GNOME Online Accounts, or Evolution Data Server dependency.
+The integration only reads events and is off by default.
+
+On Arch, install these optional packages:
+
+```sh
+sudo pacman -S --needed gnome-keyring libsecret python-gobject python-icalendar python-recurring-ical-events
+```
+
+Open **Settings → Bar layout → Clock’s cog**, paste the private HTTPS address into
+the masked field, and click **Save feed**. Unlock GNOME Keyring if prompted.
+Saving enables the feed and refreshes events automatically. The field clears as
+soon as you save or leave the calendar settings or close Settings. The saved address is never read back into
+that field. No terminal command is needed to configure a feed.
+
+The UI passes the address to the helper through a private stdin pipe. It is stored
+with libsecret in your default Secret Service keyring (normally GNOME Keyring),
+never in command arguments, Quickshell preferences, or a plaintext fallback file.
+
+For Google Calendar, open its website → Settings → select your calendar →
+**Integrate calendar → Secret address in iCal format**. Copy that address into
+the masked field in Clock settings. Your calendar does not need to be made public. Some managed
+accounts do not expose this address. See [Google's instructions](https://support.google.com/calendar/answer/37648?hl=en-GB).
+Clear the clipboard and any clipboard-manager history after pasting a private URL.
+
+Enable **Show iCalendar events** in Clock settings, then open the clock popup. Days containing events
+have a dot; a scrollable agenda appears to the right of the calendar. Switching
+days fades between event lists in a fixed-height panel, reusing the list model
+and the already-loaded month data. Recurring occurrences,
+exceptions, all-day events, and events spanning midnight are supported. Timed
+events use your system timezone; all-day dates stay on their original dates.
+Refresh downloads the feed again. The provider's feed may lag behind changes
+made in its app. Automatic refresh runs every five minutes while the popup is
+open; opening or changing months also fetches. Each popup has an isolated reader.
+
+To replace the URL, paste a new address in **Clock settings** and click
+**Save feed**. **Remove feed** deletes the saved address and disables the feed.
+Keyring errors appear in the popup; a failed save keeps the previously stored feed.
+
+Turn off **Show iCalendar events** to immediately clear displayed events in all popups. Removing
+the saved URL does not revoke it at the provider. For Google, reset the secret
+address in its calendar settings if you want to invalidate an exposed link.
+
+### Credential and data protection
+
+**A private feed URL is a bearer secret:** anyone holding it can read the feed
+without logging in. iCalendar is a data format, not encryption. The implementation
+requires HTTPS with certificate verification, rejects redirects (including HTTPS
+to HTTP), and does not use environment-configured HTTP proxies. If your provider
+redirects, configure its direct HTTPS feed address. There is no HTTP fallback,
+certificate bypass, account password, OAuth token, or embedded login flow.
+
+Use a **password-protected GNOME keyring** and a working Secret Service on your
+session D-Bus. On Hyprland, your login manager/PAM can unlock the keyring, or you
+can unlock it interactively with Seahorse. This integration does not change PAM
+or weaken keyring settings. It will not store the URL outside the keyring when
+Secret Service is unavailable. An unlocked keyring is not protection against
+compromised programs running as your user.
+
+Only the enabled preference is persisted in
+`Quickshell.statePath("calendar-feed.json")`. Feed bytes and displayed events are
+kept in process memory, with no calendar cache on disk. Closing the popup or
+turning the integration off cancels its reader and clears its event model; this
+is not a guarantee of cryptographic memory erasure or protection against swap.
+The reader disables core dumps and has download, memory, CPU and wall-time limits.
+Feeds over 5 MiB are rejected; output is limited to 2,000 occurrences, with a
+warning if truncated. Only the visible six-week range is sent to the UI, though
+an iCalendar subscription downloads the provider's entire feed to filter locally.
+
+The URL exists briefly in the masked QML input and private write request during
+setup; it is never included in command arguments or logs. Network and parser failures
+use fixed messages rather than raw exceptions. Event titles are rendered as plain
+text; attachments, links and alarms are not fetched or executed. Failed refreshes
+clear old results and show an error; there is no offline cache. The ordinary date
+grid works without the optional packages.
+
+Validation: `python3 -m unittest discover -s tests/calendar -v` and
+`bash scripts/check.sh`. Tests use synthetic feeds, fake keyring/network calls,
+and isolated shell state, without reading or changing your real keyring.
+
+References: [libsecret API](https://gnome.pages.gitlab.gnome.org/libsecret/libsecret-python-examples.html),
+[iCalendar recurrence library](https://recurring-ical-events.readthedocs.io/en/latest/user-guide/examples.html).
+
 ## Design system
 
 All shell surfaces share the tokens in `config/Design.qml` and the primitives in

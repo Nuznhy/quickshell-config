@@ -27,6 +27,7 @@ The config has been tested with Quickshell **0.3.1**, Qt **6.11.2**, and Hyprlan
 | Network | `networkmanager`, `libnm`, `python-gobject`, `nm-connection-editor` | NetworkManager daemon, `nmcli`, NM introspection through Python GI, and the advanced/VPN profile editor. |
 | Wi-Fi backend | `wpa_supplicant` | Default NetworkManager Wi-Fi backend. An already configured NetworkManager setup using `iwd` can keep it instead. |
 | Bluetooth | `bluez`, `python-gobject`, `glib2` | BlueZ daemon and Python Gio/GLib D-Bus pairing helper. |
+| iCalendar feed (optional) | `gnome-keyring`, `libsecret`, `python-gobject`, `python-icalendar`, `python-recurring-ical-events` | Read a private HTTPS .ics feed whose URL is stored in the keyring; no Google account connection. See [setup and security details](README.md#icalendar-feed). Not installed by the base script. |
 | External monitor brightness | `ddcutil` | DDC/CI discovery and hardware brightness control over I²C. |
 | Built-in display brightness | `brightnessctl` | Controls devices exposed under `/sys/class/backlight`. |
 | Night Shift | `hyprsunset` | Warm screen colors from the quick settings panel, controlled through `hyprctl`; starts on demand, or controls an existing daemon. Included in the install script below. |

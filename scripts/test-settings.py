@@ -203,6 +203,10 @@ ShellRoot {
                 error: Theme.errorMessage});
         }
         function resetWidgetStyle(): void { Theme.resetWidgetStyle(); }
+        function calendarSettings(): bool {
+            window.widgetSettings = "clock";
+            return BarLayout.entry("clock").settings && window.widgetSettings === "clock";
+        }
         function workspaceSettings(): bool {
             window.widgetSettings = "workspaces";
             return window.widgetSettings === "workspaces";
@@ -288,6 +292,7 @@ ShellRoot {
             ipc('settings', 'open')
             assert json.loads(ipc('test', 'status'))['visible']
             ipc('settings', 'open')  # Reuses the same window.
+            assert ipc('test', 'calendarSettings') == 'true'
             assert ipc('test', 'workspaceSettings') == 'true'
             assert ipc('test', 'monitoringPanels') == '0'
             assert ipc('test', 'monitoring') == 'true'

@@ -82,7 +82,7 @@ FloatingWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             StackLayout {
-                currentIndex: root.widgetSettings === "monitoring" ? 1 : root.widgetSettings === "workspaces" ? 2 : 0
+                currentIndex: root.widgetSettings === "monitoring" ? 1 : root.widgetSettings === "workspaces" ? 2 : root.widgetSettings === "clock" ? 3 : 0
                 BarLayoutEditor {
                     id: editor
                     onSettingsRequested: widgetId => { root.widgetSettings = widgetId; }
@@ -113,6 +113,22 @@ FloatingWindow {
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     WorkspaceSettingsPanel {
                         width: workspaceScroll.availableWidth
+                        onBackRequested: root.widgetSettings = ""
+                    }
+                }
+                UI.ScrollView {
+                    id: calendarScroll
+                    clip: true
+                    leftPadding: Design.space16
+                    rightPadding: Design.space16
+                    topPadding: Design.space4
+                    bottomPadding: Design.space16
+                    contentWidth: availableWidth
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    CalendarSettingsPanel {
+                        objectName: "calendar-settings-panel"
+                        width: calendarScroll.availableWidth
+                        active: root.visible && pages.currentIndex === 0 && root.widgetSettings === "clock"
                         onBackRequested: root.widgetSettings = ""
                     }
                 }

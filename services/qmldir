@@ -1,4 +1,6 @@
 singleton Time 1.0 Time.qml
+singleton CalendarFeed 1.0 CalendarFeed.qml
+CalendarEvents 1.0 CalendarEvents.qml
 singleton SystemStats 1.0 SystemStats.qml
 singleton Audio 1.0 Audio.qml
 singleton Keyboard 1.0 Keyboard.qml

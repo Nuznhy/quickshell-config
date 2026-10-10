@@ -11,7 +11,7 @@ DropdownWidget {
     barWindow: root.QsWindow.window
     implicitWidth: clockLabel.implicitWidth + 24
     implicitHeight: Settings.barHeight
-    popupWidth: 352
+    popupWidth: CalendarFeed.enabled ? Math.min(720, (root.barWindow?.screen?.width || 1920) - 32) : 352
     sizeToContent: true
     showStem: false
 

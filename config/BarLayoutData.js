@@ -5,7 +5,7 @@ var widgets = [
     { id: "workspaces", label: "Workspaces", section: "start", source: "widgets/WorkspaceBar.qml", settings: true },
     { id: "tray", label: "System tray", section: "start", source: "widgets/Tray.qml" },
     { id: "media", label: "Media", section: "start", source: "widgets/MediaWidget.qml" },
-    { id: "clock", label: "Clock", section: "center", source: "widgets/Clock.qml" },
+    { id: "clock", label: "Clock", section: "center", source: "widgets/Clock.qml", settings: true },
     { id: "cpu", label: "CPU", section: "end", source: "widgets/Cpu.qml" },
     { id: "memory", label: "Memory", section: "end", source: "widgets/Memory.qml" },
     { id: "monitoring", label: "PC monitoring", section: "end", source: "widgets/MonitoringWidget.qml", settings: true, disabledByDefault: true },
