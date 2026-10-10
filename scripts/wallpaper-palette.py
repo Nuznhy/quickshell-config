@@ -9,6 +9,8 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlsplit
 
+METHODS = ('dominant', 'vibrant', 'average', 'muted', 'dark', 'light', 'balanced')
+
 ROLES = ('bg', 'surface', 'overlay', 'muted', 'subtle', 'text', 'love', 'gold',
          'rose', 'pine', 'foam', 'iris', 'highlightLow', 'highlightMed', 'highlightHigh')
 
@@ -52,6 +54,9 @@ def extract(pixels, method):
         histogram[(r // 16, g // 16, b // 16)] += weight
     if not total:
         raise ValueError('The wallpaper is fully transparent. Choose another image.')
+    if method == 'balanced':
+        # Equal influence per occupied bucket reduces large flat regions' dominance.
+        return tuple(sum((bucket[i] * 16 + 7.5) / 255 for bucket in histogram) / len(histogram) for i in range(3))
     if method == 'average':
         return tuple(c / total for c in average)
     def rgb(bucket):
@@ -60,7 +65,13 @@ def extract(pixels, method):
         if method == 'dominant':
             return histogram[bucket]
         _, light, sat = colorsys.rgb_to_hls(*rgb(bucket))
-        return math.sqrt(histogram[bucket]) * (.02 + sat ** 2) * (.2 + 4 * light * (1 - light))
+        coverage = math.sqrt(histogram[bucket])
+        if method == 'muted':
+            return coverage * (.02 + (1 - sat) ** 2) * (.2 + 4 * light * (1 - light))
+        if method in ('dark', 'light'):
+            tone = 1 - light if method == 'dark' else light
+            return coverage * (.02 + tone ** 3)
+        return coverage * (.02 + sat ** 2) * (.2 + 4 * light * (1 - light))
     winner = max(sorted(histogram), key=score)
     return rgb(winner)
 
@@ -92,9 +103,9 @@ def palettes(seed, variant):
     return result
 
 
-def generate(request):
+def generate(request, bundle=False):
     method, variant = request.get('method', 'dominant'), request.get('variant', 'tonal')
-    if method not in ('dominant', 'vibrant', 'average') or variant not in ('neutral', 'tonal', 'vivid'):
+    if method not in METHODS or variant not in ('neutral', 'tonal', 'vivid'):
         raise ValueError('Unknown extraction method or color variant.')
     url = urlsplit(request['source'])
     if url.scheme != 'file' or url.netloc or url.query or url.fragment:
@@ -116,12 +127,14 @@ def generate(request):
         raise ValueError('Could not decode this wallpaper. Try another image.') from None
     if len(process.stdout) != 64 * 64 * 4:
         raise ValueError('Could not read wallpaper pixels.')
-    return palettes(extract(process.stdout, method), variant)
+    seed = extract(process.stdout, method)
+    selected = palettes(seed, variant)
+    return {'palettes': selected, 'vividPalettes': palettes(seed, 'vivid')} if bundle else selected
 
 
 if __name__ == '__main__':
     try:
-        print(json.dumps({'palettes': generate(json.load(sys.stdin))}))
+        print(json.dumps(generate(json.load(sys.stdin), bundle=True)))
     except (ValueError, KeyError, TypeError, OSError) as error:
         print(json.dumps({'error': str(error)}))
         sys.exit(1)

@@ -49,11 +49,11 @@ UI.ColumnLayout {
             UI.ComboBox {
                 objectName: "wallpaper-color-method"
                 Layout.fillWidth: true
-                model: ["Dominant", "Vibrant", "Average"]
-                currentIndex: ["dominant", "vibrant", "average"].indexOf(Theme.wallpaperColorMethod)
+                model: ["Dominant", "Vibrant", "Average", "Muted", "Dark", "Light", "Balanced"]
+                currentIndex: ["dominant", "vibrant", "average", "muted", "dark", "light", "balanced"].indexOf(Theme.wallpaperColorMethod)
                 enabled: Theme.ready
                 Accessible.name: "Wallpaper color extraction"
-                onActivated: index => WallpaperTheme.setOption("method", ["dominant", "vibrant", "average"][index])
+                onActivated: index => WallpaperTheme.setOption("method", ["dominant", "vibrant", "average", "muted", "dark", "light", "balanced"][index])
             }
         }
         UI.ColumnLayout {
@@ -72,7 +72,7 @@ UI.ColumnLayout {
         }
     }
     Label {
-        text: ({dominant: "Dominant favors common colors.", vibrant: "Vibrant favors saturated colors with meaningful coverage.", average: "Average blends the image’s colors."})[Theme.wallpaperColorMethod]
+        text: ({dominant: "Dominant favors common colors.", vibrant: "Vibrant favors saturated colors with meaningful coverage.", average: "Average blends the image’s colors.", muted: "Muted favors less saturated colors.", dark: "Dark favors darker colors.", light: "Light favors lighter colors.", balanced: "Balanced blends distinct colors with equal weight."})[Theme.wallpaperColorMethod]
             + " " + ({neutral: "Neutral keeps surfaces mostly gray.", tonal: "Tonal gently tints surfaces.", vivid: "Vivid uses richer accents and surfaces."})[Theme.wallpaperColorVariant]
     }
     UI.RowLayout {
@@ -86,6 +86,18 @@ UI.ColumnLayout {
             onChangeRequested: value => WallpaperTheme.setOption("auto", value)
         }
     }
+    UI.RowLayout {
+        Layout.fillWidth: true
+        Label { text: "Vivid colors for Neovim"; role: "body"; color: Design.text }
+        ControlSwitch {
+            objectName: "wallpaper-nvim-vivid"
+            value: Theme.wallpaperNvimVivid
+            enabled: Theme.ready
+            Accessible.name: "Use vivid wallpaper colors for Neovim"
+            onChangeRequested: value => WallpaperTheme.setOption("nvimVivid", value)
+        }
+    }
+    Label { text: "Uses the vivid variant only for Neovim when the Wallpaper theme and Neovim application sync are enabled." }
     Label {
         visible: WallpaperTheme.busy
         text: "Generating colors…"

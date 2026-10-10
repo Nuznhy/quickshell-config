@@ -11,6 +11,9 @@ Singleton {
 
     readonly property var presets: generatedPalette ? Palettes.presets.concat([{id: "wallpaper", name: "Wallpaper"}]) : Palettes.presets
     property var generatedPalette: null
+    property var generatedVividPalette: null
+    property bool wallpaperNvimVivid: false
+    readonly property var nvimPalette: preset === "wallpaper" && wallpaperNvimVivid && generatedVividPalette ? generatedVividPalette[mode] : palette
     property string wallpaperColorMonitor: ""
     property string wallpaperColorMethod: "dominant"
     property string wallpaperColorVariant: "tonal"
@@ -72,15 +75,17 @@ Singleton {
     function setWallpaperColorOption(key, value) {
         if (!ready) return;
         if (key === "monitor" && typeof value === "string") wallpaperColorMonitor = value;
-        else if (key === "method" && ["dominant", "vibrant", "average"].includes(value)) wallpaperColorMethod = value;
+        else if (key === "method" && ["dominant", "vibrant", "average", "muted", "dark", "light", "balanced"].includes(value)) wallpaperColorMethod = value;
         else if (key === "variant" && ["neutral", "tonal", "vivid"].includes(value)) wallpaperColorVariant = value;
+        else if (key === "nvimVivid" && typeof value === "boolean") wallpaperNvimVivid = value;
         else if (key === "auto" && typeof value === "boolean") wallpaperColorAuto = value;
         else return;
         appearanceSaveTimer.restart();
     }
 
-    function applyWallpaperPalette(value) {
+    function applyWallpaperPalette(value, vivid) {
         if (!ready || !WallpaperColors.valid(value)) return false;
+        generatedVividPalette = WallpaperColors.valid(vivid) ? vivid : null;
         generatedPalette = value;
         preset = "wallpaper";
         save();
@@ -102,7 +107,8 @@ Singleton {
             wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
             lockScreen: lockScreen,
             wallpaperColors: {monitor: wallpaperColorMonitor, method: wallpaperColorMethod,
-                variant: wallpaperColorVariant, auto: wallpaperColorAuto, palettes: generatedPalette},
+                variant: wallpaperColorVariant, auto: wallpaperColorAuto, palettes: generatedPalette,
+                nvimVivid: wallpaperNvimVivid, vividPalettes: generatedVividPalette},
             separateWallpapers: separateWallpapers, lightWallpapers: lightWallpapers, darkWallpapers: darkWallpapers,
             settingsIcon: settingsIcon, settingsIconSource: settingsIconSource }, null, 2) + "\n");
     }
@@ -252,9 +258,11 @@ Singleton {
                 const colors = saved.wallpaperColors || {};
                 root.generatedPalette = WallpaperColors.valid(colors.palettes) ? colors.palettes : null;
                 root.wallpaperColorMonitor = typeof colors.monitor === "string" ? colors.monitor : "";
-                root.wallpaperColorMethod = ["dominant", "vibrant", "average"].includes(colors.method) ? colors.method : "dominant";
+                root.wallpaperColorMethod = ["dominant", "vibrant", "average", "muted", "dark", "light", "balanced"].includes(colors.method) ? colors.method : "dominant";
                 root.wallpaperColorVariant = ["neutral", "tonal", "vivid"].includes(colors.variant) ? colors.variant : "tonal";
                 root.wallpaperColorAuto = colors.auto === true;
+                root.wallpaperNvimVivid = colors.nvimVivid === true;
+                root.generatedVividPalette = WallpaperColors.valid(colors.vividPalettes) ? colors.vividPalettes : null;
                 root.preset = saved.preset === "wallpaper" && root.generatedPalette ? "wallpaper"
                     : Palettes.hasPreset(saved.preset) ? saved.preset : "rose-pine";
                 root.mode = saved.mode === "light" ? "light" : "dark";

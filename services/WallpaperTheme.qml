@@ -29,11 +29,13 @@ Singleton {
             const screen = Theme.connectedScreens.find(s => Theme.wallpaperFor(s.name));
             if (screen) Theme.setWallpaperColorOption("monitor", screen.name);
         }
-        if (automatic) generate(true);
+        if (automatic || (Theme.preset === "wallpaper" && Theme.wallpaperNvimVivid && !Theme.generatedVividPalette)) generate(true);
     }
     function setOption(name, value) {
         Theme.setWallpaperColorOption(name, value);
-        if (name !== "auto" || value) generate(false);
+        if (name === "nvimVivid") {
+            if (value && Theme.preset === "wallpaper" && !Theme.generatedVividPalette) generate(false);
+        } else if (name !== "auto" || value) generate(false);
     }
     function cancel() {
         revision++;
@@ -72,7 +74,10 @@ Singleton {
     Component.onCompleted: initialize()
     Connections {
         target: Theme
-        function onPresetChanged() { if (Theme.preset !== "wallpaper") root.cancel(); }
+        function onPresetChanged() {
+            if (Theme.preset !== "wallpaper") root.cancel();
+            else if (Theme.wallpaperNvimVivid && !Theme.generatedVividPalette) root.generate(false);
+        }
         function onReadyChanged() { root.initialize(); }
         function onConnectedScreensChanged() { if (!root.monitor) root.initialize(); }
         function onWallpapersChanged() { if (!root.monitor) root.initialize(); }
@@ -102,7 +107,7 @@ Singleton {
                     root.preview = root.response.palettes;
                     root.previewKey = root.job.key;
                     root.errorMessage = "";
-                    Theme.applyWallpaperPalette(root.preview);
+                    Theme.applyWallpaperPalette(root.preview, root.response.vividPalettes);
                 } else root.errorMessage = root.response?.error || "Wallpaper theme generation failed.";
             }
             Qt.callLater(root.pump);

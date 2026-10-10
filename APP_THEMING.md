@@ -228,3 +228,8 @@ symlinks, unavailable dependencies, failed hooks, UI switches, and the real QML
 worker queue. Native Quickshell tests need permission to create local IPC sockets.
 The tmux suite creates separate temporary servers to verify every palette,
 restoration, new-server startup, and isolation from unrelated configurations.
+
+In Appearance → Colors, **Vivid colors for Neovim** selects the vivid wallpaper
+variant for Neovim only. It applies while the Wallpaper preset is active and Neovim
+sync is enabled; built-in presets still use their normal palettes. Disable the
+option to return Neovim to the shared palette. Changes reload on focus as usual.

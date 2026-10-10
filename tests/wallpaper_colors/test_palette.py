@@ -23,6 +23,18 @@ class PaletteTests(unittest.TestCase):
         self.assertEqual(len(set(seeds)), 3)
         self.assertEqual(seeds, [palette.extract(pixels, method) for method in ('dominant', 'vibrant', 'average')])
 
+    def test_new_extraction_preferences(self):
+        dark, light = [32, 48, 64, 255], [208, 224, 240, 255]
+        pixels = bytes(dark * 30 + light * 30 + [240, 32, 64, 255] * 30)
+        self.assertLess(sum(palette.extract(pixels, 'dark')), sum(palette.extract(pixels, 'light')))
+        self.assertNotEqual(palette.extract(pixels, 'muted'), palette.extract(pixels, 'vibrant'))
+        self.assertEqual(palette.extract(bytes(dark * 100 + light), 'balanced'),
+                         palette.extract(bytes(dark + light * 100), 'balanced'))
+        for method in palette.METHODS:
+            self.assertEqual(palette.extract(pixels, method), palette.extract(pixels, method))
+            self.assertEqual(palette.extract(bytes(dark + [255, 0, 0, 0]), method),
+                             palette.extract(bytes(dark), method))
+
     def test_variants_roles_and_contrast(self):
         for seed in [(1, 0, 0), (0, 1, 0), (0, 0, 1), (.4, .4, .4), (0, 0, 0), (1, 1, 1), (.9, .8, .1)]:
             for variant in ('neutral', 'tonal', 'vivid'):
@@ -50,6 +62,10 @@ class PaletteTests(unittest.TestCase):
             image.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#0088aa"/></svg>')
             request = dict(source=image.as_uri(), method='dominant', variant='tonal')
             self.assertEqual(set(palette.generate(request)), {'dark', 'light'})
+            bundle = palette.generate(request, bundle=True)
+            self.assertEqual(bundle['palettes'], palette.generate(request))
+            self.assertEqual(bundle['vividPalettes'], palette.generate(dict(request, variant='vivid')))
+            self.assertNotEqual(bundle['palettes'], bundle['vividPalettes'])
             with patch.object(palette.subprocess, 'run', side_effect=FileNotFoundError):
                 with self.assertRaisesRegex(ValueError, 'Install ImageMagick'):
                     palette.generate(request)

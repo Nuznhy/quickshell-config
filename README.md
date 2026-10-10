@@ -433,11 +433,17 @@ history, and settings-persistence checks.
 ## Customize
 
 In **Settings → Appearance → Colors**, **Theme from wallpaper** generates a
-shared palette from the selected monitor. Choose **Dominant**, **Vibrant**, or
-**Average** extraction and a **Neutral**, **Tonal**, or **Vivid** variant. Changing
+shared palette from the selected monitor. Choose **Dominant**, **Vibrant**, **Average**, **Muted**, **Dark**, **Light**, or
+**Balanced** extraction and a **Neutral**, **Tonal**, or **Vivid** variant. Changing
 any of these controls generates and applies the Wallpaper theme automatically;
 light/dark swatches show the result. ImageMagick (`magick`) is required for
 generation; processing stays local.
+
+**Muted** favors low saturation; **Dark** and **Light** favor darker or lighter source colors.
+**Balanced** averages distinct color buckets equally, reducing the influence of large flat areas.
+**Vivid colors for Neovim** uses a separately generated vivid variant when the Wallpaper
+theme and Neovim application sync are enabled. It leaves the shared palette unchanged,
+updates automatically, and is saved across restarts.
 
 **Follow wallpaper changes** is off by default. When enabled, it updates colors
 while the Wallpaper theme is selected, including separate light/dark wallpapers.

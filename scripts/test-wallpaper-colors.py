@@ -43,7 +43,7 @@ ShellRoot {
             return JSON.stringify({ready: Theme.ready, busy: WallpaperTheme.busy,
                 error: WallpaperTheme.errorMessage, preview: WallpaperTheme.preview,
                 palette: Theme.generatedPalette, preset: Theme.preset,
-                mode: Theme.mode,
+                mode: Theme.mode, nvimVivid: Theme.wallpaperNvimVivid, nvimPalette: Theme.nvimPalette, vividPalette: Theme.generatedVividPalette,
                 method: Theme.wallpaperColorMethod, variant: Theme.wallpaperColorVariant,
                 auto: Theme.wallpaperColorAuto, monitor: Theme.wallpaperColorMonitor});
         }
@@ -51,6 +51,7 @@ ShellRoot {
         function monitor(value: string): void { WallpaperTheme.setOption("monitor", value); }
         function autoUpdate(value: bool): void { WallpaperTheme.setOption("auto", value); }
         function method(value: string): void { WallpaperTheme.setOption("method", value); }
+        function nvimVivid(value: bool): void { WallpaperTheme.setOption("nvimVivid", value); }
         function variant(value: string): void { WallpaperTheme.setOption("variant", value); }
         function preset(value: string): void { Theme.selectPreset(value); }
         function separate(): void {
@@ -104,6 +105,13 @@ ShellRoot {
             ipc('wallpaper', 'blue'); ipc('monitor', 'TEST')
             blue = wait_for(lambda s: not s['busy'] and bool(s['palette']))
             assert blue['preset'] == 'wallpaper' and blue['palette'] == blue['preview']
+            ipc('nvimVivid', 'true')
+            override = settled()
+            assert override['palette'] == blue['palette']
+            assert override['nvimPalette'] == override['vividPalette'][override['mode']]
+            assert override['nvimPalette'] != blue['palette'][override['mode']]
+            ipc('nvimVivid', 'false')
+            assert settled()['nvimPalette'] == blue['palette'][blue['mode']]
             ipc('wallpaper', 'red')
             unchanged = settled()
             assert unchanged['palette'] == blue['palette']
@@ -140,6 +148,10 @@ ShellRoot {
             # A settings edit still regenerates/applies with follow-wallpaper disabled.
             ipc('method', 'dominant')
             changed = wait_for(lambda s: not s['busy'] and s['palette'] != light['palette'])
+            for method in ('muted', 'dark', 'light', 'balanced'):
+                ipc('method', method)
+                assert settled()['method'] == method
+            ipc('nvimVivid', 'true')
             ipc('method', 'average')
             saved_palette = wait_for(lambda s: not s['busy'] and s['palette'] != changed['palette'])['palette']
             ipc('screenshot', 'false'); time.sleep(.4)
@@ -149,9 +161,21 @@ ShellRoot {
             process = start()
             restored = settled()
             assert restored['palette'] == saved_palette and restored['preset'] == 'wallpaper'
+            assert restored['nvimVivid'] and restored['nvimPalette'] == restored['vividPalette'][restored['mode']]
+            ipc('preset', 'gruvbox')
+            assert settled()['nvimPalette'] != restored['nvimPalette']
+            ipc('preset', 'wallpaper'); settled()
             assert restored['method'] == 'average' and restored['variant'] == 'vivid' and not restored['auto']
             process.terminate(); process.wait(timeout=5)
             state, = (base / 'state').rglob('theme.json')
+            saved = json.loads(state.read_text())
+            # Older saved wallpaper themes have no separate vivid palette.
+            saved['wallpaperColors'].pop('vividPalettes', None)
+            state.write_text(json.dumps(saved))
+            process = start()
+            migrated = wait_for(lambda s: not s['busy'] and bool(s['vividPalette']))
+            assert migrated['nvimVivid'] and migrated['preset'] == 'wallpaper'
+            process.terminate(); process.wait(timeout=5)
             saved = json.loads(state.read_text())
             saved['wallpaperColors']['palettes'] = {'dark': {'bg': 'invalid'}}
             state.write_text(json.dumps(saved))

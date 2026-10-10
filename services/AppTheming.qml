@@ -63,7 +63,7 @@ Singleton {
             discoverPending = false;
             next = { action: "discover" };
         } else return;
-        request = Object.assign({}, next, { palette: Theme.palette, mode: Theme.mode, lockScreen: Theme.lockScreen, hyprlandAppearance: root.hyprlandAppearance });
+        request = Object.assign({}, next, { palette: Theme.palette, nvimPalette: Theme.nvimPalette, mode: Theme.mode, lockScreen: Theme.lockScreen, hyprlandAppearance: root.hyprlandAppearance });
         errorMessage = "";
         worker.running = true;
     }
@@ -71,6 +71,7 @@ Singleton {
     Connections {
         target: Theme
         function onReadyChanged() { if (Theme.ready) root.refresh(); }
+        function onNvimPaletteChanged() { if (root.ready) root.scheduleSync(); }
         function onPaletteChanged() { if (root.ready) root.scheduleSync(); }
         function onLockScreenChanged() {
             // A queued toggle will read the latest options when it starts. Never

@@ -65,6 +65,19 @@ class ThemeTests(unittest.TestCase):
     def status(self, result, target):
         return next(t for t in result['targets'] if t['id'] == target)
 
+    def test_neovim_palette_override_is_isolated(self):
+        self.put('nvim/init.lua', '-- existing config\n')
+        vivid = dict(self.palette, iris='#aa44ee')
+        request = dict(action='set', enabled=True, palette=self.palette, mode='dark', nvimPalette=vivid)
+        result = self.engine.handle(dict(request, target='nvim'))
+        self.assertEqual(self.status(result, 'nvim')['state'], 'restart')
+        colors = self.config / 'nvim/colors/quickshell-config.lua'
+        self.assertEqual(colors.read_text(), formats.nvim(vivid, 'dark'))
+        self.engine.handle(dict(request, target='ghostty'))
+        self.assertEqual((self.config / 'ghostty/themes/quickshell-config').read_text(), formats.terminal(self.palette, 'ghostty'))
+        self.engine.handle(dict(request, target='nvim', nvimPalette=self.palette))
+        self.assertEqual(colors.read_text(), formats.nvim(self.palette, 'dark'))
+
     def test_all_renderers_all_palettes(self):
         count = 0
         for p in palettes():

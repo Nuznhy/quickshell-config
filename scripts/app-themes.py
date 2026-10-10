@@ -737,7 +737,8 @@ class Themes:
                         available, reason = self.available(target)
                         if not available:
                             raise RuntimeError(reason)
-                        state, message = self.apply(target, palette, request['mode'])
+                        target_palette = fmt.validate(request['nvimPalette'], request['mode']) if target == 'nvim' and request.get('nvimPalette') is not None else palette
+                        state, message = self.apply(target, target_palette, request['mode'])
                         self.state['status'][target] = dict(state=state, message=message)
                     elif target in self.state['pending_restore']:
                         self.restore(target)
