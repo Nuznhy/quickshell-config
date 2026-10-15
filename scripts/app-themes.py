@@ -512,7 +512,8 @@ class Themes:
                 # Reject these rather than letting a filename change the configuration.
                 image = fmt.hyprlock_path(str(path))
             helper = Path(__file__).resolve().with_name('hyprlock-status.py')
-            self.generated(c / 'hypr/hyprlock.conf', fmt.hyprlock(p, background, image, str(helper)))
+            self.generated(c / 'hypr/hyprlock.conf', fmt.hyprlock(p, background, image, str(helper),
+                options.get("asciiText", "") if options.get("asciiEnabled") is True else ""))
             return 'applied', 'Ready for the next lock. Keyboard layout and Caps Lock status stay visible.'
         elif target == 'gtk':
             for version, css in zip(('3.0', '4.0'), fmt.gtk(p)):

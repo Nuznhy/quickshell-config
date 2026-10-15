@@ -178,7 +178,7 @@ UI.ColumnLayout {
     }
     Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 210
+        Layout.preferredHeight: Theme.lockAsciiEnabled && Theme.lockAsciiText.trim() ? 310 : 210
         color: Theme.lockBackgroundMode === "color" ? Theme.lockBackgroundColor : Design.background
         radius: Design.radiusCard
         clip: true
@@ -191,11 +191,25 @@ UI.ColumnLayout {
         }
         Rectangle {
             anchors.centerIn: parent
-            width: 260; height: 166; radius: Design.radiusCard
+            width: 260; height: parent.height - 44; radius: Design.radiusCard
             color: Design.background
             Column {
                 anchors.centerIn: parent
                 spacing: Design.space12
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: Theme.lockAsciiEnabled && Theme.lockAsciiText.trim().length > 0
+                    text: Theme.lockAsciiText
+                    textFormat: Text.PlainText
+                    font.family: "monospace"
+                    width: 230
+                    height: 100
+                    fontSizeMode: Text.Fit
+                    minimumPixelSize: 1
+                    font.pixelSize: 14
+                    horizontalAlignment: Text.AlignHCenter
+                    color: Design.accent
+                }
                 UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "12:34"; color: Design.text; font.pixelSize: 28; font.family: Design.fontFamily }
                 Rectangle {
                     width: 210; height: 32; radius: Design.radiusControl; color: Design.surface; border.color: Design.accent
@@ -205,6 +219,77 @@ UI.ColumnLayout {
                 UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Caps Lock: off"; color: Design.warning; font.family: Design.fontFamily; role: "label" }
             }
         }
+    }
+    UI.RowLayout {
+        Layout.fillWidth: true
+        UI.Text { Layout.fillWidth: true; text: "Show ASCII art"; color: Design.text; role: "section" }
+        ControlSwitch {
+            objectName: "lock-ascii-enabled"
+            value: Theme.lockAsciiEnabled
+            enabled: Theme.ready
+            Accessible.name: "Show ASCII art on the lock screen"
+            onChangeRequested: value => Theme.setLockAscii(value, Theme.lockAsciiText)
+        }
+    }
+    UI.Text {
+        Layout.fillWidth: true
+        text: "Paste ASCII or Unicode/Braille art, up to 64 lines of 160 characters. Large art appears beside the clock and unlock controls. Enable theme sync to apply on the next lock."
+        wrapMode: Text.WordWrap
+        color: Design.textSecondary
+        role: "body"
+    }
+    ScrollView {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 160
+        TextArea {
+            id: asciiInput
+            objectName: "lock-ascii-input"
+            text: Theme.lockAsciiText
+            textFormat: TextEdit.PlainText
+            wrapMode: TextEdit.NoWrap
+            font.family: "monospace"
+            font.pixelSize: 14
+            color: Design.text
+            selectByMouse: true
+            placeholderText: "Paste ASCII art here"
+            Accessible.name: "Lock-screen ASCII art"
+            function isValidArt(value) {
+                return value.split("\n").length <= 64
+                    && value.split("\n").every(line => Array.from(line).length <= 160)
+                    && !/[\x00-\x09\x0b-\x1f\x7f-\x9f\u00ad\u061c\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(value);
+            }
+            readonly property bool validArt: isValidArt(text)
+            onTextChanged: {
+                if (isValidArt(text) && text !== Theme.lockAsciiText)
+                    Theme.setLockAscii(Theme.lockAsciiEnabled, text);
+            }
+            background: Rectangle { color: Design.surface; radius: Design.radiusControl; border.color: asciiInput.validArt ? Design.border : Design.danger }
+        }
+    }
+    NotificationButton {
+        text: "Import quoted lines"
+        onClicked: {
+            try {
+                let source = asciiInput.text.trim();
+                if (!source.startsWith("[")) source = "[" + source.replace(/,\s*$/, "") + "]";
+                const lines = JSON.parse(source);
+                if (!Array.isArray(lines) || !lines.every(line => typeof line === "string")) throw new Error();
+                const art = lines.join("\n");
+                if (!asciiInput.isValidArt(art)) throw new Error();
+                asciiInput.text = art;
+                root.errorMessage = "";
+            } catch (error) {
+                root.errorMessage = "Paste a list of double-quoted lines, separated by commas, then import again.";
+            }
+        }
+    }
+    UI.Text {
+        Layout.fillWidth: true
+        visible: !asciiInput.validArt
+        text: "Use at most 64 lines of 160 characters, without control characters. This edit has not been saved."
+        wrapMode: Text.WordWrap
+        color: Design.danger
+        role: "body"
     }
     UI.Text {
         Layout.fillWidth: true

@@ -13,11 +13,29 @@ Rectangle {
         when: windowShown
         function init() {
             AppTheming.reset();
+            Theme.lockAsciiEnabled = false;
+            Theme.lockAsciiText = "";
             panel.candidate = "";
             panel.errorMessage = "";
             Theme.lockBackgroundMode = "theme";
             Theme.lockBackgroundImage = "";
             Theme.lockBackgroundColor = "#191724";
+        }
+        function test_ascii_editor() {
+            const input = findChild(panel, "lock-ascii-input");
+            input.text = "  /cat>\n  <&>";
+            compare(Theme.lockAsciiText, input.text);
+            Theme.setLockAscii(true, input.text);
+            compare(findChild(panel, "lock-ascii-enabled").value, true);
+            input.text = Array(30).fill("⠀⣀⣤⣿".repeat(20)).join("\n");
+            verify(input.validArt);
+            compare(Theme.lockAsciiText, input.text);
+            input.text = "  /cat>\n  <&>";
+            input.text = "x".repeat(161);
+            verify(!input.validArt);
+            compare(Theme.lockAsciiText, "  /cat>\n  <&>");
+            Theme.setLockAscii(false, Theme.lockAsciiText);
+            compare(Theme.lockAsciiText, "  /cat>\n  <&>");
         }
         function test_sync_switch() {
             mouseClick(findChild(panel, "lock-theme-sync"));

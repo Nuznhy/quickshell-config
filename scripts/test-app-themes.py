@@ -36,8 +36,16 @@ QtObject {
     property bool verticalBar: false
     property string lockBackgroundMode: "theme"
     property string lockBackgroundColor: "#191724"
+    property bool lockAsciiEnabled: false
+    property string lockAsciiText: ""
     property string lockBackgroundImage: ""
-    property var lockScreen: ({background: lockBackgroundMode, color: lockBackgroundColor, image: lockBackgroundImage})
+    property var lockScreen: ({background: lockBackgroundMode, color: lockBackgroundColor, image: lockBackgroundImage, asciiEnabled: lockAsciiEnabled, asciiText: lockAsciiText})
+    function setLockAscii(enabled, text) {
+        if (!ready || typeof text !== "string") return;
+        lockAsciiEnabled = enabled;
+        lockAsciiText = text;
+    }
+
     function setLockBackground(kind, value) {
         if (kind === "mode") lockBackgroundMode = value;
         else if (kind === "color") lockBackgroundColor = value;

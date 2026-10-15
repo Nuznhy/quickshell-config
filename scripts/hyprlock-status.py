@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read-only labels for Hyprlock. Never reads keypresses or passwords."""
+import base64
 import json
 import subprocess
 import html
@@ -144,7 +145,12 @@ def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'caps'
     if mode != 'caps':
         try:
-            if mode == 'media':
+            if mode == 'ascii':
+                art = base64.b64decode(sys.argv[2], validate=True).decode('utf-8')
+                # Keep whitespace inside markup so trimming command output cannot
+                # remove the first line's indentation (or trailing blank cells).
+                print('<span>' + html.escape(art) + '</span>')
+            elif mode == 'media':
                 print(media_status())
             elif mode == 'codex':
                 print(codex_status())

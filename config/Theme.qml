@@ -44,8 +44,10 @@ Singleton {
     property string wallpaperFolder: ""
     property string lockBackgroundMode: "theme"
     property string lockBackgroundColor: "#191724"
+    property bool lockAsciiEnabled: false
+    property string lockAsciiText: ""
     property string lockBackgroundImage: ""
-    readonly property var lockScreen: ({background: lockBackgroundMode, color: lockBackgroundColor, image: lockBackgroundImage})
+    readonly property var lockScreen: ({background: lockBackgroundMode, color: lockBackgroundColor, image: lockBackgroundImage, asciiEnabled: lockAsciiEnabled, asciiText: lockAsciiText})
     readonly property string defaultSettingsIcon: "󰒓"
     property string settingsIcon: defaultSettingsIcon
     property string settingsIconSource: ""
@@ -152,6 +154,13 @@ Singleton {
             }
         }
         return restored;
+    }
+
+    function setLockAscii(enabled, text) {
+        if (!ready || typeof text !== "string") return;
+        lockAsciiEnabled = enabled;
+        lockAsciiText = text;
+        appearanceSaveTimer.restart();
     }
 
     function setLockBackground(kind, value) {
@@ -284,6 +293,8 @@ Singleton {
                 root.darkWallpapers = root.restoreWallpapers(saved.darkWallpapers);
                 root.separateWallpapers = saved.separateWallpapers === true;
                 const lock = saved.lockScreen || {};
+                root.lockAsciiEnabled = lock.asciiEnabled === true;
+                root.lockAsciiText = typeof lock.asciiText === "string" ? lock.asciiText : "";
                 root.lockBackgroundMode = ["theme", "color", "image"].includes(lock.background) ? lock.background : "theme";
                 root.lockBackgroundColor = typeof lock.color === "string" && /^#[0-9a-fA-F]{6}$/.test(lock.color) ? lock.color : "#191724";
                 root.lockBackgroundImage = typeof lock.image === "string" && lock.image.startsWith("file:///") ? lock.image : "";

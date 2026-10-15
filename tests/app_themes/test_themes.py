@@ -278,6 +278,42 @@ class ThemeTests(unittest.TestCase):
         self.assertIn('    path = \n', path.read_text())
         self.assertNotIn(str(image), path.read_text())
 
+    def test_hyprlock_ascii_literal_text_and_validation(self):
+        import html
+        self.apply('hyprlock')
+        path = self.config / 'hypr/hyprlock.conf'
+        art = "  <cat> & # $TIME { }\n  $(touch /tmp/nope) `id`"
+        def sync(text, enabled=True):
+            return self.engine.handle(dict(action='sync', palette=self.palette, mode='dark',
+                lockScreen={'asciiEnabled': enabled, 'asciiText': text}))
+        self.assertEqual(self.status(sync(art), 'hyprlock')['state'], 'applied')
+        config = path.read_text()
+        command = next(line.split('cmd[update:3600000] ', 1)[1]
+                       for line in config.splitlines() if 'cmd[update:3600000]' in line)
+        import shlex
+        result = subprocess.run(shlex.split(command), capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout, '<span>' + html.escape(art) + '</span>\n')
+        # Model trimming at the command-output boundary, then parse Pango markup.
+        import xml.etree.ElementTree as ET
+        self.assertEqual(ET.fromstring(result.stdout.strip()).text, art)
+        self.assertNotIn(art, config)
+        for invalid in ['x' * 161, '\n' * 64, 'a\tb', '\u202e', None]:
+            self.assertEqual(self.status(sync(invalid), 'hyprlock')['state'], 'error')
+            self.assertEqual(path.read_text(), config)
+        large = "\n".join(["⠀⣀⣤⣿" * 20] * 30)
+        self.assertEqual(self.status(sync(large), 'hyprlock')['state'], 'applied')
+        config = path.read_text()
+        command = next(line.split('cmd[update:3600000] ', 1)[1]
+                       for line in config.splitlines() if 'cmd[update:3600000]' in line)
+        result = subprocess.run(shlex.split(command), capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout, '<span>' + large + '</span>\n')
+        self.assertIn('size = 1040, 600', config)
+        self.assertIn('position = -260, 0', config)
+        self.assertIn('position = 260, 60', config)
+        sync(art, False)
+        self.assertNotIn('cmd[update:3600000]', path.read_text())
+        self.assertIn('size = 480, 600', path.read_text())
+
     def test_hyprlock_manual_edits_preserved(self):
         path = self.put('hypr/hyprlock.conf', '# before\n')
         self.apply('hyprlock')

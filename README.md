@@ -682,6 +682,13 @@ events older than a day are omitted. Missing or incompatible data is reported
 on the card. Use **Settings → Lock screen → Reapply** to regenerate the layout;
 the updated layout appears on the next lock.
 
+**Settings → Lock screen → Show ASCII art** adds your pasted ASCII or Unicode/Braille art.
+Use up to 64 lines of 160 characters; spaces and line breaks are
+preserved. The editor previews saved art, and disabling the toggle keeps the text
+for later. Large drawings are scaled to fit beside the unlock controls; small art
+appears above the clock. Use **Import quoted lines** for comma-separated quoted
+lines (or a JSON array). Theme sync must be enabled; changes appear on the next lock.
+
 Sync uses a managed `hypr/hyprlock.conf` with standard PAM authentication. The
 previous configuration is backed up and restored when sync is disabled; manual
 edits produce a conflict instead of being overwritten. Use the normal config
