@@ -43,10 +43,23 @@ service and test patterns.
 
 ## Editor support
 
-The root `.qmlls.ini` enables Quickshell's managed QML language-server
-configuration. Start or restart Quickshell to populate it, then restart
-`qmlls` in Neovim with `:LspRestart`. Quickshell supplies the import paths
-for Qt, Quickshell, and the shell's `qs.*` modules.
+The root `.qmlls.ini` is managed by Quickshell. Start Quickshell to populate
+it. The `.qml-imports/qs/` links additionally expose the complete source
+modules, including `qmldir` files and JavaScript exports that the managed
+editor tree omits. Pass this directory explicitly to the language server:
+
+```sh
+/usr/lib/qt6/bin/qmlls -I /path/to/quickshell/.qml-imports
+```
+
+Use the system Qt language server so its Qt and Quickshell modules match
+the runtime. In Neovim, include the `-I` argument in the server command and
+restart it with `:LspRestart`.
+
+Resolve import errors before addressing `Unqualified access` diagnostics;
+missing singleton imports can cause those warnings too. For remaining warnings,
+qualify references to properties on other objects with their IDs (for example,
+`root.value`).
 
 ## Checks
 
