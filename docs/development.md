@@ -41,6 +41,13 @@ To add a bar widget, create it in `modules/bar/widgets/` and register it in
 [BarLayoutData.js](../config/BarLayoutData.js). Follow the matching feature's
 service and test patterns.
 
+## Editor support
+
+The root `.qmlls.ini` enables Quickshell's managed QML language-server
+configuration. Start or restart Quickshell to populate it, then restart
+`qmlls` in Neovim with `:LspRestart`. Quickshell supplies the import paths
+for Qt, Quickshell, and the shell's `qs.*` modules.
+
 ## Checks
 
 Run from the repository root:
