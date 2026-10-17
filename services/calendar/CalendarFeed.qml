@@ -16,13 +16,15 @@ Singleton {
     property var result: null
     readonly property string helper: Quickshell.shellPath("scripts/calendar/ical-calendar.py")
     function save(url) {
-        if (busy || !ready) return false;
+        if (busy || !ready)
+            return false;
         pendingUrl = url;
         run("store");
         return true;
     }
     function forget() {
-        if (busy || !ready) return;
+        if (busy || !ready)
+            return;
         run("forget");
     }
     function run(action) {
@@ -37,17 +39,25 @@ Singleton {
         id: writer
         command: ["python3", root.helper, "manage"]
         onStarted: {
-            write(JSON.stringify({action: root.operation, url: root.pendingUrl}));
+            write(JSON.stringify({
+                action: root.operation,
+                url: root.pendingUrl
+            }));
             root.pendingUrl = "";
             stdinEnabled = false;
         }
         stdout: SplitParser {
             onRead: data => {
-                try { root.result = JSON.parse(data); }
-                catch (error) { root.result = null; }
+                try {
+                    root.result = JSON.parse(data);
+                } catch (error) {
+                    root.result = null;
+                }
             }
         }
-        stderr: SplitParser { onRead: data => {} }
+        stderr: SplitParser {
+            onRead: data => {}
+        }
         onExited: code => {
             root.pendingUrl = "";
             const success = code === 0 && root.result && root.result.ok === true;
@@ -65,17 +75,28 @@ Singleton {
         interval: 90000
         running: writer.running
         onTriggered: {
-            root.result = {ok: false, error: "Keyring request timed out. Unlock your keyring and try again."};
+            root.result = {
+                ok: false,
+                error: "Keyring request timed out. Unlock your keyring and try again."
+            };
             writer.signal(9);
         }
     }
-    onEnabledChanged: { if (ready) preferences.setText(JSON.stringify({enabled: enabled})); }
+    onEnabledChanged: {
+        if (ready)
+            preferences.setText(JSON.stringify({
+                enabled: enabled
+            }));
+    }
     FileView {
         id: preferences
         path: Quickshell.statePath("calendar-feed.json")
         onLoaded: {
-            try { root.enabled = JSON.parse(text()).enabled === true; }
-            catch (error) { root.enabled = false; }
+            try {
+                root.enabled = JSON.parse(text()).enabled === true;
+            } catch (error) {
+                root.enabled = false;
+            }
             root.ready = true;
         }
         onLoadFailed: root.ready = true

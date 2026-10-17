@@ -16,8 +16,7 @@ Singleton {
     readonly property var devices: adapter ? adapter.devices.values : []
     readonly property var connectedDevices: devices.filter(device => device.connected)
     readonly property var savedDevices: devices.filter(device => !device.connected && (device.paired || device.bonded))
-    readonly property var nearbyDevices: devices.filter(device => !device.connected && !device.paired && !device.bonded)
-        .sort((a, b) => (a.name || a.address).localeCompare(b.name || b.address))
+    readonly property var nearbyDevices: devices.filter(device => !device.connected && !device.paired && !device.bonded).sort((a, b) => (a.name || a.address).localeCompare(b.name || b.address))
     readonly property bool busy: actionProc.running
     property int openPanels: 0
     property var scanAdapter: null
@@ -29,27 +28,40 @@ Singleton {
     property string deviceName: ""
     property bool receivedResult: false
 
-    onAdaptersChanged: { if (selectedAdapter && !adapters.includes(selectedAdapter)) selectedAdapter = null; }
+    onAdaptersChanged: {
+        if (selectedAdapter && !adapters.includes(selectedAdapter))
+            selectedAdapter = null;
+    }
     onOpenPanelsChanged: {
         if (openPanels <= 0) {
             stopScan();
-            if (busy && (operation === "pair" || prompt)) cancel();
+            if (busy && (operation === "pair" || prompt))
+                cancel();
         }
     }
     onAdapterChanged: stopScan()
-    onEnabledChanged: { if (!enabled) stopScan(); }
+    onEnabledChanged: {
+        if (!enabled)
+            stopScan();
+    }
     function selectAdapter(value) {
-        if (busy || !adapters.includes(value)) return;
+        if (busy || !adapters.includes(value))
+            return;
         stopScan();
         selectedAdapter = value;
         errorMessage = "";
     }
     function scan() {
-        if (!adapter || !enabled || busy) return;
+        if (!adapter || !enabled || busy)
+            return;
         errorMessage = "";
-        if (scanAdapter) { stopScan(); return; }
+        if (scanAdapter) {
+            stopScan();
+            return;
+        }
         // Do not stop a discovery session started by another Bluetooth manager.
-        if (adapter.discovering) return;
+        if (adapter.discovering)
+            return;
         scanAdapter = adapter;
         adapter.discovering = true;
         scanTimeout.restart();
@@ -58,52 +70,82 @@ Singleton {
     function stopScan() {
         scanTimeout.stop();
         scanCheck.stop();
-        if (scanAdapter) scanAdapter.discovering = false;
+        if (scanAdapter)
+            scanAdapter.discovering = false;
         scanAdapter = null;
     }
     function perform(action, target, value) {
-        if (busy || !target) return;
+        if (busy || !target)
+            return;
         const adapterAction = action === "power" || action === "discoverable";
-        if (!adapterAction && !devices.includes(target)) return;
-        if (adapterAction && target !== adapter) return;
+        if (!adapterAction && !devices.includes(target))
+            return;
+        if (adapterAction && target !== adapter)
+            return;
         errorMessage = "";
         prompt = null;
         receivedResult = false;
         operation = action;
         deviceName = target.name || target.address || "Bluetooth";
-        busyLabel = action === "power" ? "Changing Bluetooth power…" : action === "discoverable" ? "Changing discovery visibility…"
-            : action === "pair" ? "Pairing with " + deviceName + "…"
-            : action === "connect" ? "Connecting to " + deviceName + "…"
-            : action === "forget" ? "Removing " + deviceName + "…" : "Disconnecting " + deviceName + "…";
-        if (action === "power" || action === "pair") stopScan();
-        actionProc.command = ["python3", Quickshell.shellPath("scripts/bluetooth/bluetooth-action.py"),
-            action, target.dbusPath].concat(adapterAction ? [value ? "on" : "off"] : []);
+        busyLabel = action === "power" ? "Changing Bluetooth power…" : action === "discoverable" ? "Changing discovery visibility…" : action === "pair" ? "Pairing with " + deviceName + "…" : action === "connect" ? "Connecting to " + deviceName + "…" : action === "forget" ? "Removing " + deviceName + "…" : "Disconnecting " + deviceName + "…";
+        if (action === "power" || action === "pair")
+            stopScan();
+        actionProc.command = ["python3", Quickshell.shellPath("scripts/bluetooth/bluetooth-action.py"), action, target.dbusPath].concat(adapterAction ? [value ? "on" : "off"] : []);
         actionProc.running = true;
     }
-    function setEnabled(value) { if (!blocked) perform("power", adapter, value); }
-    function setDiscoverable(value) { if (enabled) perform("discoverable", adapter, value); }
-    function connectDevice(device) { if (enabled && !device.blocked) perform(device.paired || device.bonded ? "connect" : "pair", device); }
-    function disconnectDevice(device) { perform("disconnect", device); }
-    function forgetDevice(device) { perform("forget", device); }
+    function setEnabled(value) {
+        if (!blocked)
+            perform("power", adapter, value);
+    }
+    function setDiscoverable(value) {
+        if (enabled)
+            perform("discoverable", adapter, value);
+    }
+    function connectDevice(device) {
+        if (enabled && !device.blocked)
+            perform(device.paired || device.bonded ? "connect" : "pair", device);
+    }
+    function disconnectDevice(device) {
+        perform("disconnect", device);
+    }
+    function forgetDevice(device) {
+        perform("forget", device);
+    }
     function respond(accepted, value) {
-        if (!busy || !prompt) return;
+        if (!busy || !prompt)
+            return;
         errorMessage = "";
-        actionProc.write(JSON.stringify({ id: prompt.id, accepted: accepted, value: value || "" }) + "\n");
+        actionProc.write(JSON.stringify({
+            id: prompt.id,
+            accepted: accepted,
+            value: value || ""
+        }) + "\n");
     }
     function cancel() {
-        if (busy) actionProc.write(JSON.stringify({ cancel: true }) + "\n");
+        if (busy)
+            actionProc.write(JSON.stringify({
+                cancel: true
+            }) + "\n");
     }
     function changing(device) {
         return device.pairing || device.state === BT.BluetoothDeviceState.Connecting || device.state === BT.BluetoothDeviceState.Disconnecting;
     }
     function status(device) {
-        if (device.pairing) return "Pairing…";
-        if (device.state === BT.BluetoothDeviceState.Connecting) return "Connecting…";
-        if (device.state === BT.BluetoothDeviceState.Disconnecting) return "Disconnecting…";
-        if (device.blocked) return "Blocked";
+        if (device.pairing)
+            return "Pairing…";
+        if (device.state === BT.BluetoothDeviceState.Connecting)
+            return "Connecting…";
+        if (device.state === BT.BluetoothDeviceState.Disconnecting)
+            return "Disconnecting…";
+        if (device.blocked)
+            return "Blocked";
         return device.connected ? "Connected" : device.paired || device.bonded ? "Paired" : "Available";
     }
-    Timer { id: scanTimeout; interval: 30000; onTriggered: root.stopScan() }
+    Timer {
+        id: scanTimeout
+        interval: 30000
+        onTriggered: root.stopScan()
+    }
     Timer {
         id: scanCheck
         interval: 3000
@@ -121,18 +163,24 @@ Singleton {
             onRead: data => {
                 try {
                     const message = JSON.parse(data);
-                    if (message.type === "prompt") root.prompt = message.prompt;
-                    else if (message.type === "input-error") root.errorMessage = message.error;
+                    if (message.type === "prompt")
+                        root.prompt = message.prompt;
+                    else if (message.type === "input-error")
+                        root.errorMessage = message.error;
                     else if (message.type === "result") {
                         root.receivedResult = true;
-                        if (!message.ok) root.errorMessage = message.error || "Bluetooth operation failed.";
+                        if (!message.ok)
+                            root.errorMessage = message.error || "Bluetooth operation failed.";
                     }
-                } catch (error) { root.errorMessage = "Could not read the Bluetooth response."; }
+                } catch (error) {
+                    root.errorMessage = "Could not read the Bluetooth response.";
+                }
             }
         }
         stderr: StdioCollector {}
         onExited: code => {
-            if (!root.receivedResult) root.errorMessage = "Bluetooth helper failed. Check Python, PyGObject, and BlueZ.";
+            if (!root.receivedResult)
+                root.errorMessage = "Bluetooth helper failed. Check Python, PyGObject, and BlueZ.";
             root.prompt = null;
             root.busyLabel = "";
             root.operation = "";

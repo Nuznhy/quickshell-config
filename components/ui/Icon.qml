@@ -19,12 +19,9 @@ Item {
     UI.Text {
         id: glyph
         // Center visible ink, rather than the font's advance width and line box.
-        x: (root.width - metrics.tightBoundingRect.width * scale) / 2
-            - metrics.tightBoundingRect.x * scale
-        y: (root.height - metrics.tightBoundingRect.height * scale) / 2
-            - (metrics.tightBoundingRect.y + baselineOffset) * scale
-        scale: Math.min(1, root.width / Math.max(1, metrics.tightBoundingRect.width),
-                        root.height / Math.max(1, metrics.tightBoundingRect.height))
+        x: (root.width - metrics.tightBoundingRect.width * scale) / 2 - metrics.tightBoundingRect.x * scale
+        y: (root.height - metrics.tightBoundingRect.height * scale) / 2 - (metrics.tightBoundingRect.y + baselineOffset) * scale
+        scale: Math.min(1, root.width / Math.max(1, metrics.tightBoundingRect.width), root.height / Math.max(1, metrics.tightBoundingRect.height))
         transformOrigin: Item.TopLeft
         font.family: Design.iconFontFamily
         font.pixelSize: root.size

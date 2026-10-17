@@ -74,18 +74,28 @@ QtObject {
 
     function textSize(role) {
         switch (role) {
-        case "caption": return captionSize;
-        case "label": return labelSize;
-        case "section": return sectionHeadingSize;
-        case "panel": return panelHeadingSize;
-        case "page": return pageHeadingSize;
-        default: return bodySize;
+        case "caption":
+            return captionSize;
+        case "label":
+            return labelSize;
+        case "section":
+            return sectionHeadingSize;
+        case "panel":
+            return panelHeadingSize;
+        case "page":
+            return pageHeadingSize;
+        default:
+            return bodySize;
         }
     }
-    function heading(role) { return ["section", "panel", "page"].includes(role); }
+    function heading(role) {
+        return ["section", "panel", "page"].includes(role);
+    }
     function luminance(value) {
         const c = Qt.tint(value, "transparent");
-        function linear(v) { return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+        function linear(v) {
+            return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        }
         return 0.2126 * linear(c.r) + 0.7152 * linear(c.g) + 0.0722 * linear(c.b);
     }
     function contrast(a, b) {
@@ -93,17 +103,21 @@ QtObject {
         return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
     }
     function readableText(fillColor) {
-        if (contrast(background, fillColor) >= 4.5) return background;
-        if (contrast(text, fillColor) >= 4.5) return text;
+        if (contrast(background, fillColor) >= 4.5)
+            return background;
+        if (contrast(text, fillColor) >= 4.5)
+            return text;
         return contrast("#ffffff", fillColor) > contrast("#000000", fillColor) ? "#ffffff" : "#000000";
     }
     function fill(variant, selected, hovered, down, active, accentColor) {
         const emphasized = selected || variant === "primary" || variant === "destructive";
-        const base = emphasized ? (variant === "destructive" ? danger : accentColor)
-            : variant === "ghost" ? "transparent" : surfaceRaised;
-        if (!active) return base;
-        if (down) return emphasized ? Qt.tint(base, Qt.rgba(0, 0, 0, 0.16)) : pressed;
-        if (hovered) return emphasized ? Qt.tint(base, Qt.rgba(1, 1, 1, 0.12)) : hover;
+        const base = emphasized ? (variant === "destructive" ? danger : accentColor) : variant === "ghost" ? "transparent" : surfaceRaised;
+        if (!active)
+            return base;
+        if (down)
+            return emphasized ? Qt.tint(base, Qt.rgba(0, 0, 0, 0.16)) : pressed;
+        if (hovered)
+            return emphasized ? Qt.tint(base, Qt.rgba(1, 1, 1, 0.12)) : hover;
         return base;
     }
 }

@@ -5,16 +5,23 @@ import Quickshell.Io
 import qs.components.popup
 import qs.modules.notifications
 import qs.services.notifications
+
 ShellRoot {
     property int historyChanges: 0
     Connections {
         target: Notifications
-        function onEntriesChanged() { historyChanges++; }
+        function onEntriesChanged() {
+            historyChanges++;
+        }
     }
     Connections {
         target: Quickshell
-        function onReloadCompleted() { Quickshell.inhibitReloadPopup(); }
-        function onReloadFailed(error) { Quickshell.inhibitReloadPopup(); }
+        function onReloadCompleted() {
+            Quickshell.inhibitReloadPopup();
+        }
+        function onReloadFailed(error) {
+            Quickshell.inhibitReloadPopup();
+        }
     }
     FloatingWindow {
         id: host
@@ -26,7 +33,9 @@ ShellRoot {
         color: "#191724"
         NotificationCenter {
             id: center
-            x: 8; y: 8; width: 404
+            x: 8
+            y: 8
+            width: 404
             onDismissed: active = false
         }
         DropdownWidget {
@@ -35,7 +44,9 @@ ShellRoot {
             // Offscreen has no Hyprland focus-grab protocol. Exercise actual window
             // closure separately from compositor focus behavior.
             focusGrabEnabled: false
-            Text { text: "Test popup" }
+            Text {
+                text: "Test popup"
+            }
             popupContent: Rectangle {
                 id: popupBody
                 color: "#191724"
@@ -46,29 +57,51 @@ ShellRoot {
     IpcHandler {
         target: "test"
         function snapshot(): string {
-            return JSON.stringify({ ready: Notifications.ready, centerActive: center.active, dnd: Notifications.doNotDisturb,
+            return JSON.stringify({
+                ready: Notifications.ready,
+                centerActive: center.active,
+                dnd: Notifications.doNotDisturb,
                 historyChanges: historyChanges,
-                popupOpen: dropdown.dropdownOpen, popupVisible: host.testPopup?.visible || false,
-                entries: Notifications.entries, popups: Notifications.popups.length,
-                watchers: Object.keys(Notifications.watchers).length });
+                popupOpen: dropdown.dropdownOpen,
+                popupVisible: host.testPopup?.visible || false,
+                entries: Notifications.entries,
+                popups: Notifications.popups.length,
+                watchers: Object.keys(Notifications.watchers).length
+            });
         }
-        function invoke(key: string, action: string): void { Notifications.invoke(key, action); }
-        function remove(key: string): void { Notifications.remove(key); }
-        function markRead(): void { Notifications.markRead(); }
-        function open(): void { center.active = true; }
-        function close(): void { center.active = false; }
+        function invoke(key: string, action: string): void {
+            Notifications.invoke(key, action);
+        }
+        function remove(key: string): void {
+            Notifications.remove(key);
+        }
+        function markRead(): void {
+            Notifications.markRead();
+        }
+        function open(): void {
+            center.active = true;
+        }
+        function close(): void {
+            center.active = false;
+        }
         function openPopup(): void {
             host.closeAllPopups();
             dropdown.dropdownOpen = true;
         }
-        function switchWorkspace(): void { host.closeAllPopups(); }
-        function dismissPopup(): void { host.testPopup.contentItem.Window.window.close(); }
+        function switchWorkspace(): void {
+            host.closeAllPopups();
+        }
+        function dismissPopup(): void {
+            host.testPopup.contentItem.Window.window.close();
+        }
         function screenshot(): void {
             center.grabToImage(result => {
                 result.saveToFile(Quickshell.env("QS_NOTIFICATION_TEST_DIR") + "/preview.png");
                 console.log("Preview saved", center.implicitHeight);
             });
         }
-        function quit(): void { Qt.quit(); }
+        function quit(): void {
+            Qt.quit();
+        }
     }
 }

@@ -38,8 +38,8 @@ UI.RowLayout {
     }
 
     UI.Button {
-        highlighted: root.muted
         id: muteButton
+        highlighted: root.muted
         enabled: !root.busy
         opacity: root.enabled ? 1 : Design.disabledOpacity
         Layout.preferredWidth: 34
@@ -55,6 +55,5 @@ UI.RowLayout {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
-
     }
 }

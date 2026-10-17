@@ -13,12 +13,19 @@ Grid {
     property bool nerdFontIcons: false
     readonly property int count: iconModel.count
     property string hoveredAddress: ""
-    onVisibleChanged: { if (!visible) hoveredAddress = ""; }
+    onVisibleChanged: {
+        if (!visible)
+            hoveredAddress = "";
+    }
     signal windowClicked
     spacing: Design.space4
 
     move: Transition {
-        NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            properties: "x,y"
+            duration: 220
+            easing.type: Easing.OutCubic
+        }
     }
 
     ListModel {
@@ -77,7 +84,10 @@ Grid {
             property bool appeared: false
             Component.onCompleted: appeared = true
             enabled: present
-            onPresentChanged: { if (!present && root.hoveredAddress === windowAddress) root.hoveredAddress = ""; }
+            onPresentChanged: {
+                if (!present && root.hoveredAddress === windowAddress)
+                    root.hoveredAddress = "";
+            }
             opacity: appeared && present ? 1 : 0
             scale: appeared && present ? 1 : 0.5
 
@@ -136,7 +146,11 @@ Grid {
                 color: root.activeWorkspace ? Design.danger : Design.text
                 scale: appIcon.iconScale
             }
-            TextMetrics { id: glyphMetrics; font: glyph.font; text: glyph.text }
+            TextMetrics {
+                id: glyphMetrics
+                font: glyph.font
+                text: glyph.text
+            }
 
             Rectangle {
                 anchors.top: parent.top
@@ -159,8 +173,14 @@ Grid {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onEntered: root.hoveredAddress = appIcon.windowAddress
-                onExited: { if (root.hoveredAddress === appIcon.windowAddress) root.hoveredAddress = ""; }
-                onClicked: { root.windowClicked(); Workspaces.focusWindow(appIcon.modelData.address); }
+                onExited: {
+                    if (root.hoveredAddress === appIcon.windowAddress)
+                        root.hoveredAddress = "";
+                }
+                onClicked: {
+                    root.windowClicked();
+                    Workspaces.focusWindow(appIcon.modelData.address);
+                }
             }
         }
     }

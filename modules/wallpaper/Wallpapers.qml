@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import qs.config
 
-
 Variants {
     model: Quickshell.screens
     PanelWindow {
@@ -13,7 +12,12 @@ Variants {
         readonly property string wallpaperSource: Theme.wallpaperFor(modelData.name)
         screen: modelData
         visible: Theme.ready && (wallpaperSource.length > 0 || transition.hasContent)
-        anchors { top: true; bottom: true; left: true; right: true }
+        anchors {
+            top: true
+            bottom: true
+            left: true
+            right: true
+        }
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Background
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -28,9 +32,7 @@ Variants {
             ready: Theme.ready
             style: Theme.wallpaperTransitionStyle
             backgroundColor: Design.background
-            pixelSize: Qt.size(
-                Math.ceil((wallpaperWindow.modelData.width || 1920) * (wallpaperWindow.modelData.devicePixelRatio || 1)),
-                Math.ceil((wallpaperWindow.modelData.height || 1080) * (wallpaperWindow.modelData.devicePixelRatio || 1)))
+            pixelSize: Qt.size(Math.ceil((wallpaperWindow.modelData.width || 1920) * (wallpaperWindow.modelData.devicePixelRatio || 1)), Math.ceil((wallpaperWindow.modelData.height || 1080) * (wallpaperWindow.modelData.devicePixelRatio || 1)))
         }
     }
 }

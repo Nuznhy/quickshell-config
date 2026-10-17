@@ -10,7 +10,8 @@ import qs.components.popup as PopupScripts
 Item {
     id: root
     objectName: "workspace-preview"
-    width: 0; height: 0
+    width: 0
+    height: 0
     required property var barWindow
     property var anchorItem: null
     property int workspaceId: -1
@@ -21,9 +22,7 @@ Item {
     readonly property var monitor: workspace?.monitor || Hyprland.monitors.values.find(m => m.id === Workspaces.getWsWindows(workspaceId)[0]?.monitor)
     readonly property var screen: Quickshell.screens.find(screen => screen.name === monitor?.name) || barWindow?.screen
     readonly property var monitorBounds: ServiceScripts.WorkspacePreviewData.bounds(monitor, screen)
-    readonly property real previewWidth: Math.max(1, Math.min(380,
-        (barWindow?.screen?.width || 800) - 48,
-        Math.min(260, (barWindow?.screen?.height || 600) - 100) * monitorBounds.width / monitorBounds.height))
+    readonly property real previewWidth: Math.max(1, Math.min(380, (barWindow?.screen?.width || 800) - 48, Math.min(260, (barWindow?.screen?.height || 600) - 100) * monitorBounds.width / monitorBounds.height))
 
     function request(wsId, item, address) {
         hideDelay.stop();
@@ -31,28 +30,48 @@ Item {
         workspaceId = wsId;
         anchorItem = item;
         highlightedAddress = address || "";
-        if (!opened && (changed || !showDelay.running)) showDelay.restart();
-        if (opened) Qt.callLater(popup.anchor.updateAnchor);
+        if (!opened && (changed || !showDelay.running))
+            showDelay.restart();
+        if (opened)
+            Qt.callLater(popup.anchor.updateAnchor);
     }
     function leave(wsId) {
-        if (workspaceId !== wsId) return;
+        if (workspaceId !== wsId)
+            return;
         showDelay.stop();
         hideDelay.restart();
     }
     function close() {
-        showDelay.stop(); hideDelay.stop(); opened = false;
+        showDelay.stop();
+        hideDelay.stop();
+        opened = false;
         highlightedAddress = "";
     }
     Timer {
         id: showDelay
         interval: 280
-        onTriggered: { if (root.anchorItem && Workspaces.occupiedWorkspaceIds.includes(root.workspaceId)) root.opened = true; }
+        onTriggered: {
+            if (root.anchorItem && Workspaces.occupiedWorkspaceIds.includes(root.workspaceId))
+                root.opened = true;
+        }
     }
-    Timer { id: hideDelay; interval: 90; onTriggered: root.close() }
-    Connections { target: root.barWindow; function onCloseAllPopups() { root.close(); } }
+    Timer {
+        id: hideDelay
+        interval: 90
+        onTriggered: root.close()
+    }
+    Connections {
+        target: root.barWindow
+        function onCloseAllPopups() {
+            root.close();
+        }
+    }
     Connections {
         target: Workspaces
-        function onOccupiedWorkspaceIdsChanged() { if (!Workspaces.occupiedWorkspaceIds.includes(root.workspaceId)) root.close(); }
+        function onOccupiedWorkspaceIdsChanged() {
+            if (!Workspaces.occupiedWorkspaceIds.includes(root.workspaceId))
+                root.close();
+        }
     }
     PopupWindow {
         id: popup
@@ -60,11 +79,10 @@ Item {
         anchor.window: root.barWindow
         anchor.adjustment: PopupAdjustment.SlideX | PopupAdjustment.SlideY
         anchor.onAnchoring: {
-            if (!root.anchorItem || !root.barWindow?.contentItem) return;
+            if (!root.anchorItem || !root.barWindow?.contentItem)
+                return;
             const point = root.anchorItem.mapToItem(root.barWindow.contentItem, 0, 0);
-            const pos = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y,
-                root.anchorItem.width, root.anchorItem.height, root.barWindow.width, root.barWindow.height,
-                popup.width, popup.height, "center", 0, false);
+            const pos = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y, root.anchorItem.width, root.anchorItem.height, root.barWindow.width, root.barWindow.height, popup.width, popup.height, "center", 0, false);
             popup.anchor.rect = Qt.rect(pos.x, pos.y, 1, 1);
         }
         implicitWidth: root.previewWidth + Settings.popupPadding * 2
@@ -78,7 +96,8 @@ Item {
         Loader {
             id: content
             active: popup.visible
-            x: Settings.popupPadding; y: Settings.popupPadding
+            x: Settings.popupPadding
+            y: Settings.popupPadding
             width: root.previewWidth
             sourceComponent: WorkspacePreviewContent {
                 workspaceId: root.workspaceId

@@ -12,7 +12,10 @@ import qs.services.notifications
 PanelWindow {
     id: root
     screen: Quickshell.screens.find(screen => screen.name === Hyprland.focusedMonitor?.name) || Quickshell.screens[0]
-    anchors { top: true; right: true }
+    anchors {
+        top: true
+        right: true
+    }
     margins.top: Settings.barHeight + Theme.barTopMargin + 12
     margins.right: Theme.barSideMargin + 16
     implicitWidth: 390
@@ -41,13 +44,21 @@ PanelWindow {
                     entry: modelData
                     toast: true
                     onDismissed: {
-                        Notifications.patch(entry.key, { read: true, popup: false });
+                        Notifications.patch(entry.key, {
+                            read: true,
+                            popup: false
+                        });
                         const watcher = Notifications.watchers[entry.key];
-                        if (watcher) watcher.notification.dismiss();
+                        if (watcher)
+                            watcher.notification.dismiss();
                     }
                     opacity: 0
                     Component.onCompleted: opacity = 1
-                    Behavior on opacity { NumberAnimation { duration: 160 } }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 160
+                        }
+                    }
                 }
             }
         }

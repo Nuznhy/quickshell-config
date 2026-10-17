@@ -13,30 +13,145 @@ Item {
     id: scene
     width: 640
     height: 480
-    Component { id: buttonFactory; UI.Button { text: "Action"; property bool available: true; enabled: available } }
-    Component { id: fieldFactory; UI.TextField { width: 220; placeholderText: "Value" } }
-    Component { id: comboFactory; UI.ComboBox { width: 220; textRole: "label"; valueRole: "id"; model: [{id: "a", label: "Alpha"}, {id: "b", label: "Beta"}] } }
-    Component { id: switchFactory; ControlSwitch { property bool reported: false; value: reported } }
-    Component { id: segmentsFactory; UI.SegmentedControl { width: 300; model: ["One", "Two", "Three"]; currentIndex: 0 } }
-    Component { id: checkFactory; UI.CheckBox { text: "Check" } }
-    Component { id: sliderFactory; UI.Slider { width: 220; from: 0; to: 100; stepSize: 1; value: 25 } }
-    Component { id: audioFactory; AudioSlider { width: 220; level: 25 } }
-    Component { id: seekFactory; MediaSeekSlider { width: 220; mediaPosition: 10; duration: 100; trackKey: "first" } }
-    Component { id: popupFactory; UI.Popup { width: 160; height: 100; contentItem: UI.MenuItem { text: "Option" } } }
-    Component { id: calendarFactory; CalendarPanel { width: 328; active: true } }
-    Component { id: mediaFactory; MediaDetails { width: 300 } }
-    Component { id: audioChoiceFactory; AudioDeviceDropdown { width: 280; title: "Output"; devices: [{name: "a", description: "Speakers"}, {name: "b", description: "Headphones"}]; selectedName: "a" } }
+    Component {
+        id: buttonFactory
+        UI.Button {
+            text: "Action"
+            property bool available: true
+            enabled: available
+        }
+    }
+    Component {
+        id: fieldFactory
+        UI.TextField {
+            width: 220
+            placeholderText: "Value"
+        }
+    }
+    Component {
+        id: comboFactory
+        UI.ComboBox {
+            width: 220
+            textRole: "label"
+            valueRole: "id"
+            model: [
+                {
+                    id: "a",
+                    label: "Alpha"
+                },
+                {
+                    id: "b",
+                    label: "Beta"
+                }
+            ]
+        }
+    }
+    Component {
+        id: switchFactory
+        ControlSwitch {
+            property bool reported: false
+            value: reported
+        }
+    }
+    Component {
+        id: segmentsFactory
+        UI.SegmentedControl {
+            width: 300
+            model: ["One", "Two", "Three"]
+            currentIndex: 0
+        }
+    }
+    Component {
+        id: checkFactory
+        UI.CheckBox {
+            text: "Check"
+        }
+    }
+    Component {
+        id: sliderFactory
+        UI.Slider {
+            width: 220
+            from: 0
+            to: 100
+            stepSize: 1
+            value: 25
+        }
+    }
+    Component {
+        id: audioFactory
+        AudioSlider {
+            width: 220
+            level: 25
+        }
+    }
+    Component {
+        id: seekFactory
+        MediaSeekSlider {
+            width: 220
+            mediaPosition: 10
+            duration: 100
+            trackKey: "first"
+        }
+    }
+    Component {
+        id: popupFactory
+        UI.Popup {
+            width: 160
+            height: 100
+            contentItem: UI.MenuItem {
+                text: "Option"
+            }
+        }
+    }
+    Component {
+        id: calendarFactory
+        CalendarPanel {
+            width: 328
+            active: true
+        }
+    }
+    Component {
+        id: mediaFactory
+        MediaDetails {
+            width: 300
+        }
+    }
+    Component {
+        id: audioChoiceFactory
+        AudioDeviceDropdown {
+            width: 280
+            title: "Output"
+            devices: [
+                {
+                    name: "a",
+                    description: "Speakers"
+                },
+                {
+                    name: "b",
+                    description: "Headphones"
+                }
+            ]
+            selectedName: "a"
+        }
+    }
     TestCase {
         name: "DesignControls"
         when: windowShown
-        SignalSpy { id: spy }
+        SignalSpy {
+            id: spy
+        }
         function init() {
             spy.target = null;
             spy.clear();
             Design.previewPalette = null;
             mouseMove(scene, scene.width - 1, scene.height - 1);
         }
-        function watch(item, signal) { spy.target = null; spy.signalName = signal; spy.target = item; spy.clear(); }
+        function watch(item, signal) {
+            spy.target = null;
+            spy.signalName = signal;
+            spy.target = item;
+            spy.clear();
+        }
         function make(factory) {
             const item = createTemporaryObject(factory, scene);
             verify(item !== null);
@@ -67,7 +182,10 @@ Item {
             compare(spy.count, 3);
         }
         function test_button_visual_states_data() {
-            return ["neutral", "primary", "ghost", "destructive"].map(variant => ({tag: variant, variant: variant}));
+            return ["neutral", "primary", "ghost", "destructive"].map(variant => ({
+                        tag: variant,
+                        variant: variant
+                    }));
         }
         function test_button_visual_states(data) {
             const button = make(buttonFactory);
@@ -217,7 +335,11 @@ Item {
             compare(selector.selectedDescription, "No devices available");
         }
         function test_palette_changes_update_existing_controls_data() {
-            return ConfigScripts.Palettes.presets.reduce((rows, p) => rows.concat(["dark", "light"].map(mode => ({tag: p.id + "-" + mode, preset: p.id, mode: mode}))), []);
+            return ConfigScripts.Palettes.presets.reduce((rows, p) => rows.concat(["dark", "light"].map(mode => ({
+                            tag: p.id + "-" + mode,
+                            preset: p.id,
+                            mode: mode
+                        }))), []);
         }
         function test_palette_changes_update_existing_controls(data) {
             const button = make(buttonFactory);

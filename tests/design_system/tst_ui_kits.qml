@@ -9,15 +9,44 @@ Item {
     id: scene
     width: 640
     height: 480
-    Component { id: buttonFactory; UI.Button { text: "Action" } }
-    Component { id: fieldFactory; UI.TextField { width: 200; text: "Keep me" } }
-    Component { id: sliderFactory; UI.Slider { width: 200; value: 0.65 } }
-    Component { id: switchFactory; UI.Switch { checked: true } }
-    Component { id: popupFactory; UI.Popup { width: 120; height: 80 } }
+    Component {
+        id: buttonFactory
+        UI.Button {
+            text: "Action"
+        }
+    }
+    Component {
+        id: fieldFactory
+        UI.TextField {
+            width: 200
+            text: "Keep me"
+        }
+    }
+    Component {
+        id: sliderFactory
+        UI.Slider {
+            width: 200
+            value: 0.65
+        }
+    }
+    Component {
+        id: switchFactory
+        UI.Switch {
+            checked: true
+        }
+    }
+    Component {
+        id: popupFactory
+        UI.Popup {
+            width: 120
+            height: 80
+        }
+    }
     Component {
         id: cardFactory
         UI.Card {
-            width: 100; height: 60
+            width: 100
+            height: 60
             color: "#123456"
             radius: 7
             topLeftRadius: 0
@@ -25,12 +54,21 @@ Item {
             border.color: "#abcdef"
         }
     }
-    Component { id: hoverFactory; BarHoverIndicator { width: 100; height: 42; hovered: true; focused: true } }
+    Component {
+        id: hoverFactory
+        BarHoverIndicator {
+            width: 100
+            height: 42
+            hovered: true
+            focused: true
+        }
+    }
     Component {
         id: dropdownFactory
         Item {
             id: host
-            width: 200; height: 160
+            width: 200
+            height: 160
             property bool showStem: true
             property int triggerWidth: 30
             property int stemWidth: 46
@@ -48,7 +86,8 @@ Item {
     Component {
         id: rectangleFactory
         Rectangle {
-            width: 100; height: 60
+            width: 100
+            height: 60
             color: "#123456"
             radius: 7
             topLeftRadius: 0
@@ -59,8 +98,14 @@ Item {
     TestCase {
         name: "UiKits"
         when: windowShown
-        function init() { UiKit.previewKit = "default"; Theme.verticalBar = false; }
-        function cleanup() { UiKit.previewKit = ""; Theme.verticalBar = false; }
+        function init() {
+            UiKit.previewKit = "default";
+            Theme.verticalBar = false;
+        }
+        function cleanup() {
+            UiKit.previewKit = "";
+            Theme.verticalBar = false;
+        }
         function make(factory) {
             const item = createTemporaryObject(factory, scene);
             verify(item !== null);
@@ -68,7 +113,8 @@ Item {
         }
         function test_defaults_and_fallback() {
             const defaults = DefaultKitScripts.Tokens.defaults();
-            for (const key of Object.keys(defaults)) compare(Design[key], defaults[key], key);
+            for (const key of Object.keys(defaults))
+                compare(Design[key], defaults[key], key);
             UiKit.previewKit = "unknown";
             compare(UiKit.activeId, "default");
             compare(Design.radiusControl, 8);
@@ -93,8 +139,19 @@ Item {
             const button = make(buttonFactory);
             const background = button.background;
             try {
-                kit.palette = {bg: "#123456", text: "#ffffff", iris: "#008800"};
-                kit.palettes = {light: {bg: "#abcdef"}, dark: {surface: "#80112233"}};
+                kit.palette = {
+                    bg: "#123456",
+                    text: "#ffffff",
+                    iris: "#008800"
+                };
+                kit.palettes = {
+                    light: {
+                        bg: "#abcdef"
+                    },
+                    dark: {
+                        surface: "#80112233"
+                    }
+                };
                 UiKit.previewKit = "rounded";
                 Design.previewMode = "";
                 Theme.mode = "dark";
@@ -109,11 +166,17 @@ Item {
                 compare(Design.background, "#123456");
                 Design.previewMode = "light";
                 compare(Design.background, "#abcdef");
-                Design.previewPalette = Object.assign({}, Design.palette, {bg: "#fedcba", text: "#000000", gold: "#998877"});
+                Design.previewPalette = Object.assign({}, Design.palette, {
+                    bg: "#fedcba",
+                    text: "#000000",
+                    gold: "#998877"
+                });
                 compare(Design.background, "#abcdef");
                 compare(Design.text, "#ffffff");
                 compare(Design.warning, "#998877");
-                kit.palette = {text: "#eeeeee"};
+                kit.palette = {
+                    text: "#eeeeee"
+                };
                 kit.palettes = {};
                 compare(Design.background, "#fedcba");
                 compare(Design.text, "#eeeeee");
@@ -149,7 +212,8 @@ Item {
             field.y = 80;
             slider.y = 140;
             toggle.y = 200;
-            card.x = 300; card.y = 100;
+            card.x = 300;
+            card.y = 100;
             const background = button.background;
             field.forceActiveFocus();
             field.cursorPosition = 3;
@@ -180,7 +244,10 @@ Item {
             compare(button.enabled, false);
             button.busy = false;
             compare(button.enabled, true);
-            const spy = createTemporaryObject(signalSpyFactory, scene, {target: button, signalName: "clicked"});
+            const spy = createTemporaryObject(signalSpyFactory, scene, {
+                target: button,
+                signalName: "clicked"
+            });
             mouseClick(button);
             compare(spy.count, 1);
             button.forceActiveFocus();
@@ -191,7 +258,10 @@ Item {
             UiKit.previewKit = "rounded";
             tryCompare(popup, "visible", false);
         }
-        Component { id: signalSpyFactory; SignalSpy {} }
+        Component {
+            id: signalSpyFactory
+            SignalSpy {}
+        }
         function test_demo_renderers_and_vertical_indicator() {
             const button = make(buttonFactory);
             const hover = make(hoverFactory);
@@ -211,7 +281,9 @@ Item {
         }
         function test_dropdown_geometry_and_repaint() {
             const dropdown = make(dropdownFactory);
-            const spy = createTemporaryObject(signalSpyFactory, scene, {signalName: "painted"});
+            const spy = createTemporaryObject(signalSpyFactory, scene, {
+                signalName: "painted"
+            });
             for (const id of ["minimal", "rounded", "default"]) {
                 UiKit.previewKit = id;
                 const renderer = dropdown.renderer;

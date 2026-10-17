@@ -15,23 +15,33 @@ Singleton {
     readonly property bool checkingUpdates: updateProcess.running
     readonly property string helper: Quickshell.shellPath("scripts/quicksettings/system-info.py")
     function refresh() {
-        if (!infoProcess.running) infoProcess.running = true;
-        if (Date.now() - attemptedAt > 1800000) checkUpdates();
+        if (!infoProcess.running)
+            infoProcess.running = true;
+        if (Date.now() - attemptedAt > 1800000)
+            checkUpdates();
     }
     function checkUpdates() {
-        if (checkingUpdates) return;
+        if (checkingUpdates)
+            return;
         attemptedAt = Date.now();
         updateError = "";
         updateProcess.running = true;
     }
-    onOpenPanelsChanged: { if (openPanels > 0) refresh(); }
+    onOpenPanelsChanged: {
+        if (openPanels > 0)
+            refresh();
+    }
     Process {
         id: infoProcess
         command: ["python3", root.helper]
         stdout: StdioCollector {
             onStreamFinished: {
-                try { root.details = JSON.parse(text); root.errorMessage = root.details.error || ""; }
-                catch (error) { root.errorMessage = "Could not read system information."; }
+                try {
+                    root.details = JSON.parse(text);
+                    root.errorMessage = root.details.error || "";
+                } catch (error) {
+                    root.errorMessage = "Could not read system information.";
+                }
             }
         }
         stderr: StdioCollector {}
@@ -48,11 +58,21 @@ Singleton {
                         root.updateCount = data.count;
                         root.checkedAt = Date.now();
                     }
-                } catch (error) { root.updateError = "Could not read pending updates."; }
+                } catch (error) {
+                    root.updateError = "Could not read pending updates.";
+                }
             }
         }
         stderr: StdioCollector {}
-        onExited: code => { if (code !== 0) root.updateError = root.updateError || "Could not check repository updates."; }
+        onExited: code => {
+            if (code !== 0)
+                root.updateError = root.updateError || "Could not check repository updates.";
+        }
     }
-    Timer { interval: 30000; repeat: true; running: root.openPanels > 0; onTriggered: root.refresh(); }
+    Timer {
+        interval: 30000
+        repeat: true
+        running: root.openPanels > 0
+        onTriggered: root.refresh()
+    }
 }

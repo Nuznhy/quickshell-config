@@ -4,7 +4,8 @@ import qs.modules.network
 import qs.services.network
 
 Item {
-    width: 460; height: 900
+    width: 460
+    height: 900
     NetworkCenter {
         id: center
         width: 430
@@ -26,7 +27,14 @@ Item {
             NetworkState.wifiEnabled = true;
             NetworkState.passwordNetwork = null;
             NetworkState.wired.connected = true;
-            NetworkState.vpnProfiles = [{uuid: "test-vpn", name: "Work VPN", active: false, state: "disconnected"}];
+            NetworkState.vpnProfiles = [
+                {
+                    uuid: "test-vpn",
+                    name: "Work VPN",
+                    active: false,
+                    state: "disconnected"
+                }
+            ];
             NetworkState.lastAction = {};
             wait(50);
         }
@@ -82,8 +90,7 @@ Item {
                 compare(toggle.width, 40);
                 compare(toggle.indicator.x, 0);
                 compare(toggle.indicator.y, (toggle.height - toggle.indicator.height) / 2);
-                verify(Math.abs(toggle.parent.width - toggle.x - toggle.width) < 1,
-                    name + " stays at the right edge of its row");
+                verify(Math.abs(toggle.parent.width - toggle.x - toggle.width) < 1, name + " stays at the right edge of its row");
             }
         }
     }

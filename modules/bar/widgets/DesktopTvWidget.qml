@@ -9,15 +9,8 @@ Item {
     implicitWidth: Math.max(30, Theme.fontSize + 8)
     implicitHeight: Settings.barHeight
     activeFocusOnTab: true
-    readonly property string actionText: DesktopTv.pending ? "Keep TV"
-        : DesktopTv.mode === "tv" ? "Switch to Desktop" : "Switch to TV"
-    readonly property string description: DesktopTv.errorMessage
-        || (DesktopTv.changing ? "Changing display layout…"
-        : !DesktopTv.available ? DesktopTv.reason
-        : DesktopTv.pending ? "Press Enter within 15 seconds, or click here, to keep TV"
-        : DesktopTv.mode === "tv"
-            ? "Switch to DP-1 and DP-2; restore workspace placement"
-            : "Switch all workspaces and apps to HDMI-A-1")
+    readonly property string actionText: DesktopTv.pending ? "Keep TV" : DesktopTv.mode === "tv" ? "Switch to Desktop" : "Switch to TV"
+    readonly property string description: DesktopTv.errorMessage || (DesktopTv.changing ? "Changing display layout…" : !DesktopTv.available ? DesktopTv.reason : DesktopTv.pending ? "Press Enter within 15 seconds, or click here, to keep TV" : DesktopTv.mode === "tv" ? "Switch to DP-1 and DP-2; restore workspace placement" : "Switch all workspaces and apps to HDMI-A-1")
     Accessible.role: Accessible.Button
     Accessible.name: actionText
     Accessible.description: description
@@ -34,8 +27,7 @@ Item {
         role: "bar"
         anchors.centerIn: parent
         text: DesktopTv.mode === "tv" ? "󰟴" : "󰍹"
-        color: DesktopTv.errorMessage ? Design.danger : !DesktopTv.available ? Design.textSecondary
-            : DesktopTv.mode === "tv" ? Design.accent : Design.text
+        color: DesktopTv.errorMessage ? Design.danger : !DesktopTv.available ? Design.textSecondary : DesktopTv.mode === "tv" ? Design.accent : Design.text
         font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }

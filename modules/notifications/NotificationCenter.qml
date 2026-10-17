@@ -21,15 +21,22 @@ FocusScope {
             forceActiveFocus();
         }
     }
-    Component.onDestruction: { if (active) Notifications.openPanels--; }
+    Component.onDestruction: {
+        if (active)
+            Notifications.openPanels--;
+    }
     Keys.onEscapePressed: dismissed()
     Connections {
         target: Notifications
-        function onOpenRequested() { if (root.active) root.dismissed(); }
+        function onOpenRequested() {
+            if (root.active)
+                root.dismissed();
+        }
     }
     UI.ColumnLayout {
         id: content
-        x: 0; y: 0
+        x: 0
+        y: 0
         width: parent.width
         spacing: Design.space12
         UI.RowLayout {

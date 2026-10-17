@@ -38,9 +38,13 @@ Item {
         }
 
         UI.Button {
-            highlighted: root.expanded
             id: trigger
-            background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: devicePopup.reveal }
+            highlighted: root.expanded
+            background: UI.SelectTriggerSurface {
+                control: trigger
+                selected: trigger.highlighted
+                reveal: devicePopup.reveal
+            }
             Layout.fillWidth: true
             implicitHeight: Design.selectorHeight
             leftPadding: Design.space12
@@ -68,7 +72,6 @@ Item {
                     role: "section"
                 }
             }
-
         }
     }
 
@@ -96,8 +99,8 @@ Item {
                 Repeater {
                     model: devicePopup.visible ? root.devices : []
                     UI.MenuItem {
-                        highlighted: selectedDevice
                         id: choice
+                        highlighted: selectedDevice
                         required property var modelData
                         readonly property bool selectedDevice: modelData.name === root.selectedName
                         Layout.fillWidth: true
@@ -122,7 +125,6 @@ Item {
                             wrapMode: Text.WordWrap
                             verticalAlignment: Text.AlignVCenter
                         }
-
                     }
                 }
             }

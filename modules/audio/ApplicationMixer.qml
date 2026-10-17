@@ -15,13 +15,16 @@ UI.ColumnLayout {
     function applicationIcon(iconName, desktopId, binaryName, appName) {
         if (iconName) {
             const icon = Quickshell.iconPath(iconName, true);
-            if (icon) return icon;
+            if (icon)
+                return icon;
         }
         for (const name of [desktopId, binaryName, appName]) {
-            if (!name) continue;
+            if (!name)
+                continue;
             const entry = DesktopEntries.heuristicLookup(name);
             const icon = Quickshell.iconPath(entry?.icon || name.toLowerCase(), true);
-            if (icon) return icon;
+            if (icon)
+                return icon;
         }
         return "";
     }
@@ -94,13 +97,12 @@ UI.ColumnLayout {
                                 font.bold: true
                             }
                             UI.Button {
-                                highlighted: streamRow.muted
                                 id: muteButton
+                                highlighted: streamRow.muted
                                 text: streamRow.muted ? "Unmute" : "Mute"
                                 implicitHeight: Design.compactHeight
                                 implicitWidth: 64
                                 onClicked: Audio.setStreamMuted(streamRow.streamId, !streamRow.muted)
-
                             }
                         }
 

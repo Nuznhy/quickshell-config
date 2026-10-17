@@ -24,18 +24,23 @@ Singleton {
     readonly property string helper: Quickshell.shellPath("scripts/wallpaper/wallpaper-palette.py")
 
     function initialize() {
-        if (!Theme.ready) return;
+        if (!Theme.ready)
+            return;
         if (!monitor) {
             const screen = Theme.connectedScreens.find(s => Theme.wallpaperFor(s.name));
-            if (screen) Theme.setWallpaperColorOption("monitor", screen.name);
+            if (screen)
+                Theme.setWallpaperColorOption("monitor", screen.name);
         }
-        if (automatic || (Theme.preset === "wallpaper" && Theme.wallpaperNvimVivid && !Theme.generatedVividPalette)) generate(true);
+        if (automatic || (Theme.preset === "wallpaper" && Theme.wallpaperNvimVivid && !Theme.generatedVividPalette))
+            generate(true);
     }
     function setOption(name, value) {
         Theme.setWallpaperColorOption(name, value);
         if (name === "nvimVivid") {
-            if (value && Theme.preset === "wallpaper" && !Theme.generatedVividPalette) generate(false);
-        } else if (name !== "auto" || value) generate(false);
+            if (value && Theme.preset === "wallpaper" && !Theme.generatedVividPalette)
+                generate(false);
+        } else if (name !== "auto" || value)
+            generate(false);
     }
     function cancel() {
         revision++;
@@ -43,7 +48,8 @@ Singleton {
         debounce.stop();
     }
     function generate(followChange) {
-        if (!Theme.ready) return;
+        if (!Theme.ready)
+            return;
         revision++;
         pendingAutomatic = followChange === true;
         errorMessage = "";
@@ -51,13 +57,21 @@ Singleton {
         debounce.restart();
     }
     function pump() {
-        if (!pending || worker.running || debounce.running) return;
+        if (!pending || worker.running || debounce.running)
+            return;
         pending = false;
         if (!connected || !source) {
             errorMessage = !connected ? "Connect the source monitor or choose another monitor." : "Choose a wallpaper for this monitor first.";
             return;
         }
-        job = {key: key, source: source, method: Theme.wallpaperColorMethod, variant: Theme.wallpaperColorVariant, automatic: pendingAutomatic, revision: revision};
+        job = {
+            key: key,
+            source: source,
+            method: Theme.wallpaperColorMethod,
+            variant: Theme.wallpaperColorVariant,
+            automatic: pendingAutomatic,
+            revision: revision
+        };
         response = null;
         worker.running = true;
     }
@@ -65,26 +79,49 @@ Singleton {
         preview = null;
         previewKey = "";
         errorMessage = "";
-        if (Theme.ready && automatic) generate(true);
+        if (Theme.ready && automatic)
+            generate(true);
     }
     onAutomaticChanged: {
-        if (automatic && Theme.ready && previewKey !== key) generate(true);
-        else if (!automatic && (pending ? pendingAutomatic : worker.running && job.automatic)) cancel();
+        if (automatic && Theme.ready && previewKey !== key)
+            generate(true);
+        else if (!automatic && (pending ? pendingAutomatic : worker.running && job.automatic))
+            cancel();
     }
     Component.onCompleted: initialize()
     Connections {
         target: Theme
         function onPresetChanged() {
-            if (Theme.preset !== "wallpaper") root.cancel();
-            else if (Theme.wallpaperNvimVivid && !Theme.generatedVividPalette) root.generate(false);
+            if (Theme.preset !== "wallpaper")
+                root.cancel();
+            else if (Theme.wallpaperNvimVivid && !Theme.generatedVividPalette)
+                root.generate(false);
         }
-        function onReadyChanged() { root.initialize(); }
-        function onConnectedScreensChanged() { if (!root.monitor) root.initialize(); }
-        function onWallpapersChanged() { if (!root.monitor) root.initialize(); }
-        function onLightWallpapersChanged() { if (!root.monitor) root.initialize(); }
-        function onDarkWallpapersChanged() { if (!root.monitor) root.initialize(); }
+        function onReadyChanged() {
+            root.initialize();
+        }
+        function onConnectedScreensChanged() {
+            if (!root.monitor)
+                root.initialize();
+        }
+        function onWallpapersChanged() {
+            if (!root.monitor)
+                root.initialize();
+        }
+        function onLightWallpapersChanged() {
+            if (!root.monitor)
+                root.initialize();
+        }
+        function onDarkWallpapersChanged() {
+            if (!root.monitor)
+                root.initialize();
+        }
     }
-    Timer { id: debounce; interval: 300; onTriggered: root.pump() }
+    Timer {
+        id: debounce
+        interval: 300
+        onTriggered: root.pump()
+    }
     Process {
         id: worker
         command: ["python3", root.helper]
@@ -95,8 +132,13 @@ Singleton {
         }
         stdout: StdioCollector {
             onStreamFinished: {
-                try { root.response = JSON.parse(text); }
-                catch (error) { root.response = {error: "Could not read generated colors."}; }
+                try {
+                    root.response = JSON.parse(text);
+                } catch (error) {
+                    root.response = {
+                        error: "Could not read generated colors."
+                    };
+                }
             }
         }
         stderr: StdioCollector {}
@@ -108,7 +150,8 @@ Singleton {
                     root.previewKey = root.job.key;
                     root.errorMessage = "";
                     Theme.applyWallpaperPalette(root.preview, root.response.vividPalettes);
-                } else root.errorMessage = root.response?.error || "Wallpaper theme generation failed.";
+                } else
+                    root.errorMessage = root.response?.error || "Wallpaper theme generation failed.";
             }
             Qt.callLater(root.pump);
         }

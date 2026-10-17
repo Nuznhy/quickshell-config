@@ -11,6 +11,8 @@ ShellRoot {
         implicitHeight: 820
         minimumSize: Qt.size(640, 480)
         color: Design.background
-        Gallery { anchors.fill: parent }
+        Gallery {
+            anchors.fill: parent
+        }
     }
 }

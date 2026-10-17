@@ -14,8 +14,7 @@ UI.ColumnLayout {
     property string selectedMonitor: ""
     property string selectedMode: Theme.mode
     readonly property string wallpaperMode: Theme.separateWallpapers ? selectedMode : "shared"
-    readonly property string activeMonitor: Theme.connectedScreens.some(screen => screen.name === selectedMonitor)
-        ? selectedMonitor : (Theme.connectedScreens[0]?.name || "")
+    readonly property string activeMonitor: Theme.connectedScreens.some(screen => screen.name === selectedMonitor) ? selectedMonitor : (Theme.connectedScreens[0]?.name || "")
     readonly property int imageCount: folderLoader.item?.files.count || 0
     readonly property bool folderLoading: folderLoader.item?.files.status === FolderListModel.Loading
     signal dismissed
@@ -59,7 +58,8 @@ UI.ColumnLayout {
             text: "Choose folder…"
             enabled: Theme.ready
             onClicked: {
-                if (Theme.wallpaperFolder) folderPicker.currentFolder = Theme.wallpaperFolder;
+                if (Theme.wallpaperFolder)
+                    folderPicker.currentFolder = Theme.wallpaperFolder;
                 folderPicker.open();
             }
         }
@@ -76,8 +76,11 @@ UI.ColumnLayout {
         Layout.fillWidth: true
         visible: Theme.wallpaperFolder.length > 0
         text: {
-            try { return decodeURIComponent(Theme.wallpaperFolder.replace(/^file:\/\//, "")); }
-            catch (error) { return Theme.wallpaperFolder; }
+            try {
+                return decodeURIComponent(Theme.wallpaperFolder.replace(/^file:\/\//, ""));
+            } catch (error) {
+                return Theme.wallpaperFolder;
+            }
         }
         elide: Text.ElideMiddle
         textFormat: Text.PlainText
@@ -102,7 +105,8 @@ UI.ColumnLayout {
             enabled: Theme.ready
             Accessible.name: "Different wallpapers for light and dark"
             onChangeRequested: value => {
-                if (value) root.selectedMode = Theme.mode;
+                if (value)
+                    root.selectedMode = Theme.mode;
                 Theme.setSeparateWallpapers(value);
             }
         }
@@ -123,7 +127,9 @@ UI.ColumnLayout {
                 onClicked: root.selectedMode = modelData
             }
         }
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
     }
     WallpaperSelector {
         id: monitors
@@ -157,14 +163,12 @@ UI.ColumnLayout {
             onActivated: index => root.selectedMonitor = Theme.connectedScreens[index].name
             enabled: Theme.connectedScreens.length > 0
             Accessible.name: "Monitor for gallery wallpaper"
-
         }
     }
     UI.Text {
         Layout.fillWidth: true
         visible: !root.imageCount || root.folderLoading
-        text: !Theme.wallpaperFolder ? "Choose a folder to browse its images here."
-            : root.folderLoading ? "Loading images…" : "No supported images found. The folder may be empty or unavailable."
+        text: !Theme.wallpaperFolder ? "Choose a folder to browse its images here." : root.folderLoading ? "Loading images…" : "No supported images found. The folder may be empty or unavailable."
         color: Design.textSecondary
         font.family: Design.fontFamily
         role: "body"
@@ -184,8 +188,8 @@ UI.ColumnLayout {
         model: folderLoader.item?.files || null
         ScrollBar.vertical: UI.ScrollBar {}
         delegate: UI.Button {
-        highlighted: Theme.wallpaperFor(root.activeMonitor, root.wallpaperMode) === fileUrl.toString()
             id: tile
+            highlighted: Theme.wallpaperFor(root.activeMonitor, root.wallpaperMode) === fileUrl.toString()
             required property url fileUrl
             required property string fileName
             objectName: "wallpaper-image-" + fileName

@@ -15,28 +15,41 @@ Singleton {
     readonly property bool capsule: state.capsule
 
     function setOption(key, value) {
-        if (!ready || !["showIcons", "iconStyle", "separator", "capsule"].includes(key)) return;
-        state = ConfigScripts.WorkspaceAppearanceData.normalize(Object.assign({}, state, {[key]: value}));
+        if (!ready || !["showIcons", "iconStyle", "separator", "capsule"].includes(key))
+            return;
+        state = ConfigScripts.WorkspaceAppearanceData.normalize(Object.assign({}, state, {
+            [key]: value
+        }));
         saveTimer.restart();
     }
     function reset() {
-        if (!ready) return;
+        if (!ready)
+            return;
         state = ConfigScripts.WorkspaceAppearanceData.defaults();
         saveTimer.restart();
     }
-    Timer { id: saveTimer; interval: 250; onTriggered: file.setText(JSON.stringify(root.state, null, 2) + "\n") }
+    Timer {
+        id: saveTimer
+        interval: 250
+        onTriggered: file.setText(JSON.stringify(root.state, null, 2) + "\n")
+    }
     FileView {
         id: file
         path: Quickshell.statePath("workspace-appearance.json")
         printErrors: false
         onLoaded: {
-            if (root.ready) return;
-            try { root.state = ConfigScripts.WorkspaceAppearanceData.normalize(JSON.parse(text())); }
-            catch (error) { root.errorMessage = "Could not read workspace settings. Defaults restored."; }
+            if (root.ready)
+                return;
+            try {
+                root.state = ConfigScripts.WorkspaceAppearanceData.normalize(JSON.parse(text()));
+            } catch (error) {
+                root.errorMessage = "Could not read workspace settings. Defaults restored.";
+            }
             root.ready = true;
         }
         onLoadFailed: error => {
-            if (error !== FileViewError.FileNotFound) root.errorMessage = "Could not read workspace settings.";
+            if (error !== FileViewError.FileNotFound)
+                root.errorMessage = "Could not read workspace settings.";
             root.ready = true;
         }
         onSaved: root.errorMessage = ""

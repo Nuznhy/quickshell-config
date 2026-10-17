@@ -50,8 +50,8 @@ UI.ColumnLayout {
         }
     }
     component Choice: UI.Button {
-        highlighted: selected
         id: choice
+        highlighted: selected
         property bool selected: false
         Layout.fillWidth: true
         Layout.preferredWidth: 1
@@ -63,7 +63,6 @@ UI.ColumnLayout {
         enabled: Theme.ready
         Accessible.checkable: true
         Accessible.checked: selected
-
     }
 
     UI.RowLayout {
@@ -84,7 +83,9 @@ UI.ColumnLayout {
     Section {
         title: "UI kit"
         description: "Choose the look of the bar and controls."
-        UiKitPicker { Layout.fillWidth: true }
+        UiKitPicker {
+            Layout.fillWidth: true
+        }
     }
 
     Section {
@@ -105,7 +106,11 @@ UI.ColumnLayout {
                 Layout.preferredWidth: 2
                 Layout.minimumWidth: 0
                 spacing: Design.space8
-                Label { text: "Color mode"; color: Design.textSecondary; role: "label" }
+                Label {
+                    text: "Color mode"
+                    color: Design.textSecondary
+                    role: "label"
+                }
                 UI.RowLayout {
                     Layout.fillWidth: true
                     spacing: Design.space4
@@ -259,13 +264,17 @@ UI.ColumnLayout {
     Section {
         title: "Widget styling"
         description: "Hover and active effects for bar widgets on every monitor."
-        WidgetStyleSettings { Layout.fillWidth: true }
+        WidgetStyleSettings {
+            Layout.fillWidth: true
+        }
     }
 
     Section {
         title: "Text & icon"
         description: "Choose a font, adjust the text size, and pick your settings button."
-        BarFontPicker { Layout.fillWidth: true }
+        BarFontPicker {
+            Layout.fillWidth: true
+        }
         AppearanceSlider {
             Layout.fillWidth: true
             Layout.maximumWidth: 340
@@ -276,7 +285,9 @@ UI.ColumnLayout {
             onValueEdited: value => Theme.setFontSize(value)
             onEditingFinished: Theme.save()
         }
-        SettingsIconEditor { Layout.fillWidth: true }
+        SettingsIconEditor {
+            Layout.fillWidth: true
+        }
     }
 
     Section {
@@ -320,7 +331,9 @@ UI.ColumnLayout {
     }
 
     Section {
-        ApplicationThemes { Layout.fillWidth: true }
+        ApplicationThemes {
+            Layout.fillWidth: true
+        }
     }
 
     Label {

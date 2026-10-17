@@ -26,7 +26,8 @@ DropdownWidget {
         busy: action.running
         errorMessage: root.errorMessage
         onActionRequested: requested => {
-            if (action.running) return;
+            if (action.running)
+                return;
             root.errorMessage = "";
             root.dropdownOpen = false;
             action.command = ["python3", Quickshell.shellPath("scripts/power/power-action.py"), requested];
@@ -36,7 +37,9 @@ DropdownWidget {
     Process {
         id: action
         stdout: StdioCollector {}
-        stderr: StdioCollector { id: errors }
+        stderr: StdioCollector {
+            id: errors
+        }
         onExited: code => {
             if (code !== 0) {
                 root.errorMessage = errors.text.trim() || "Power action failed.";

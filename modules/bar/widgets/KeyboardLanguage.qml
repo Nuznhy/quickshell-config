@@ -15,8 +15,8 @@ Item {
     }
 
     UI.Text {
-        role: "bar"
         id: verticalLabel
+        role: "bar"
         anchors.centerIn: parent
         visible: Theme.verticalBar
         text: "󰌌\n" + Keyboard.layoutName.toUpperCase()
@@ -34,8 +34,8 @@ Item {
         spacing: Design.space8
 
         UI.Text {
-            role: "bar"
             id: keyboardIcon
+            role: "bar"
             readonly property rect inkBounds: iconMetrics.tightBoundingRect(text)
             width: Theme.fontSize + 12
             y: (content.height - inkBounds.height) / 2 - inkBounds.y - baselineOffset
@@ -51,8 +51,8 @@ Item {
         }
 
         UI.Text {
-            role: "bar"
             id: languageLabel
+            role: "bar"
             readonly property rect inkBounds: labelMetrics.tightBoundingRect(text)
             width: implicitWidth
             // Center the visible letters, excluding the font's ascender/descender padding.

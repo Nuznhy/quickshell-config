@@ -17,12 +17,16 @@ UI.GridLayout {
         // An image being decoded must never land in a newly selected mode.
         for (let index = 0; index < cards.count; ++index) {
             const card = cards.itemAt(index);
-            if (card) { card.candidate = ""; card.errorMessage = ""; }
+            if (card) {
+                card.candidate = "";
+                card.errorMessage = "";
+            }
         }
     }
 
     function localImageUrl(urls) {
-        if (!urls || urls.length !== 1) return "";
+        if (!urls || urls.length !== 1)
+            return "";
         const source = urls[0].toString();
         return source.startsWith("file:///") ? source : "";
     }
@@ -47,7 +51,10 @@ UI.GridLayout {
         title: "Wallpaper for " + monitorName + (wallpaperMode === "shared" ? "" : " · " + wallpaperMode)
         fileMode: FileDialog.OpenFile
         nameFilters: ["Images (*.png *.jpg *.jpeg *.webp *.bmp *.avif *.svg)", "All files (*)"]
-        onAccepted: { if (wallpaperMode === root.wallpaperMode) root.choose(monitorName, selectedFile); }
+        onAccepted: {
+            if (wallpaperMode === root.wallpaperMode)
+                root.choose(monitorName, selectedFile);
+        }
     }
 
     component IconButton: UI.IconButton {}
@@ -72,10 +79,15 @@ UI.GridLayout {
 
             border.color: dropArea.containsDrag ? Design.accent : Design.border
             border.width: dropArea.containsDrag ? 2 : 1
-            Behavior on border.color { ColorAnimation { duration: Design.durationFast } }
+            Behavior on border.color {
+                ColorAnimation {
+                    duration: Design.durationFast
+                }
+            }
 
             function loadImage(value) {
-                if (!Theme.ready) return;
+                if (!Theme.ready)
+                    return;
                 candidate = "";
                 errorMessage = "";
                 if (!root.localImageUrl([value])) {
@@ -103,7 +115,8 @@ UI.GridLayout {
                 cache: false
                 sourceSize: Qt.size(640, 360)
                 onStatusChanged: {
-                    if (!card.candidate) return;
+                    if (!card.candidate)
+                        return;
                     if (status === Image.Ready) {
                         if (card.candidateMode === root.wallpaperMode)
                             Theme.setWallpaper(card.modelData.name, card.candidate, card.candidateMode);
@@ -184,8 +197,7 @@ UI.GridLayout {
                             }
                             UI.Text {
                                 width: parent.width
-                                text: card.loading ? "Loading image…" : dropArea.containsDrag ? "Drop to set wallpaper"
-                                    : preview.status === Image.Error ? "Choose another image" : "Drop an image or click to browse"
+                                text: card.loading ? "Loading image…" : dropArea.containsDrag ? "Drop to set wallpaper" : preview.status === Image.Error ? "Choose another image" : "Drop an image or click to browse"
                                 horizontalAlignment: Text.AlignHCenter
                                 wrapMode: Text.WordWrap
                                 color: Design.text
@@ -202,9 +214,14 @@ UI.GridLayout {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         text: {
-                            if (!card.source) return "No wallpaper";
+                            if (!card.source)
+                                return "No wallpaper";
                             const name = card.source.slice(card.source.lastIndexOf("/") + 1);
-                            try { return decodeURIComponent(name); } catch (error) { return name; }
+                            try {
+                                return decodeURIComponent(name);
+                            } catch (error) {
+                                return name;
+                            }
                         }
                         elide: Text.ElideMiddle
                         color: Design.textSecondary
@@ -245,8 +262,7 @@ UI.GridLayout {
                 anchors.fill: parent
                 enabled: Theme.ready
                 onEntered: drag => {
-                    drag.accepted = drag.hasUrls && !!root.localImageUrl(drag.urls)
-                        && !!(drag.supportedActions & Qt.CopyAction);
+                    drag.accepted = drag.hasUrls && !!root.localImageUrl(drag.urls) && !!(drag.supportedActions & Qt.CopyAction);
                 }
                 onDropped: drop => card.acceptDrop(drop)
             }

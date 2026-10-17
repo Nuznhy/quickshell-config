@@ -12,7 +12,8 @@ UI.ColumnLayout {
     spacing: Design.space12
     readonly property var monitors: {
         const names = Theme.connectedScreens.map(s => s.name);
-        if (Theme.wallpaperColorMonitor && !names.includes(Theme.wallpaperColorMonitor)) names.push(Theme.wallpaperColorMonitor);
+        if (Theme.wallpaperColorMonitor && !names.includes(Theme.wallpaperColorMonitor))
+            names.push(Theme.wallpaperColorMonitor);
         return names;
     }
     component Label: UI.Text {
@@ -21,8 +22,14 @@ UI.ColumnLayout {
         color: Design.textSecondary
         role: "label"
     }
-    UI.Text { text: "Theme from wallpaper"; role: "section"; color: Design.text }
-    Label { text: "Choose a monitor, extraction method, or variant to generate and apply colors automatically." }
+    UI.Text {
+        text: "Theme from wallpaper"
+        role: "section"
+        color: Design.text
+    }
+    Label {
+        text: "Choose a monitor, extraction method, or variant to generate and apply colors automatically."
+    }
     UI.GridLayout {
         Layout.fillWidth: true
         columns: width >= 560 ? 3 : 1
@@ -31,7 +38,9 @@ UI.ColumnLayout {
         UI.ColumnLayout {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            Label { text: "Source monitor" }
+            Label {
+                text: "Source monitor"
+            }
             UI.ComboBox {
                 objectName: "wallpaper-color-monitor"
                 Layout.fillWidth: true
@@ -47,7 +56,9 @@ UI.ColumnLayout {
         UI.ColumnLayout {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            Label { text: "Extraction" }
+            Label {
+                text: "Extraction"
+            }
             UI.ComboBox {
                 objectName: "wallpaper-color-method"
                 Layout.fillWidth: true
@@ -61,7 +72,9 @@ UI.ColumnLayout {
         UI.ColumnLayout {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            Label { text: "Color variant" }
+            Label {
+                text: "Color variant"
+            }
             UI.ComboBox {
                 objectName: "wallpaper-color-variant"
                 Layout.fillWidth: true
@@ -74,12 +87,27 @@ UI.ColumnLayout {
         }
     }
     Label {
-        text: ({dominant: "Dominant favors common colors.", vibrant: "Vibrant favors saturated colors with meaningful coverage.", average: "Average blends the image’s colors.", muted: "Muted favors less saturated colors.", dark: "Dark favors darker colors.", light: "Light favors lighter colors.", balanced: "Balanced blends distinct colors with equal weight."})[Theme.wallpaperColorMethod]
-            + " " + ({neutral: "Neutral keeps surfaces mostly gray.", tonal: "Tonal gently tints surfaces.", vivid: "Vivid uses richer accents and surfaces."})[Theme.wallpaperColorVariant]
+        text: ({
+                dominant: "Dominant favors common colors.",
+                vibrant: "Vibrant favors saturated colors with meaningful coverage.",
+                average: "Average blends the image’s colors.",
+                muted: "Muted favors less saturated colors.",
+                dark: "Dark favors darker colors.",
+                light: "Light favors lighter colors.",
+                balanced: "Balanced blends distinct colors with equal weight."
+            })[Theme.wallpaperColorMethod] + " " + ({
+                neutral: "Neutral keeps surfaces mostly gray.",
+                tonal: "Tonal gently tints surfaces.",
+                vivid: "Vivid uses richer accents and surfaces."
+            })[Theme.wallpaperColorVariant]
     }
     UI.RowLayout {
         Layout.fillWidth: true
-        Label { text: "Follow wallpaper changes"; role: "body"; color: Design.text }
+        Label {
+            text: "Follow wallpaper changes"
+            role: "body"
+            color: Design.text
+        }
         ControlSwitch {
             objectName: "wallpaper-color-auto"
             value: Theme.wallpaperColorAuto
@@ -90,7 +118,11 @@ UI.ColumnLayout {
     }
     UI.RowLayout {
         Layout.fillWidth: true
-        Label { text: "Vivid colors for Neovim"; role: "body"; color: Design.text }
+        Label {
+            text: "Vivid colors for Neovim"
+            role: "body"
+            color: Design.text
+        }
         ControlSwitch {
             objectName: "wallpaper-nvim-vivid"
             value: Theme.wallpaperNvimVivid
@@ -99,7 +131,9 @@ UI.ColumnLayout {
             onChangeRequested: value => WallpaperTheme.setOption("nvimVivid", value)
         }
     }
-    Label { text: "Uses the vivid variant only for Neovim when the Wallpaper theme and Neovim application sync are enabled." }
+    Label {
+        text: "Uses the vivid variant only for Neovim when the Wallpaper theme and Neovim application sync are enabled."
+    }
     Label {
         visible: WallpaperTheme.busy
         text: "Generating colors…"
@@ -124,11 +158,26 @@ UI.ColumnLayout {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 padding: Design.space12
-                background: UI.Card { color: sample.colors.bg; border.color: sample.colors.highlightMed }
+                background: UI.Card {
+                    color: sample.colors.bg
+                    border.color: sample.colors.highlightMed
+                }
                 contentItem: UI.ColumnLayout {
-                    UI.Text { text: sample.modelData === "dark" ? "Dark preview" : "Light preview"; color: sample.colors.text; role: "body" }
-                    UI.Text { text: "Readable text and accents"; color: sample.colors.subtle; role: "caption" }
-                    PaletteSwatches { colors: sample.colors; swatchWidth: 20; swatchHeight: 12 }
+                    UI.Text {
+                        text: sample.modelData === "dark" ? "Dark preview" : "Light preview"
+                        color: sample.colors.text
+                        role: "body"
+                    }
+                    UI.Text {
+                        text: "Readable text and accents"
+                        color: sample.colors.subtle
+                        role: "caption"
+                    }
+                    PaletteSwatches {
+                        colors: sample.colors
+                        swatchWidth: 20
+                        swatchHeight: 12
+                    }
                 }
             }
         }

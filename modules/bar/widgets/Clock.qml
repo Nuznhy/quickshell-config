@@ -17,8 +17,8 @@ DropdownWidget {
     showStem: false
 
     UI.Text {
-        role: "bar"
         id: clockLabel
+        role: "bar"
         height: parent.height
         text: Theme.verticalBar ? Qt.formatDateTime(Time.date, "hh\nmm") : Time.time
         horizontalAlignment: Text.AlignHCenter

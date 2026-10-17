@@ -24,18 +24,23 @@ FloatingWindow {
     visible: ShellSettings.opened && Theme.ready
     onClosed: ShellSettings.close()
     onVisibleChanged: {
-        if (visible) Qt.callLater(activate);
-        else editor.cancelDrag();
+        if (visible)
+            Qt.callLater(activate);
+        else
+            editor.cancelDrag();
     }
     function activate() {
-        if (!visible) return;
+        if (!visible)
+            return;
         minimized = false;
         contentItem.Window.window?.raise();
         contentItem.Window.window?.requestActivate();
     }
     Connections {
         target: ShellSettings
-        function onActivateRequested() { Qt.callLater(root.activate); }
+        function onActivateRequested() {
+            Qt.callLater(root.activate);
+        }
     }
     UI.ColumnLayout {
         anchors.fill: parent
@@ -61,7 +66,10 @@ FloatingWindow {
             NotificationButton {
                 text: "Bar layout"
                 accent: pages.currentIndex === 0
-                onClicked: { root.widgetSettings = ""; pages.currentIndex = 0; }
+                onClicked: {
+                    root.widgetSettings = "";
+                    pages.currentIndex = 0;
+                }
             }
             NotificationButton {
                 text: "Appearance"
@@ -80,7 +88,9 @@ FloatingWindow {
                 accent: pages.currentIndex === 3
                 onClicked: pages.currentIndex = 3
             }
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
         }
         StackLayout {
             id: pages
@@ -90,7 +100,9 @@ FloatingWindow {
                 currentIndex: root.widgetSettings === "monitoring" ? 1 : root.widgetSettings === "workspaces" ? 2 : root.widgetSettings === "clock" ? 3 : 0
                 BarLayoutEditor {
                     id: editor
-                    onSettingsRequested: widgetId => { root.widgetSettings = widgetId; }
+                    onSettingsRequested: widgetId => {
+                        root.widgetSettings = widgetId;
+                    }
                 }
                 UI.ScrollView {
                     id: monitoringScroll
@@ -175,7 +187,9 @@ FloatingWindow {
                 bottomPadding: Design.space16
                 contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                LockScreenSettings { width: lockScroll.availableWidth }
+                LockScreenSettings {
+                    width: lockScroll.availableWidth
+                }
             }
         }
         UI.Text {

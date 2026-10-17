@@ -16,8 +16,12 @@ Item {
     property bool refreshPending: false
 
     function refresh() {
-        if (!active) return;
-        if (reader.running) { refreshPending = true; return; }
+        if (!active)
+            return;
+        if (reader.running) {
+            refreshPending = true;
+            return;
+        }
         errorMessage = "";
         reader.requestGeneration = generation;
         reader.received = false;
@@ -30,20 +34,30 @@ Item {
         errorMessage = "";
         refreshPending = false;
         debounce.stop();
-        if (reader.running) reader.signal(9);
-        if (active) debounce.restart();
+        if (reader.running)
+            reader.signal(9);
+        if (active)
+            debounce.restart();
     }
     function eventsOn(day) {
         const key = Qt.formatDate(day, "yyyy-MM-dd");
         const first = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
         const last = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
-        return events.filter(event => event.allDay ? event.startDay <= key && key < event.endDay
-                            : event.start < last && (event.end > first || event.start === event.end && event.start >= first));
+        return events.filter(event => event.allDay ? event.startDay <= key && key < event.endDay : event.start < last && (event.end > first || event.start === event.end && event.start >= first));
     }
     onActiveChanged: invalidate()
     onRangeKeyChanged: invalidate()
-    Timer { id: debounce; interval: 120; onTriggered: root.refresh() }
-    Timer { interval: 300000; repeat: true; running: root.active; onTriggered: root.refresh() }
+    Timer {
+        id: debounce
+        interval: 120
+        onTriggered: root.refresh()
+    }
+    Timer {
+        interval: 300000
+        repeat: true
+        running: root.active
+        onTriggered: root.refresh()
+    }
     Timer {
         interval: 45000
         running: reader.running
@@ -60,11 +74,13 @@ Item {
         property bool received: false
         stdout: SplitParser {
             onRead: data => {
-                if (!root.active || reader.requestGeneration !== root.generation) return;
+                if (!root.active || reader.requestGeneration !== root.generation)
+                    return;
                 reader.received = true;
                 try {
                     const result = JSON.parse(data);
-                    if (!Array.isArray(result.events)) throw new Error("invalid events");
+                    if (!Array.isArray(result.events))
+                        throw new Error("invalid events");
                     root.events = result.events;
                     root.errorMessage = result.error || "";
                 } catch (error) {
@@ -74,7 +90,9 @@ Item {
             }
         }
         // Consume diagnostics without forwarding account/backend details to logs.
-        stderr: SplitParser { onRead: data => {} }
+        stderr: SplitParser {
+            onRead: data => {}
+        }
         onExited: code => {
             if (root.active && requestGeneration === root.generation && (code !== 0 || !received)) {
                 root.events = [];

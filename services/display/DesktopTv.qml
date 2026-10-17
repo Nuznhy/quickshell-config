@@ -17,14 +17,16 @@ Singleton {
     readonly property string helper: Quickshell.shellPath("scripts/display/desktop-tv.py")
 
     function run(action) {
-        if (requestPending || worker.running) return;
+        if (requestPending || worker.running)
+            return;
         requestPending = true;
         worker.action = action;
         worker.command = ["python3", helper, action];
         worker.running = true;
     }
     function toggle() {
-        if (!available || busy) return;
+        if (!available || busy)
+            return;
         errorMessage = "";
         run(pending ? "confirm" : "toggle");
     }
@@ -36,8 +38,17 @@ Singleton {
                 refreshTimer.restart();
         }
     }
-    Timer { id: refreshTimer; interval: 500; onTriggered: root.run("status") }
-    Timer { interval: 5000; repeat: true; running: true; onTriggered: root.run("status") }
+    Timer {
+        id: refreshTimer
+        interval: 500
+        onTriggered: root.run("status")
+    }
+    Timer {
+        interval: 5000
+        repeat: true
+        running: true
+        onTriggered: root.run("status")
+    }
     Process {
         id: worker
         property string action: "status"
@@ -49,7 +60,8 @@ Singleton {
                     root.mode = state.mode || "unavailable";
                     root.pending = !!state.pending;
                     root.reason = state.reason || "";
-                    if (state.error || worker.action !== "status") root.errorMessage = state.error || "";
+                    if (state.error || worker.action !== "status")
+                        root.errorMessage = state.error || "";
                 } catch (error) {
                     root.available = false;
                     root.errorMessage = "Could not read display mode.";
@@ -59,7 +71,8 @@ Singleton {
         stderr: StdioCollector {}
         onExited: code => {
             root.requestPending = false;
-            if (code !== 0) root.errorMessage = "Display mode helper failed.";
+            if (code !== 0)
+                root.errorMessage = "Display mode helper failed.";
         }
     }
 }

@@ -13,17 +13,22 @@ Singleton {
 
     function setLayout(name) {
         const layout = name.toLowerCase();
-        if (layout.includes("ukrainian")) layoutName = "ua";
-        else if (layout.includes("english")) layoutName = "en";
-        else layoutName = name.substring(0, 2);
+        if (layout.includes("ukrainian"))
+            layoutName = "ua";
+        else if (layout.includes("english"))
+            layoutName = "en";
+        else
+            layoutName = name.substring(0, 2);
     }
 
     function handleLayoutEvent(data) {
         const separator = data.indexOf(",");
-        if (separator < 1) return;
+        if (separator < 1)
+            return;
         const keyboard = data.substring(0, separator);
         const layout = data.substring(separator + 1);
-        if (!layout || (Settings.keyboardName && keyboard !== Settings.keyboardName)) return;
+        if (!layout || (Settings.keyboardName && keyboard !== Settings.keyboardName))
+            return;
         eventRevision++;
         kbName = keyboard;
         setLayout(layout);
@@ -32,9 +37,7 @@ Singleton {
     function applyDevices(devices) {
         const keyboards = devices.keyboards || [];
         const preferred = Settings.keyboardName || kbName;
-        const keyboard = keyboards.find(kb => kb.name === preferred)
-            || keyboards.find(kb => kb.main)
-            || keyboards[0];
+        const keyboard = keyboards.find(kb => kb.name === preferred) || keyboards.find(kb => kb.main) || keyboards[0];
         if (!keyboard) {
             kbName = "";
             layoutName = "--";
@@ -45,19 +48,22 @@ Singleton {
     }
 
     function refresh() {
-        if (fetchProc.running) return;
+        if (fetchProc.running)
+            return;
         fetchProc.revision = eventRevision;
         fetchProc.running = true;
     }
 
     function nextLayout() {
-        if (kbName && !switchProc.running) switchProc.running = true;
+        if (kbName && !switchProc.running)
+            switchProc.running = true;
     }
 
     Connections {
         target: Hyprland
         function onRawEvent(event) {
-            if (event.name === "activelayout") root.handleLayoutEvent(event.data);
+            if (event.name === "activelayout")
+                root.handleLayoutEvent(event.data);
         }
     }
 
@@ -75,7 +81,8 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 // A snapshot started before an event must not overwrite the newer layout.
-                if (fetchProc.revision !== root.eventRevision) return;
+                if (fetchProc.revision !== root.eventRevision)
+                    return;
                 try {
                     root.applyDevices(JSON.parse(text));
                 } catch (error) {

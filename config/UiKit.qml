@@ -15,7 +15,11 @@ QtObject {
     readonly property QtObject defaultKit: Default.Kit {}
     readonly property QtObject minimalKit: Minimal.Kit {}
     readonly property QtObject roundedKit: Rounded.Kit {}
-    readonly property var definitions: ({default: defaultKit, minimal: minimalKit, rounded: roundedKit})
+    readonly property var definitions: ({
+            default: defaultKit,
+            minimal: minimalKit,
+            rounded: roundedKit
+        })
     readonly property QtObject active: definitions[activeId] || defaultKit
     readonly property var tokens: Object.assign({}, defaultKit.baseTokens, active.tokens)
     function resolvePalette(base, mode) {
@@ -23,10 +27,11 @@ QtObject {
         const variant = (active.palettes || {})[mode] || {};
         const result = {};
         for (const role of ConfigScripts.Palettes.roles) {
-            result[role] = variant[role] !== undefined && variant[role] !== null ? variant[role]
-                : shared[role] !== undefined && shared[role] !== null ? shared[role] : base[role];
+            result[role] = variant[role] !== undefined && variant[role] !== null ? variant[role] : shared[role] !== undefined && shared[role] !== null ? shared[role] : base[role];
         }
         return result;
     }
-    function visual(slot) { return active[slot] || defaultKit[slot]; }
+    function visual(slot) {
+        return active[slot] || defaultKit[slot];
+    }
 }

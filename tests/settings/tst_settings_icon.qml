@@ -4,13 +4,22 @@ import qs.modules.appearance
 import qs.config
 
 Rectangle {
-    width: 600; height: 260
+    width: 600
+    height: 260
     color: Theme.bg
-    SettingsIconEditor { id: editor; x: 20; y: 20; width: 560 }
+    SettingsIconEditor {
+        id: editor
+        x: 20
+        y: 20
+        width: 560
+    }
     TestCase {
         name: "SettingsIcon"
         when: windowShown
-        function init() { editor.selectPreset(0); wait(20); }
+        function init() {
+            editor.selectPreset(0);
+            wait(20);
+        }
         function test_presets_hide_custom_input() {
             const input = findChild(editor, "settings-icon-glyph");
             compare(input.visible, false);

@@ -14,15 +14,32 @@ UI.ColumnLayout {
     property string errorMessage: ""
     property bool customEditing: false
     readonly property var presets: [
-        {name: "Gear", icon: Theme.defaultSettingsIcon},
-        {name: "Sliders", icon: ""},
-        {name: "Palette", icon: "󰏘"},
-        {name: "Grid", icon: ""},
-        {name: "Linux", icon: "󰌽"},
-        {name: "Arch", icon: "󰣇"}
+        {
+            name: "Gear",
+            icon: Theme.defaultSettingsIcon
+        },
+        {
+            name: "Sliders",
+            icon: ""
+        },
+        {
+            name: "Palette",
+            icon: "󰏘"
+        },
+        {
+            name: "Grid",
+            icon: ""
+        },
+        {
+            name: "Linux",
+            icon: "󰌽"
+        },
+        {
+            name: "Arch",
+            icon: "󰣇"
+        }
     ]
-    readonly property int selectedPreset: Theme.settingsIconSource ? -1
-        : presets.findIndex(preset => preset.icon === Theme.settingsIcon)
+    readonly property int selectedPreset: Theme.settingsIconSource ? -1 : presets.findIndex(preset => preset.icon === Theme.settingsIcon)
     readonly property bool customSelected: customEditing || selectedPreset < 0
 
     function selectPreset(index) {
@@ -52,15 +69,19 @@ UI.ColumnLayout {
         Layout.fillWidth: true
         spacing: Design.space8
         Repeater {
-            model: root.presets.concat([{name: "Custom", icon: "󰏫"}])
+            model: root.presets.concat([
+                {
+                    name: "Custom",
+                    icon: "󰏫"
+                }
+            ])
             delegate: UI.Button {
-        highlighted: selected
                 id: option
+                highlighted: selected
                 required property var modelData
                 required property int index
                 readonly property bool isCustom: index === root.presets.length
-                readonly property bool selected: isCustom ? root.customSelected
-                    : !root.customSelected && root.selectedPreset === index
+                readonly property bool selected: isCustom ? root.customSelected : !root.customSelected && root.selectedPreset === index
                 objectName: "settings-icon-option-" + modelData.name.toLowerCase()
                 width: 72
                 height: 64
@@ -75,7 +96,8 @@ UI.ColumnLayout {
                     if (isCustom) {
                         root.customEditing = true;
                         glyph.forceActiveFocus();
-                    } else root.selectPreset(index);
+                    } else
+                        root.selectPreset(index);
                 }
 
                 contentItem: Column {
@@ -108,8 +130,13 @@ UI.ColumnLayout {
         visible: root.customSelected
         spacing: Design.space8
         UI.Card {
-            implicitWidth: 40; implicitHeight: Design.selectorHeight
-            SettingsIcon { anchors.centerIn: parent; iconSize: 24; color: Design.accent }
+            implicitWidth: 40
+            implicitHeight: Design.selectorHeight
+            SettingsIcon {
+                anchors.centerIn: parent
+                iconSize: 24
+                color: Design.accent
+            }
         }
         UI.TextField {
             id: glyph
@@ -122,9 +149,9 @@ UI.ColumnLayout {
             enabled: Theme.ready
             Accessible.name: "Settings icon glyph"
             onEditingFinished: {
-                if (root.customSelected && text !== Theme.settingsIcon) Theme.setSettingsIcon(text, "");
+                if (root.customSelected && text !== Theme.settingsIcon)
+                    Theme.setSettingsIcon(text, "");
             }
-
         }
         NotificationButton {
             text: "Image…"
@@ -159,7 +186,8 @@ UI.ColumnLayout {
         asynchronous: true
         cache: false
         onStatusChanged: {
-            if (!root.candidate) return;
+            if (!root.candidate)
+                return;
             if (status === Image.Ready) {
                 Theme.setSettingsIcon(Theme.settingsIcon, root.candidate);
                 root.candidate = "";

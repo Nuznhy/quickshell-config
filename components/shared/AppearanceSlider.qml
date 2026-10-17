@@ -45,6 +45,9 @@ UI.ColumnLayout {
         wheelEnabled: false
         Accessible.name: root.label
         onMoved: root.valueEdited(value)
-        onPressedChanged: { if (!pressed && Theme.ready) root.editingFinished(); }
+        onPressedChanged: {
+            if (!pressed && Theme.ready)
+                root.editingFinished();
+        }
     }
 }

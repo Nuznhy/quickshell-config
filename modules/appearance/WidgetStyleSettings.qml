@@ -10,7 +10,9 @@ UI.ColumnLayout {
     enabled: Theme.ready
     readonly property var modes: ["off", "instant", "animated"]
 
-    UI.FieldLabel { text: "Edge lines" }
+    UI.FieldLabel {
+        text: "Edge lines"
+    }
     UI.HelperText {
         Layout.fillWidth: true
         text: "Top and bottom on horizontal bars; left and right on vertical bars. Off also hides active-state lines."
@@ -23,7 +25,9 @@ UI.ColumnLayout {
         currentIndex: root.modes.indexOf(Theme.widgetStyle.lines)
         onSelected: index => Theme.setWidgetStyle("lines", root.modes[index])
     }
-    UI.FieldLabel { text: "Hover background" }
+    UI.FieldLabel {
+        text: "Hover background"
+    }
     UI.SegmentedControl {
         objectName: "widget-style-background"
         Layout.fillWidth: true
@@ -42,7 +46,10 @@ UI.ColumnLayout {
             Layout.preferredWidth: 1
             Layout.minimumWidth: 0
             label: "Animation duration"
-            minimum: 100; maximum: 600; stepSize: 20; suffix: " ms"
+            minimum: 100
+            maximum: 600
+            stepSize: 20
+            suffix: " ms"
             enabled: Theme.widgetStyle.lines === "animated" || Theme.widgetStyle.background === "animated"
             value: Theme.widgetStyle.duration
             onValueEdited: value => Theme.setWidgetStyle("duration", value)
@@ -54,7 +61,9 @@ UI.ColumnLayout {
             Layout.preferredWidth: 1
             Layout.minimumWidth: 0
             label: "Background strength"
-            minimum: 0; maximum: 30; suffix: "%"
+            minimum: 0
+            maximum: 30
+            suffix: "%"
             enabled: Theme.widgetStyle.background !== "off"
             value: Theme.widgetStyle.strength
             onValueEdited: value => Theme.setWidgetStyle("strength", value)

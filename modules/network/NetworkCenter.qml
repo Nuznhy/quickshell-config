@@ -15,16 +15,22 @@ FocusScope {
     signal dismissed
     onActiveChanged: {
         NetworkState.openPanels += active ? 1 : -1;
-        if (active) forceActiveFocus();
+        if (active)
+            forceActiveFocus();
         else {
             password.text = "";
             NetworkState.passwordNetwork = null;
         }
     }
-    Component.onDestruction: { if (active) NetworkState.openPanels--; }
+    Component.onDestruction: {
+        if (active)
+            NetworkState.openPanels--;
+    }
     Keys.onEscapePressed: {
-        if (NetworkState.passwordNetwork) NetworkState.passwordNetwork = null;
-        else dismissed();
+        if (NetworkState.passwordNetwork)
+            NetworkState.passwordNetwork = null;
+        else
+            dismissed();
     }
     function editConnections() {
         root.dismissed();
@@ -32,13 +38,15 @@ FocusScope {
     }
     function submitPassword() {
         NetworkState.submitPassword(password.text);
-        if (!NetworkState.passwordNetwork) password.text = "";
+        if (!NetworkState.passwordNetwork)
+            password.text = "";
     }
     Connections {
         target: NetworkState
         function onPasswordNetworkChanged() {
             password.text = "";
-            if (NetworkState.passwordNetwork && root.active) password.forceActiveFocus();
+            if (NetworkState.passwordNetwork && root.active)
+                password.forceActiveFocus();
         }
     }
     component Label: UI.Text {
@@ -59,7 +67,8 @@ FocusScope {
 
     UI.ColumnLayout {
         id: content
-        x: 0; y: 0
+        x: 0
+        y: 0
         width: parent.width
         spacing: Design.space12
         UI.RowLayout {
@@ -70,7 +79,10 @@ FocusScope {
                 role: "panel"
                 font.bold: true
             }
-            NotificationButton { text: "Advanced"; onClicked: root.editConnections() }
+            NotificationButton {
+                text: "Advanced"
+                onClicked: root.editConnections()
+            }
         }
         Label {
             id: errorLabel
@@ -89,7 +101,8 @@ FocusScope {
             border.color: Design.accent
             UI.ColumnLayout {
                 id: passwordContent
-                x: Design.panelPadding; y: Design.panelPadding
+                x: Design.panelPadding
+                y: Design.panelPadding
                 width: parent.width - Design.panelPadding * 2
                 spacing: Design.space8
                 Label {
@@ -127,9 +140,7 @@ FocusScope {
         UI.ScrollView {
             id: scroll
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(details.implicitHeight,
-                Math.max(160, root.maximumHeight - 80 - (passwordBox.visible ? passwordBox.implicitHeight + 12 : 0)
-                    - (errorLabel.visible ? errorLabel.implicitHeight + 12 : 0)))
+            Layout.preferredHeight: Math.min(details.implicitHeight, Math.max(160, root.maximumHeight - 80 - (passwordBox.visible ? passwordBox.implicitHeight + 12 : 0) - (errorLabel.visible ? errorLabel.implicitHeight + 12 : 0)))
             contentWidth: availableWidth
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -137,7 +148,9 @@ FocusScope {
                 id: details
                 width: scroll.availableWidth
                 spacing: Design.space8
-                SectionTitle { text: "CURRENT CONNECTIONS" }
+                SectionTitle {
+                    text: "CURRENT CONNECTIONS"
+                }
                 Label {
                     Layout.fillWidth: true
                     visible: NetworkState.connections.length === 0
@@ -152,7 +165,8 @@ FocusScope {
                         implicitHeight: currentContent.implicitHeight + Design.panelPadding * 2
                         UI.ColumnLayout {
                             id: currentContent
-                            x: Design.panelPadding; y: Design.panelPadding
+                            x: Design.panelPadding
+                            y: Design.panelPadding
                             width: parent.width - Design.panelPadding * 2
                             spacing: Design.space4
                             UI.RowLayout {
@@ -206,7 +220,10 @@ FocusScope {
                         }
                     }
                 }
-                SectionTitle { text: "ETHERNET"; Layout.topMargin: Design.space4 }
+                SectionTitle {
+                    text: "ETHERNET"
+                    Layout.topMargin: Design.space4
+                }
                 Label {
                     visible: NetworkState.wiredDevices.length === 0
                     text: "No wired adapter"
@@ -224,11 +241,11 @@ FocusScope {
                             UI.ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: Design.space2
-                                Label { text: wiredCard.modelData.name }
                                 Label {
-                                    text: !wiredCard.modelData.nmManaged ? "Unmanaged"
-                                        : wiredCard.modelData.connected ? "Connected · " + wiredCard.modelData.linkSpeed + " Mbps"
-                                        : wiredCard.modelData.hasLink ? "Disconnected" : "Cable unplugged"
+                                    text: wiredCard.modelData.name
+                                }
+                                Label {
+                                    text: !wiredCard.modelData.nmManaged ? "Unmanaged" : wiredCard.modelData.connected ? "Connected · " + wiredCard.modelData.linkSpeed + " Mbps" : wiredCard.modelData.hasLink ? "Disconnected" : "Cable unplugged"
                                     role: "caption"
                                     color: Design.textSecondary
                                 }
@@ -236,8 +253,7 @@ FocusScope {
                             ControlSwitch {
                                 objectName: "wiredToggle"
                                 value: wiredCard.modelData.connected
-                                enabled: NetworkState.available && !NetworkState.busy && wiredCard.modelData.nmManaged
-                                    && (wiredCard.modelData.hasLink || checked)
+                                enabled: NetworkState.available && !NetworkState.busy && wiredCard.modelData.nmManaged && (wiredCard.modelData.hasLink || checked)
                                 Accessible.name: "Ethernet " + wiredCard.modelData.name
                                 onChangeRequested: value => NetworkState.setWired(wiredCard.modelData, value)
                             }
@@ -247,8 +263,14 @@ FocusScope {
                 UI.RowLayout {
                     Layout.fillWidth: true
                     Layout.topMargin: Design.space4
-                    SectionTitle { Layout.fillWidth: true; text: "VPN" }
-                    NotificationButton { text: "Add VPN"; onClicked: root.editConnections() }
+                    SectionTitle {
+                        Layout.fillWidth: true
+                        text: "VPN"
+                    }
+                    NotificationButton {
+                        text: "Add VPN"
+                        onClicked: root.editConnections()
+                    }
                 }
                 Label {
                     visible: NetworkState.vpnProfiles.length === 0
@@ -293,12 +315,14 @@ FocusScope {
                     UI.RowLayout {
                         anchors.fill: parent
                         anchors.margins: Design.panelPadding
-                        Label { Layout.fillWidth: true; text: "Wi-Fi" }
+                        Label {
+                            Layout.fillWidth: true
+                            text: "Wi-Fi"
+                        }
                         ControlSwitch {
                             objectName: "wifiToggle"
                             value: NetworkState.wifiEnabled
-                            enabled: NetworkState.available && !NetworkState.busy
-                                && NetworkState.wifiDevices.length > 0 && NetworkState.wifiHardwareEnabled
+                            enabled: NetworkState.available && !NetworkState.busy && NetworkState.wifiDevices.length > 0 && NetworkState.wifiHardwareEnabled
                             Accessible.name: "Wi-Fi"
                             onChangeRequested: value => NetworkState.setWifi(value)
                         }
@@ -306,11 +330,8 @@ FocusScope {
                 }
                 Label {
                     Layout.fillWidth: true
-                    visible: !NetworkState.wifiEnabled || !NetworkState.wifiHardwareEnabled
-                        || NetworkState.wifiDevices.length === 0 || NetworkState.wifiNetworks.length === 0
-                    text: NetworkState.wifiDevices.length === 0 ? "No Wi-Fi adapter"
-                        : !NetworkState.wifiHardwareEnabled ? "Wi-Fi is blocked by the hardware switch"
-                        : !NetworkState.wifiEnabled ? "Wi-Fi is off" : "Searching for networks…"
+                    visible: !NetworkState.wifiEnabled || !NetworkState.wifiHardwareEnabled || NetworkState.wifiDevices.length === 0 || NetworkState.wifiNetworks.length === 0
+                    text: NetworkState.wifiDevices.length === 0 ? "No Wi-Fi adapter" : !NetworkState.wifiHardwareEnabled ? "Wi-Fi is blocked by the hardware switch" : !NetworkState.wifiEnabled ? "Wi-Fi is off" : "Searching for networks…"
                     color: Design.textMuted
                     wrapMode: Text.Wrap
                 }
@@ -339,9 +360,7 @@ FocusScope {
                                 }
                                 Label {
                                     Layout.fillWidth: true
-                                    text: Math.round(wifiCard.modelData.signalStrength * 100) + "% · " + NetworkState.securityLabel(wifiCard.modelData)
-                                        + (wifiCard.modelData.known ? " · Saved" : "")
-                                        + (NetworkState.wifiDevices.length > 1 ? " · " + wifiCard.modelData.device.name : "")
+                                    text: Math.round(wifiCard.modelData.signalStrength * 100) + "% · " + NetworkState.securityLabel(wifiCard.modelData) + (wifiCard.modelData.known ? " · Saved" : "") + (NetworkState.wifiDevices.length > 1 ? " · " + wifiCard.modelData.device.name : "")
                                     role: "caption"
                                     color: Design.textSecondary
                                 }
@@ -351,14 +370,15 @@ FocusScope {
                                 text: wifiCard.modelData.stateChanging ? "Connecting…" : wifiCard.modelData.connected ? "Disconnect" : "Connect"
                                 enabled: NetworkState.available && !NetworkState.busy && !wifiCard.modelData.stateChanging
                                 onClicked: {
-                                    if (wifiCard.modelData.connected) NetworkState.disconnectWifi(wifiCard.modelData);
-                                    else NetworkState.connectWifi(wifiCard.modelData);
+                                    if (wifiCard.modelData.connected)
+                                        NetworkState.disconnectWifi(wifiCard.modelData);
+                                    else
+                                        NetworkState.connectWifi(wifiCard.modelData);
                                 }
                             }
                         }
                     }
                 }
-
             }
         }
     }

@@ -16,21 +16,36 @@ UI.Slider {
     stepSize: 1
     Accessible.name: "Playback position"
     Component.onCompleted: value = mediaPosition
-    onMediaPositionChanged: { if (!pressed) value = mediaPosition; }
-    onTrackKeyChanged: { if (!pressed) value = mediaPosition; }
+    onMediaPositionChanged: {
+        if (!pressed)
+            value = mediaPosition;
+    }
+    onTrackKeyChanged: {
+        if (!pressed)
+            value = mediaPosition;
+    }
     function commit() {
         seekRequested(Math.max(0, Math.min(duration, value)));
     }
-    function cancelSeek() { dirty = false; gestureTrack = ""; }
+    function cancelSeek() {
+        dirty = false;
+        gestureTrack = "";
+    }
     onMoved: {
-        if (pressed) dirty = true;
-        else if (enabled) commit();
+        if (pressed)
+            dirty = true;
+        else if (enabled)
+            commit();
     }
     onPressedChanged: {
-        if (pressed) { gestureTrack = trackKey; dirty = false; }
-        else {
-            if (dirty && enabled && gestureTrack === trackKey) commit();
-            else value = mediaPosition;
+        if (pressed) {
+            gestureTrack = trackKey;
+            dirty = false;
+        } else {
+            if (dirty && enabled && gestureTrack === trackKey)
+                commit();
+            else
+                value = mediaPosition;
             dirty = false;
         }
     }

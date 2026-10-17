@@ -20,10 +20,26 @@ UI.ColumnLayout {
         spacing: Design.space8
         Repeater {
             model: [
-                {action: "lock", label: "Lock", icon: "󰌾"},
-                {action: "sleep", label: "Sleep", icon: "󰒲"},
-                {action: "reboot", label: "Reboot", icon: "󰜉"},
-                {action: "shutdown", label: "Shut down", icon: "󰐥"}
+                {
+                    action: "lock",
+                    label: "Lock",
+                    icon: "󰌾"
+                },
+                {
+                    action: "sleep",
+                    label: "Sleep",
+                    icon: "󰒲"
+                },
+                {
+                    action: "reboot",
+                    label: "Reboot",
+                    icon: "󰜉"
+                },
+                {
+                    action: "shutdown",
+                    label: "Shut down",
+                    icon: "󰐥"
+                }
             ]
             NotificationButton {
                 id: button
@@ -41,8 +57,10 @@ UI.ColumnLayout {
                     color: button.accent ? button.foreground : button.modelData.action === "shutdown" ? Design.danger : Design.text
                 }
                 onClicked: {
-                    if (modelData.action === "reboot" || modelData.action === "shutdown") root.confirmation = modelData.action;
-                    else root.actionRequested(modelData.action);
+                    if (modelData.action === "reboot" || modelData.action === "shutdown")
+                        root.confirmation = modelData.action;
+                    else
+                        root.actionRequested(modelData.action);
                 }
             }
         }
@@ -50,7 +68,12 @@ UI.ColumnLayout {
     UI.RowLayout {
         visible: root.confirmation.length > 0
         Layout.fillWidth: true
-        NotificationButton { text: "Cancel"; Layout.fillWidth: true; enabled: !root.busy; onClicked: root.confirmation = "" }
+        NotificationButton {
+            text: "Cancel"
+            Layout.fillWidth: true
+            enabled: !root.busy
+            onClicked: root.confirmation = ""
+        }
         NotificationButton {
             text: root.confirmation === "reboot" ? "Reboot" : "Shut down"
             Layout.fillWidth: true

@@ -9,7 +9,9 @@ Item {
     implicitWidth: label.implicitWidth
     implicitHeight: Theme.verticalBar ? Math.max(Settings.barHeight, label.implicitHeight + 8) : Settings.barHeight
 
-    HoverHandler { id: hover }
+    HoverHandler {
+        id: hover
+    }
 
     BarHoverIndicator {
         anchors.fill: parent
@@ -17,8 +19,8 @@ Item {
     }
 
     UI.Text {
-        role: "bar"
         id: label
+        role: "bar"
         anchors.centerIn: parent
         text: Theme.verticalBar ? "󰍛\n" + SystemStats.cpuUsage + "%" : SystemStats.cpuUsage + "% 󰍛"
         horizontalAlignment: Text.AlignHCenter

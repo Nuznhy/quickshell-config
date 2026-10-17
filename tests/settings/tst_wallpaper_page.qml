@@ -4,9 +4,15 @@ import qs.modules.wallpaper
 import qs.config
 
 Rectangle {
-    width: 800; height: 760
+    width: 800
+    height: 760
     color: Theme.bg
-    WallpaperPage { id: page; x: 20; y: 20; width: 760 }
+    WallpaperPage {
+        id: page
+        x: 20
+        y: 20
+        width: 760
+    }
     TestCase {
         name: "WallpaperGallery"
         when: windowShown
@@ -18,7 +24,14 @@ Rectangle {
             Theme.separateWallpapers = false;
             Theme.mode = "dark";
             page.selectedMode = "dark";
-            Theme.connectedScreens = [{name: "DP-1"}, {name: "HDMI-A-1"}];
+            Theme.connectedScreens = [
+                {
+                    name: "DP-1"
+                },
+                {
+                    name: "HDMI-A-1"
+                }
+            ];
             page.selectedMonitor = "";
             wait(30);
         }
@@ -43,7 +56,11 @@ Rectangle {
             const url = Qt.resolvedUrl("gallery/first image.svg").toString();
             tryVerify(() => Theme.wallpaperFor("HDMI-A-1") === url);
             compare(Theme.wallpaperFor("DP-1"), "");
-            Theme.connectedScreens = [{name: "DP-1"}];
+            Theme.connectedScreens = [
+                {
+                    name: "DP-1"
+                }
+            ];
             tryCompare(page, "activeMonitor", "DP-1");
             Theme.connectedScreens = [];
             tryCompare(tile, "enabled", false);

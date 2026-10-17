@@ -11,7 +11,11 @@ Item {
 
     Component {
         id: barFactory
-        UI.ScrollBar { width: 8; height: 160; orientation: Qt.Vertical }
+        UI.ScrollBar {
+            width: 8
+            height: 160
+            orientation: Qt.Vertical
+        }
     }
     Component {
         id: viewFactory
@@ -34,7 +38,9 @@ Item {
             contentWidth: width
             contentHeight: height
             property alias verticalBar: vertical
-            C.ScrollBar.vertical: UI.ScrollBar { id: vertical }
+            C.ScrollBar.vertical: UI.ScrollBar {
+                id: vertical
+            }
         }
     }
 
@@ -48,13 +54,35 @@ Item {
             wait(30);
             return item;
         }
-        function init() { mouseMove(scene, scene.width - 1, scene.height - 1); }
+        function init() {
+            mouseMove(scene, scene.width - 1, scene.height - 1);
+        }
         function test_visibility_policy_data() {
             return [
-                {tag: "as-needed-fits", policy: C.ScrollBar.AsNeeded, size: 1, shown: false},
-                {tag: "as-needed-overflows", policy: C.ScrollBar.AsNeeded, size: 0.5, shown: true},
-                {tag: "always-off-overflows", policy: C.ScrollBar.AlwaysOff, size: 0.5, shown: false},
-                {tag: "always-on-fits", policy: C.ScrollBar.AlwaysOn, size: 1, shown: true}
+                {
+                    tag: "as-needed-fits",
+                    policy: C.ScrollBar.AsNeeded,
+                    size: 1,
+                    shown: false
+                },
+                {
+                    tag: "as-needed-overflows",
+                    policy: C.ScrollBar.AsNeeded,
+                    size: 0.5,
+                    shown: true
+                },
+                {
+                    tag: "always-off-overflows",
+                    policy: C.ScrollBar.AlwaysOff,
+                    size: 0.5,
+                    shown: false
+                },
+                {
+                    tag: "always-on-fits",
+                    policy: C.ScrollBar.AlwaysOn,
+                    size: 1,
+                    shown: true
+                }
             ];
         }
         function test_visibility_policy(data) {
@@ -63,7 +91,8 @@ Item {
             bar.size = data.size;
             bar.active = true;
             tryCompare(bar, "visible", data.shown);
-            if (data.shown) tryCompare(bar.contentItem, "opacity", 1);
+            if (data.shown)
+                tryCompare(bar.contentItem, "opacity", 1);
         }
         function test_idle_overflow_hides_and_interaction_reveals() {
             const bar = make(barFactory);

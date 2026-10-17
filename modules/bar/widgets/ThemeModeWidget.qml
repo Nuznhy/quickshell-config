@@ -12,7 +12,9 @@ Item {
     activeFocusOnTab: true
     Accessible.role: Accessible.Button
     Accessible.name: Theme.isDark ? "Switch to light mode" : "Switch to dark mode"
-    function toggle() { Theme.selectMode(Theme.isDark ? "light" : "dark"); }
+    function toggle() {
+        Theme.selectMode(Theme.isDark ? "light" : "dark");
+    }
     Accessible.onPressAction: toggle()
     Keys.onSpacePressed: toggle()
     Keys.onReturnPressed: toggle()

@@ -12,7 +12,10 @@ UI.ColumnLayout {
     spacing: Design.space8
     property string detailsId: ""
     readonly property var detailTarget: AppTheming.targets.find(target => target.id === detailsId) || null
-    onVisibleChanged: { if (visible) AppTheming.refresh(); }
+    onVisibleChanged: {
+        if (visible)
+            AppTheming.refresh();
+    }
 
     component RefreshButton: UI.IconButton {
         text: "󰑐"
@@ -72,7 +75,8 @@ UI.ColumnLayout {
                 border.color: modelData.state === "error" ? Design.danger : Design.border
                 UI.ColumnLayout {
                     id: cardContent
-                    x: Design.panelPadding; y: Design.panelPadding
+                    x: Design.panelPadding
+                    y: Design.panelPadding
                     width: parent.width - Design.panelPadding * 2
                     spacing: Design.space4
                     UI.RowLayout {
@@ -112,9 +116,7 @@ UI.ColumnLayout {
                     UI.Text {
                         Layout.fillWidth: true
                         visible: card.modelData.id === "hyprland" || card.modelData.id === "hyprland-colors"
-                        text: card.modelData.id === "hyprland-colors"
-                            ? "Follow bar colors for window borders."
-                            : "Follow bar rounding, opacity, and margins, with shared spacing and blur."
+                        text: card.modelData.id === "hyprland-colors" ? "Follow bar colors for window borders." : "Follow bar rounding, opacity, and margins, with shared spacing and blur."
                         role: "caption"
                         color: Design.textSecondary
                         wrapMode: Text.WordWrap
@@ -126,10 +128,7 @@ UI.ColumnLayout {
                         implicitHeight: Math.max(20, contentItem.implicitHeight)
                         padding: 0
                         enabled: card.hasDetails
-                        text: card.applying ? "Applying…" : card.modelData.state === "error"
-                            ? card.modelData.message || "Theme update failed. No error details were reported."
-                            : !card.modelData.available ? "Unavailable" : !card.modelData.enabled ? "Off"
-                            : card.modelData.state === "restart" ? "Restart app" : "Synced"
+                        text: card.applying ? "Applying…" : card.modelData.state === "error" ? card.modelData.message || "Theme update failed. No error details were reported." : !card.modelData.available ? "Unavailable" : !card.modelData.enabled ? "Off" : card.modelData.state === "restart" ? "Restart app" : "Synced"
                         Accessible.name: card.modelData.name + ": " + text + (card.hasDetails ? ". Show details" : "")
                         Accessible.description: card.modelData.message || ""
                         onClicked: root.detailsId = root.detailsId === card.modelData.id ? "" : card.modelData.id
@@ -138,9 +137,10 @@ UI.ColumnLayout {
                         contentItem: UI.RowLayout {
                             spacing: Design.space4
                             Rectangle {
-                                implicitWidth: 5; implicitHeight: 5; radius: Design.radiusSmall
-                                color: card.modelData.state === "error" ? Design.danger
-                                    : card.modelData.enabled ? Design.accent : Design.textSecondary
+                                implicitWidth: 5
+                                implicitHeight: 5
+                                radius: Design.radiusSmall
+                                color: card.modelData.state === "error" ? Design.danger : card.modelData.enabled ? Design.accent : Design.textSecondary
                             }
                             UI.Text {
                                 objectName: "app-theme-status-" + card.modelData.id
@@ -176,7 +176,8 @@ UI.ColumnLayout {
         color: Design.surfaceRaised
         UI.ColumnLayout {
             id: detailContent
-            x: Design.panelPadding; y: Design.panelPadding
+            x: Design.panelPadding
+            y: Design.panelPadding
             width: parent.width - Design.panelPadding * 2
             spacing: Design.space8
             UI.RowLayout {

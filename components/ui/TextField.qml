@@ -41,6 +41,10 @@ T.TextField {
         color: Design.surface
         border.width: root.activeFocus ? Design.focusWidth : Design.borderWidth
         border.color: root.invalid ? Design.danger : root.activeFocus ? Design.accent : root.hovered && root.enabled ? Design.textSecondary : Design.border
-        Behavior on border.color { ColorAnimation { duration: Design.durationFast } }
+        Behavior on border.color {
+            ColorAnimation {
+                duration: Design.durationFast
+            }
+        }
     }
 }

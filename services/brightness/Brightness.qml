@@ -15,7 +15,10 @@ Singleton {
     readonly property bool loading: statusProc.running && statusProc.discovery
     readonly property bool changing: actionProc.running || Object.keys(pending).length > 0
     readonly property string helper: Quickshell.shellPath("scripts/brightness/brightness.py")
-    onOpenPanelsChanged: { if (openPanels > 0) refresh(); }
+    onOpenPanelsChanged: {
+        if (openPanels > 0)
+            refresh();
+    }
 
     Component {
         id: displayEntry
@@ -40,15 +43,20 @@ Singleton {
             entry.value = Object.prototype.hasOwnProperty.call(pending, data.id) ? pending[data.id] : data.value;
             return entry;
         });
-        if (previous.length !== next.length || previous.some((entry, i) => entry !== next[i])) displays = next;
-        previous.forEach(entry => { if (!next.includes(entry)) entry.destroy(); });
+        if (previous.length !== next.length || previous.some((entry, i) => entry !== next[i]))
+            displays = next;
+        previous.forEach(entry => {
+            if (!next.includes(entry))
+                entry.destroy();
+        });
     }
 
     // Readback only updates values/errors; discovery owns device membership.
     function applyLevels(levels) {
         levels.forEach(data => {
             const entry = displays.find(item => item.deviceId === data.id);
-            if (!entry) return;
+            if (!entry)
+                return;
             entry.error = data.error || "";
             if (Number.isFinite(data.value) && !Object.prototype.hasOwnProperty.call(pending, data.id))
                 entry.value = data.value;
@@ -56,16 +64,19 @@ Singleton {
     }
     function refresh(discover = true) {
         discoveryPending = discoveryPending || discover;
-        if (statusProc.running || changing) { refreshAgain = true; return; }
+        if (statusProc.running || changing) {
+            refreshAgain = true;
+            return;
+        }
         refreshAgain = false;
         statusProc.discovery = discoveryPending || !displays.length;
         discoveryPending = false;
-        statusProc.command = statusProc.discovery ? ["python3", helper]
-            : ["python3", helper, "levels", JSON.stringify(displays.filter(d => d.supported).map(d => d.deviceId))];
+        statusProc.command = statusProc.discovery ? ["python3", helper] : ["python3", helper, "levels", JSON.stringify(displays.filter(d => d.supported).map(d => d.deviceId))];
         statusProc.running = true;
     }
     function setBrightness(id, value) {
-        if (!displays.some(display => display.deviceId === id && display.supported)) return;
+        if (!displays.some(display => display.deviceId === id && display.supported))
+            return;
         value = Math.max(0, Math.min(100, Math.round(value)));
         const next = Object.assign({}, pending);
         next[id] = value;
@@ -76,9 +87,13 @@ Singleton {
         writeNext();
     }
     function writeNext() {
-        if (actionProc.running || statusProc.running) return;
+        if (actionProc.running || statusProc.running)
+            return;
         const ids = Object.keys(pending);
-        if (!ids.length) { refresh(false); return; }
+        if (!ids.length) {
+            refresh(false);
+            return;
+        }
         const id = ids[0];
         const next = Object.assign({}, pending);
         actionProc.command = ["python3", helper, "set", id, String(next[id])];
@@ -94,29 +109,42 @@ Singleton {
                 try {
                     const result = JSON.parse(text);
                     root.statusError = result.error || "";
-                    if (result.displays) root.applySnapshot(result.displays);
-                    if (result.levels) root.applyLevels(result.levels);
-                } catch (error) { root.statusError = "Could not read monitor brightness."; }
+                    if (result.displays)
+                        root.applySnapshot(result.displays);
+                    if (result.levels)
+                        root.applyLevels(result.levels);
+                } catch (error) {
+                    root.statusError = "Could not read monitor brightness.";
+                }
             }
         }
         stderr: StdioCollector {}
         onExited: code => {
-            if (code !== 0) root.statusError = root.statusError || "Brightness discovery failed.";
-            if (Object.keys(root.pending).length) Qt.callLater(root.writeNext);
-            else if (root.refreshAgain) Qt.callLater(() => root.refresh(false));
+            if (code !== 0)
+                root.statusError = root.statusError || "Brightness discovery failed.";
+            if (Object.keys(root.pending).length)
+                Qt.callLater(root.writeNext);
+            else if (root.refreshAgain)
+                Qt.callLater(() => root.refresh(false));
         }
     }
     Process {
         id: actionProc
         stdout: StdioCollector {
             onStreamFinished: {
-                try { const result = JSON.parse(text); if (result.error) root.errorMessage = result.error; }
-                catch (error) { root.errorMessage = "Could not change monitor brightness."; }
+                try {
+                    const result = JSON.parse(text);
+                    if (result.error)
+                        root.errorMessage = result.error;
+                } catch (error) {
+                    root.errorMessage = "Could not change monitor brightness.";
+                }
             }
         }
         stderr: StdioCollector {}
         onExited: code => {
-            if (code !== 0 && !root.errorMessage) root.errorMessage = "Brightness adjustment failed. Check device permissions.";
+            if (code !== 0 && !root.errorMessage)
+                root.errorMessage = "Brightness adjustment failed. Check device permissions.";
             Qt.callLater(root.writeNext);
         }
     }

@@ -9,7 +9,10 @@ import qs.services.appearance
 import qs.services.wallpaper
 
 ShellRoot {
-    Component.onCompleted: { AppTheming.refresh(); WallpaperTheme.initialize(); }
+    Component.onCompleted: {
+        AppTheming.refresh();
+        WallpaperTheme.initialize();
+    }
     SettingsWindow {}
     Wallpapers {}
     NotificationToasts {}

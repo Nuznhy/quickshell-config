@@ -19,19 +19,21 @@ Singleton {
     property alias streams: streamModel
     property var pendingStreamCommands: []
     property int audioRevision: 0
-    readonly property bool commandsPending: deviceCommandProc.running || streamCommandProc.running
-        || pendingDeviceCommands.length > 0 || pendingStreamCommands.length > 0 || switching || switchingMicrophone
+    readonly property bool commandsPending: deviceCommandProc.running || streamCommandProc.running || pendingDeviceCommands.length > 0 || pendingStreamCommands.length > 0 || switching || switchingMicrophone
     readonly property bool switching: switchProc.running
     readonly property bool switchingMicrophone: microphoneProc.running
     readonly property bool available: outputs.some(output => output.name === defaultOutput)
     readonly property bool microphoneAvailable: microphones.some(source => source.name === defaultMicrophone)
 
-    ListModel { id: streamModel }
+    ListModel {
+        id: streamModel
+    }
 
     function updateStreams(inputs) {
         const ids = inputs.map(input => input.index);
         for (let i = streamModel.count - 1; i >= 0; --i) {
-            if (!ids.includes(streamModel.get(i).streamId)) streamModel.remove(i);
+            if (!ids.includes(streamModel.get(i).streamId))
+                streamModel.remove(i);
         }
         inputs.forEach(input => {
             const properties = input.properties || {};
@@ -49,20 +51,27 @@ Singleton {
             };
             let index = -1;
             for (let i = 0; i < streamModel.count; ++i) {
-                if (streamModel.get(i).streamId === input.index) { index = i; break; }
+                if (streamModel.get(i).streamId === input.index) {
+                    index = i;
+                    break;
+                }
             }
             // Updating roles in place preserves sliders while playback state is polled.
-            if (index < 0) streamModel.append(row);
-            else streamModel.set(index, row);
+            if (index < 0)
+                streamModel.append(row);
+            else
+                streamModel.set(index, row);
         });
     }
 
     function streamCommand(id, action, value) {
         let exists = false;
         for (let i = 0; i < streamModel.count; ++i) {
-            if (streamModel.get(i).streamId === id) exists = true;
+            if (streamModel.get(i).streamId === id)
+                exists = true;
         }
-        if (!exists) return;
+        if (!exists)
+            return;
         audioRevision++;
         enqueue(pendingStreamCommands, ["pactl", action, String(id), value]);
         errorMessage = "";
@@ -70,10 +79,12 @@ Singleton {
     }
 
     function setStreamVolume(id, value) {
-        if (!Number.isFinite(value)) return;
+        if (!Number.isFinite(value))
+            return;
         const volume = Math.round(Math.max(0, Math.min(150, value)));
         for (let i = 0; i < streamModel.count; ++i) {
-            if (streamModel.get(i).streamId === id) streamModel.setProperty(i, "volume", volume);
+            if (streamModel.get(i).streamId === id)
+                streamModel.setProperty(i, "volume", volume);
         }
         streamCommand(id, "set-sink-input-volume", volume + "%");
     }
@@ -83,7 +94,8 @@ Singleton {
     }
 
     function runNextStreamCommand() {
-        if (streamCommandProc.running || !pendingStreamCommands.length) return;
+        if (streamCommandProc.running || !pendingStreamCommands.length)
+            return;
         streamCommandProc.command = pendingStreamCommands.shift();
         streamCommandProc.running = true;
     }
@@ -91,41 +103,51 @@ Singleton {
     Process {
         id: streamCommandProc
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) root.errorMessage = "Could not change application audio. The stream may have closed.";
-            Qt.callLater(() => { root.runNextStreamCommand(); root.refresh(); });
+            if (exitCode !== 0)
+                root.errorMessage = "Could not change application audio. The stream may have closed.";
+            Qt.callLater(() => {
+                root.runNextStreamCommand();
+                root.refresh();
+            });
         }
     }
 
     // Exit handlers defer this until Process.running has settled.
     function refresh() {
-        if (statusProc.running || commandsPending) return;
+        if (statusProc.running || commandsPending)
+            return;
         statusProc.revision = audioRevision;
         statusProc.running = true;
     }
 
     function adjustVolume(delta) {
         // Use the optimistic value so rapid scroll steps accumulate correctly.
-        if (available) setOutputVolume(volumeLevel + (delta.startsWith("-") ? -5 : 5));
+        if (available)
+            setOutputVolume(volumeLevel + (delta.startsWith("-") ? -5 : 5));
     }
 
     function toggleMute() {
-        if (available) deviceCommand("set-sink-mute", defaultOutput, "toggle");
+        if (available)
+            deviceCommand("set-sink-mute", defaultOutput, "toggle");
     }
 
     function setOutputVolume(value) {
-        if (!available || !Number.isFinite(value)) return;
+        if (!available || !Number.isFinite(value))
+            return;
         volumeLevel = Math.round(Math.max(0, Math.min(150, value)));
         deviceCommand("set-sink-volume", defaultOutput, volumeLevel + "%");
     }
 
     function setMicrophoneVolume(value) {
-        if (!microphoneAvailable || !Number.isFinite(value)) return;
+        if (!microphoneAvailable || !Number.isFinite(value))
+            return;
         microphoneVolume = Math.round(Math.max(0, Math.min(100, value)));
         deviceCommand("set-source-volume", defaultMicrophone, microphoneVolume + "%");
     }
 
     function toggleMicrophoneMute() {
-        if (microphoneAvailable) deviceCommand("set-source-mute", defaultMicrophone, "toggle");
+        if (microphoneAvailable)
+            deviceCommand("set-source-mute", defaultMicrophone, "toggle");
     }
 
     function deviceCommand(action, device, value) {
@@ -149,13 +171,15 @@ Singleton {
     }
 
     function runNextDeviceCommand() {
-        if (deviceCommandProc.running || !pendingDeviceCommands.length) return;
+        if (deviceCommandProc.running || !pendingDeviceCommands.length)
+            return;
         deviceCommandProc.command = pendingDeviceCommands.shift();
         deviceCommandProc.running = true;
     }
 
     function selectOutput(name) {
-        if (switching || !outputs.some(output => output.name === name)) return;
+        if (switching || !outputs.some(output => output.name === name))
+            return;
         audioRevision++;
         errorMessage = "";
         switchProc.command = ["bash", Quickshell.shellPath("scripts/audio/audio-select-output.sh"), name];
@@ -167,7 +191,8 @@ Singleton {
     }
 
     function selectMicrophone(name) {
-        if (switchingMicrophone || name === defaultMicrophone || !microphones.some(source => source.name === name)) return;
+        if (switchingMicrophone || name === defaultMicrophone || !microphones.some(source => source.name === name))
+            return;
         audioRevision++;
         errorMessage = "";
         microphoneProc.command = ["bash", Quickshell.shellPath("scripts/audio/audio-select-input.sh"), name];
@@ -180,24 +205,32 @@ Singleton {
         command: ["bash", Quickshell.shellPath("scripts/audio/audio-status.sh")]
         Component.onCompleted: root.refresh()
         onExited: {
-            if (revision !== root.audioRevision) Qt.callLater(root.refresh);
+            if (revision !== root.audioRevision)
+                Qt.callLater(root.refresh);
         }
         stdout: StdioCollector {
             onStreamFinished: {
                 // Never apply a snapshot begun before a write or while writes are queued.
-                if (statusProc.revision !== root.audioRevision || root.commandsPending) return;
+                if (statusProc.revision !== root.audioRevision || root.commandsPending)
+                    return;
                 try {
                     var data = JSON.parse(text);
                     root.updateStreams(data.inputs || []);
-                    var devices = data.sinks.map(sink => ({name: sink.name, description: sink.description || sink.name}));
+                    var devices = data.sinks.map(sink => ({
+                                name: sink.name,
+                                description: sink.description || sink.name
+                            }));
                     // Avoid rebuilding device buttons on every volume poll.
-                    if (JSON.stringify(devices) !== JSON.stringify(root.outputs)) root.outputs = devices;
+                    if (JSON.stringify(devices) !== JSON.stringify(root.outputs))
+                        root.outputs = devices;
                     root.defaultOutput = data.default;
                     const monitors = data.sinks.map(sink => sink.monitor_source);
-                    const microphones = (data.sources || [])
-                        .filter(source => !monitors.includes(source.name) && !source.name.endsWith(".monitor") && source.properties?.["device.class"] !== "monitor")
-                        .map(source => ({name: source.name, description: source.description || source.name}));
-                    if (JSON.stringify(microphones) !== JSON.stringify(root.microphones)) root.microphones = microphones;
+                    const microphones = (data.sources || []).filter(source => !monitors.includes(source.name) && !source.name.endsWith(".monitor") && source.properties?.["device.class"] !== "monitor").map(source => ({
+                                name: source.name,
+                                description: source.description || source.name
+                            }));
+                    if (JSON.stringify(microphones) !== JSON.stringify(root.microphones))
+                        root.microphones = microphones;
                     root.defaultMicrophone = data.defaultSource || "";
                     const microphone = (data.sources || []).find(source => source.name === root.defaultMicrophone);
                     root.microphoneMuted = microphone ? !!microphone.mute : false;
@@ -207,7 +240,8 @@ Singleton {
                     root.volumeMuted = active ? active.mute : false;
                     var channels = active ? Object.values(active.volume) : [];
                     root.volumeLevel = channels.length ? Math.round(channels.reduce((sum, channel) => sum + parseInt(channel.value_percent, 10), 0) / channels.length) : 0;
-                    if (root.errorMessage === "Audio server unavailable.") root.errorMessage = "";
+                    if (root.errorMessage === "Audio server unavailable.")
+                        root.errorMessage = "";
                 } catch (error) {
                     // A failed check is not a device-removal event. Keep the last
                     // confirmed controls until a successful snapshot replaces them.
@@ -220,7 +254,8 @@ Singleton {
     Process {
         id: switchProc
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) root.errorMessage = "Could not switch all audio. Check sound settings.";
+            if (exitCode !== 0)
+                root.errorMessage = "Could not switch all audio. Check sound settings.";
             Qt.callLater(root.refresh);
         }
     }
@@ -233,7 +268,8 @@ Singleton {
     Process {
         id: microphoneProc
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) root.errorMessage = "Could not switch all microphone audio. Check sound settings.";
+            if (exitCode !== 0)
+                root.errorMessage = "Could not switch all microphone audio. Check sound settings.";
             Qt.callLater(root.refresh);
         }
     }
@@ -241,8 +277,12 @@ Singleton {
     Process {
         id: deviceCommandProc
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) root.errorMessage = "Could not change device audio. The device may have disconnected.";
-            Qt.callLater(() => { root.runNextDeviceCommand(); root.refresh(); });
+            if (exitCode !== 0)
+                root.errorMessage = "Could not change device audio. The device may have disconnected.";
+            Qt.callLater(() => {
+                root.runNextDeviceCommand();
+                root.refresh();
+            });
         }
     }
 

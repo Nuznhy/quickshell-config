@@ -13,7 +13,10 @@ UI.ColumnLayout {
     readonly property var target: AppTheming.targets.find(t => t.id === "hyprlock") || null
     property string candidate: ""
     property string errorMessage: ""
-    onVisibleChanged: { if (visible) AppTheming.refresh(); }
+    onVisibleChanged: {
+        if (visible)
+            AppTheming.refresh();
+    }
 
     function selectMode(mode) {
         candidate = "";
@@ -41,9 +44,14 @@ UI.ColumnLayout {
         candidate = source;
     }
     function pictureName() {
-        if (!Theme.lockBackgroundImage) return "No picture selected";
+        if (!Theme.lockBackgroundImage)
+            return "No picture selected";
         const name = Theme.lockBackgroundImage.slice(Theme.lockBackgroundImage.lastIndexOf("/") + 1);
-        try { return decodeURIComponent(name); } catch (error) { return name; }
+        try {
+            return decodeURIComponent(name);
+        } catch (error) {
+            return name;
+        }
     }
     Image {
         source: root.candidate
@@ -52,7 +60,8 @@ UI.ColumnLayout {
         cache: false
         sourceSize: Qt.size(640, 360)
         onStatusChanged: {
-            if (!root.candidate) return;
+            if (!root.candidate)
+                return;
             if (status === Image.Ready) {
                 Theme.setLockBackground("image", root.candidate);
                 Theme.setLockBackground("mode", "image");
@@ -121,7 +130,12 @@ UI.ColumnLayout {
             onClicked: AppTheming.retry("hyprlock")
         }
     }
-    UI.Text { text: "Background"; color: Design.text; font.family: Design.fontFamily; role: "section" }
+    UI.Text {
+        text: "Background"
+        color: Design.text
+        font.family: Design.fontFamily
+        role: "section"
+    }
     UI.RowLayout {
         spacing: Design.space8
         NotificationButton {
@@ -141,8 +155,10 @@ UI.ColumnLayout {
             text: "Picture"
             accent: Theme.lockBackgroundMode === "image"
             onClicked: {
-                if (Theme.lockBackgroundImage) root.selectMode("image");
-                else picker.open();
+                if (Theme.lockBackgroundImage)
+                    root.selectMode("image");
+                else
+                    picker.open();
             }
         }
     }
@@ -155,18 +171,31 @@ UI.ColumnLayout {
             placeholderText: "#RRGGBB"
             maximumLength: 7
             Accessible.name: "Lock-screen background color in hex"
-            validator: RegularExpressionValidator { regularExpression: /#[0-9a-fA-F]{6}/ }
+            validator: RegularExpressionValidator {
+                regularExpression: /#[0-9a-fA-F]{6}/
+            }
             invalid: length > 0 && !acceptableInput
-            onTextEdited: { if (acceptableInput) Theme.setLockBackground("color", text); }
+            onTextEdited: {
+                if (acceptableInput)
+                    Theme.setLockBackground("color", text);
+            }
             onEditingFinished: text = Qt.binding(() => Theme.lockBackgroundColor)
-
         }
-        Rectangle { width: 30; height: 30; radius: Design.radiusControl; color: Theme.lockBackgroundColor; border.color: Design.border }
+        Rectangle {
+            width: 30
+            height: 30
+            radius: Design.radiusControl
+            color: Theme.lockBackgroundColor
+            border.color: Design.border
+        }
     }
     UI.RowLayout {
         visible: Theme.lockBackgroundMode === "image"
         Layout.fillWidth: true
-        NotificationButton { text: "Choose picture…"; onClicked: picker.open() }
+        NotificationButton {
+            text: "Choose picture…"
+            onClicked: picker.open()
+        }
         UI.Text {
             Layout.fillWidth: true
             text: root.pictureName()
@@ -192,7 +221,9 @@ UI.ColumnLayout {
         }
         Rectangle {
             anchors.centerIn: parent
-            width: 260; height: parent.height - 44; radius: Design.radiusCard
+            width: 260
+            height: parent.height - 44
+            radius: Design.radiusCard
             color: Design.background
             Column {
                 anchors.centerIn: parent
@@ -211,19 +242,52 @@ UI.ColumnLayout {
                     horizontalAlignment: Text.AlignHCenter
                     color: Design.accent
                 }
-                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "12:34"; color: Design.text; font.pixelSize: 28; font.family: Design.fontFamily }
-                Rectangle {
-                    width: 210; height: 32; radius: Design.radiusControl; color: Design.surface; border.color: Design.accent
-                    UI.Text { anchors.centerIn: parent; text: "Password"; color: Design.text; font.family: Design.fontFamily; role: "label" }
+                UI.Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "12:34"
+                    color: Design.text
+                    font.pixelSize: 28
+                    font.family: Design.fontFamily
                 }
-                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Keyboard layout: …"; color: Design.warning; font.family: Design.fontFamily; role: "label" }
-                UI.Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Caps Lock: off"; color: Design.warning; font.family: Design.fontFamily; role: "label" }
+                Rectangle {
+                    width: 210
+                    height: 32
+                    radius: Design.radiusControl
+                    color: Design.surface
+                    border.color: Design.accent
+                    UI.Text {
+                        anchors.centerIn: parent
+                        text: "Password"
+                        color: Design.text
+                        font.family: Design.fontFamily
+                        role: "label"
+                    }
+                }
+                UI.Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Keyboard layout: …"
+                    color: Design.warning
+                    font.family: Design.fontFamily
+                    role: "label"
+                }
+                UI.Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Caps Lock: off"
+                    color: Design.warning
+                    font.family: Design.fontFamily
+                    role: "label"
+                }
             }
         }
     }
     UI.RowLayout {
         Layout.fillWidth: true
-        UI.Text { Layout.fillWidth: true; text: "Show ASCII art"; color: Design.text; role: "section" }
+        UI.Text {
+            Layout.fillWidth: true
+            text: "Show ASCII art"
+            color: Design.text
+            role: "section"
+        }
         ControlSwitch {
             objectName: "lock-ascii-enabled"
             value: Theme.lockAsciiEnabled
@@ -255,16 +319,18 @@ UI.ColumnLayout {
             placeholderText: "Paste ASCII art here"
             Accessible.name: "Lock-screen ASCII art"
             function isValidArt(value) {
-                return value.split("\n").length <= 64
-                    && value.split("\n").every(line => Array.from(line).length <= 160)
-                    && !/[\x00-\x09\x0b-\x1f\x7f-\x9f\u00ad\u061c\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(value);
+                return value.split("\n").length <= 64 && value.split("\n").every(line => Array.from(line).length <= 160) && !/[\x00-\x09\x0b-\x1f\x7f-\x9f\u00ad\u061c\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(value);
             }
             readonly property bool validArt: isValidArt(text)
             onTextChanged: {
                 if (isValidArt(text) && text !== Theme.lockAsciiText)
                     Theme.setLockAscii(Theme.lockAsciiEnabled, text);
             }
-            background: Rectangle { color: Design.surface; radius: Design.radiusControl; border.color: asciiInput.validArt ? Design.border : Design.danger }
+            background: Rectangle {
+                color: Design.surface
+                radius: Design.radiusControl
+                border.color: asciiInput.validArt ? Design.border : Design.danger
+            }
         }
     }
     NotificationButton {
@@ -272,11 +338,14 @@ UI.ColumnLayout {
         onClicked: {
             try {
                 let source = asciiInput.text.trim();
-                if (!source.startsWith("[")) source = "[" + source.replace(/,\s*$/, "") + "]";
+                if (!source.startsWith("["))
+                    source = "[" + source.replace(/,\s*$/, "") + "]";
                 const lines = JSON.parse(source);
-                if (!Array.isArray(lines) || !lines.every(line => typeof line === "string")) throw new Error();
+                if (!Array.isArray(lines) || !lines.every(line => typeof line === "string"))
+                    throw new Error();
                 const art = lines.join("\n");
-                if (!asciiInput.isValidArt(art)) throw new Error();
+                if (!asciiInput.isValidArt(art))
+                    throw new Error();
                 asciiInput.text = art;
                 root.errorMessage = "";
             } catch (error) {

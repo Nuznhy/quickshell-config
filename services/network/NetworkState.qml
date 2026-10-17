@@ -24,37 +24,43 @@ Singleton {
     readonly property var wifiNetworks: {
         let networks = [];
         for (const device of wifiDevices)
-            for (const network of device.networks.values) networks.push(network);
-        return networks.filter(network => !!network.name)
-            .sort((a, b) => Number(b.connected) - Number(a.connected) || b.signalStrength - a.signalStrength);
+            for (const network of device.networks.values)
+                networks.push(network);
+        return networks.filter(network => !!network.name).sort((a, b) => Number(b.connected) - Number(a.connected) || b.signalStrength - a.signalStrength);
     }
     readonly property bool vpnActive: vpnProfiles.some(profile => profile.active)
     readonly property bool connected: connections.some(connection => connection.state === "activated")
     readonly property string connectivity: Net.NetworkConnectivity.toString(Net.Networking.connectivity)
-    readonly property string icon: vpnActive ? "󰦝" : wiredDevices.some(device => device.connected) ? "󰈀"
-        : wifiNetworks.some(network => network.connected) ? "󰤨" : "󰤭"
+    readonly property string icon: vpnActive ? "󰦝" : wiredDevices.some(device => device.connected) ? "󰈀" : wifiNetworks.some(network => network.connected) ? "󰤨" : "󰤭"
 
     onOpenPanelsChanged: {
         updateScanning();
-        if (openPanels > 0) refresh();
+        if (openPanels > 0)
+            refresh();
     }
     onWifiDevicesChanged: updateScanning()
     onWifiEnabledChanged: {
         updateScanning();
-        if (!wifiEnabled) passwordNetwork = null;
+        if (!wifiEnabled)
+            passwordNetwork = null;
         refresh();
     }
     function updateScanning() {
-        for (const device of wifiDevices) device.scannerEnabled = openPanels > 0 && wifiEnabled;
+        for (const device of wifiDevices)
+            device.scannerEnabled = openPanels > 0 && wifiEnabled;
     }
     function refresh() {
-        if (statusProc.running) { refreshAgain = true; return; }
+        if (statusProc.running) {
+            refreshAgain = true;
+            return;
+        }
         statusProc.revision = revision;
         statusProc.running = true;
     }
     property bool refreshAgain: false
     function runAction(command, label) {
-        if (busy || !available) return;
+        if (busy || !available)
+            return;
         revision++;
         errorMessage = "";
         busyLabel = label;
@@ -62,32 +68,44 @@ Singleton {
         actionProc.running = true;
     }
     function setWifi(enabled) {
-        if (!wifiHardwareEnabled || !wifiDevices.length) return;
-        if (!enabled) passwordNetwork = null;
+        if (!wifiHardwareEnabled || !wifiDevices.length)
+            return;
+        if (!enabled)
+            passwordNetwork = null;
         runAction(["nmcli", "--wait", "15", "radio", "wifi", enabled ? "on" : "off"], enabled ? "Enabling Wi-Fi…" : "Disabling Wi-Fi…");
     }
     function setWired(device, enabled) {
-        if (!wiredDevices.includes(device) || !device.nmManaged) return;
+        if (!wiredDevices.includes(device) || !device.nmManaged)
+            return;
         runAction(["nmcli", "--wait", "30", "device", enabled ? "connect" : "disconnect", device.name], enabled ? "Connecting Ethernet…" : "Disconnecting Ethernet…");
     }
     function setVpn(profile, enabled) {
-        if (!vpnProfiles.some(item => item.uuid === profile.uuid)) return;
+        if (!vpnProfiles.some(item => item.uuid === profile.uuid))
+            return;
         runAction(["nmcli", "--wait", "45", "connection", enabled ? "up" : "down", "uuid", profile.uuid], enabled ? "Connecting VPN…" : "Disconnecting VPN…");
     }
     function needsPassword(network) {
         return [Net.WifiSecurityType.WpaPsk, Net.WifiSecurityType.Wpa2Psk, Net.WifiSecurityType.Sae].includes(network.security);
     }
     function securityLabel(network) {
-        if (network.security === Net.WifiSecurityType.Open) return "Open";
-        if (network.security === Net.WifiSecurityType.Owe) return "Enhanced open";
-        if (network.security === Net.WifiSecurityType.Sae) return "WPA3";
-        if (needsPassword(network)) return "WPA/WPA2";
+        if (network.security === Net.WifiSecurityType.Open)
+            return "Open";
+        if (network.security === Net.WifiSecurityType.Owe)
+            return "Enhanced open";
+        if (network.security === Net.WifiSecurityType.Sae)
+            return "WPA3";
+        if (needsPassword(network))
+            return "WPA/WPA2";
         return "Enterprise / other";
     }
     function connectWifi(network) {
-        if (busy || !available || !wifiEnabled || !wifiNetworks.includes(network)) return;
+        if (busy || !available || !wifiEnabled || !wifiNetworks.includes(network))
+            return;
         errorMessage = "";
-        if (!network.known && needsPassword(network)) { passwordNetwork = network; return; }
+        if (!network.known && needsPassword(network)) {
+            passwordNetwork = network;
+            return;
+        }
         if (!network.known && ![Net.WifiSecurityType.Open, Net.WifiSecurityType.Owe].includes(network.security)) {
             errorMessage = "Configure this network in Advanced first, then connect here.";
             return;
@@ -104,11 +122,9 @@ Singleton {
     }
     function submitPassword(password) {
         const network = passwordNetwork;
-        if (!network || busy || !wifiNetworks.includes(network)) return;
-        if ((network.security !== Net.WifiSecurityType.Sae && password.length < 8)
-                || password.length === 0 || password.length > 64
-                || (network.security === Net.WifiSecurityType.Sae && password.length > 63)
-                || (password.length === 64 && !/^[0-9a-fA-F]{64}$/.test(password))) {
+        if (!network || busy || !wifiNetworks.includes(network))
+            return;
+        if ((network.security !== Net.WifiSecurityType.Sae && password.length < 8) || password.length === 0 || password.length > 64 || (network.security === Net.WifiSecurityType.Sae && password.length > 63) || (password.length === 64 && !/^[0-9a-fA-F]{64}$/.test(password))) {
             errorMessage = "Enter a valid Wi-Fi password.";
             return;
         }
@@ -117,10 +133,13 @@ Singleton {
         network.connectWithPsk(password);
     }
     function disconnectWifi(network) {
-        if (busy || !wifiNetworks.includes(network)) return;
+        if (busy || !wifiNetworks.includes(network))
+            return;
         runAction(["nmcli", "--wait", "15", "device", "disconnect", network.device.name], "Disconnecting Wi-Fi…");
     }
-    function openSettings() { editorProc.running = true; }
+    function openSettings() {
+        editorProc.running = true;
+    }
 
     Connections {
         target: root.pendingWifi
@@ -132,7 +151,8 @@ Singleton {
             if (reason === Net.ConnectionFailReason.NoSecrets && network && root.needsPassword(network)) {
                 root.passwordNetwork = network;
                 root.errorMessage = "Authentication failed. Enter the Wi-Fi password.";
-            } else root.errorMessage = "Connection failed: " + Net.ConnectionFailReason.toString(reason);
+            } else
+                root.errorMessage = "Connection failed: " + Net.ConnectionFailReason.toString(reason);
             root.refresh();
         }
         function onConnectedChanged() {
@@ -156,12 +176,17 @@ Singleton {
     }
     Process {
         id: actionProc
-        environment: ({ LC_ALL: "C" })
+        environment: ({
+                LC_ALL: "C"
+            })
         stdout: StdioCollector {}
-        stderr: StdioCollector { id: actionError }
+        stderr: StdioCollector {
+            id: actionError
+        }
         onExited: code => {
             root.busyLabel = "";
-            if (code !== 0) root.errorMessage = actionError.text.trim() || "Network operation failed.";
+            if (code !== 0)
+                root.errorMessage = actionError.text.trim() || "Network operation failed.";
             root.refresh();
         }
     }
@@ -169,7 +194,8 @@ Singleton {
         id: editorProc
         command: ["nm-connection-editor"]
         onExited: code => {
-            if (code !== 0) root.errorMessage = "Could not open nm-connection-editor.";
+            if (code !== 0)
+                root.errorMessage = "Could not open nm-connection-editor.";
             root.refresh();
         }
     }
@@ -179,14 +205,17 @@ Singleton {
         command: ["python3", Quickshell.shellPath("scripts/network/network-status.py")]
         stdout: StdioCollector {
             onStreamFinished: {
-                if (statusProc.revision !== root.revision) return;
+                if (statusProc.revision !== root.revision)
+                    return;
                 try {
                     const snapshot = JSON.parse(text);
                     root.available = snapshot.ok === true;
                     root.statusError = snapshot.ok ? "" : snapshot.error;
                     if (snapshot.ok) {
-                        if (JSON.stringify(root.connections) !== JSON.stringify(snapshot.connections)) root.connections = snapshot.connections;
-                        if (JSON.stringify(root.vpnProfiles) !== JSON.stringify(snapshot.vpns)) root.vpnProfiles = snapshot.vpns;
+                        if (JSON.stringify(root.connections) !== JSON.stringify(snapshot.connections))
+                            root.connections = snapshot.connections;
+                        if (JSON.stringify(root.vpnProfiles) !== JSON.stringify(snapshot.vpns))
+                            root.vpnProfiles = snapshot.vpns;
                     } else {
                         root.connections = [];
                         root.vpnProfiles = [];
@@ -198,7 +227,10 @@ Singleton {
             }
         }
         onExited: code => {
-            if (code !== 0) { root.available = false; root.statusError = "Network status helper failed."; }
+            if (code !== 0) {
+                root.available = false;
+                root.statusError = "Network status helper failed.";
+            }
             if (root.refreshAgain || revision !== root.revision) {
                 root.refreshAgain = false;
                 Qt.callLater(root.refresh);
@@ -220,7 +252,9 @@ Singleton {
     Process {
         id: networkMonitor
         command: ["nmcli", "monitor"]
-        stdout: SplitParser { onRead: data => changeDebounce.restart() }
+        stdout: SplitParser {
+            onRead: data => changeDebounce.restart()
+        }
         stderr: StdioCollector {}
         running: true
     }

@@ -18,6 +18,10 @@ T.ScrollBar {
         radius: Design.radiusSmall
         color: root.pressed ? Design.accent : Design.textSecondary
         opacity: root.policy === T.ScrollBar.AlwaysOn || (root.size < 1 && (root.active || root.hovered || root.pressed)) ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Design.durationFast } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Design.durationFast
+            }
+        }
     }
 }

@@ -12,7 +12,10 @@ PanelWindow {
     screen: assignedScreen
     signal closeAllPopups
     visible: Theme.barEnabled(assignedScreen?.name || "")
-    onVisibleChanged: { if (!visible) closeAllPopups(); }
+    onVisibleChanged: {
+        if (!visible)
+            closeAllPopups();
+    }
 
     Connections {
         target: Hyprland
@@ -20,21 +23,25 @@ PanelWindow {
             // Focus grabs handle outside clicks. An activewindow event can also
             // be the popup itself taking focus, so dismiss on workspace changes
             // explicitly instead of immediately closing a newly opened popup.
-            if (event.name === "workspace" || event.name === "workspacev2"
-                    || event.name === "activespecial" || event.name === "activespecialv2"
-                    || event.name === "focusedmon") {
+            if (event.name === "workspace" || event.name === "workspacev2" || event.name === "activespecial" || event.name === "activespecialv2" || event.name === "focusedmon") {
                 barRoot.closeAllPopups();
             }
         }
     }
     Connections {
         target: BarLayout
-        function onAboutToChange() { barRoot.closeAllPopups(); }
+        function onAboutToChange() {
+            barRoot.closeAllPopups();
+        }
     }
     Connections {
         target: Theme
-        function onUiKitChanged() { barRoot.closeAllPopups(); }
-        function onBarPositionChanged() { barRoot.closeAllPopups(); }
+        function onUiKitChanged() {
+            barRoot.closeAllPopups();
+        }
+        function onBarPositionChanged() {
+            barRoot.closeAllPopups();
+        }
     }
     anchors {
         top: Theme.barPosition !== "bottom"
@@ -54,6 +61,7 @@ PanelWindow {
     }
 
     UI.KitSurface {
+        id: background
         kitSlot: "barSurface"
         anchors.fill: parent
         color: Design.background
@@ -61,14 +69,11 @@ PanelWindow {
         opacity: Theme.barOpacity
         // Fade the completed bar once, including overlapping backgrounds and text.
         layer.enabled: opacity < 1
-
-        id: background
         readonly property real edgeStart: Theme.verticalBar ? 12 : Settings.leftPadding
         readonly property real edgeEnd: Theme.verticalBar ? 12 : Settings.rightPadding
         readonly property real axisLength: Theme.verticalBar ? height : width
         readonly property real centerLength: Math.min(centerSection.naturalLength, Math.max(0, axisLength / 3))
-        readonly property real halfSpace: Math.max(0, (axisLength - centerLength) / 2
-            - (centerLength > 0 ? Settings.widgetSpacing : 0))
+        readonly property real halfSpace: Math.max(0, (axisLength - centerLength) / 2 - (centerLength > 0 ? Settings.widgetSpacing : 0))
 
         MouseArea {
             anchors.fill: parent

@@ -9,8 +9,14 @@ Column {
     property bool active: false
     signal backRequested
     spacing: Design.space16
-    onActiveChanged: { if (!active) feedUrl.clear(); }
-    onVisibleChanged: { if (!visible) feedUrl.clear(); }
+    onActiveChanged: {
+        if (!active)
+            feedUrl.clear();
+    }
+    onVisibleChanged: {
+        if (!visible)
+            feedUrl.clear();
+    }
 
     Row {
         width: parent.width
@@ -18,9 +24,15 @@ Column {
         UI.IconButton {
             text: "‹"
             Accessible.name: "Back to bar layout"
-            onClicked: { feedUrl.clear(); root.backRequested(); }
+            onClicked: {
+                feedUrl.clear();
+                root.backRequested();
+            }
         }
-        UI.Text { text: "Clock and calendar"; role: "panel" }
+        UI.Text {
+            text: "Clock and calendar"
+            role: "panel"
+        }
     }
     Row {
         width: parent.width
@@ -70,7 +82,8 @@ Column {
                 text: "Save feed"
                 enabled: CalendarFeed.ready && !CalendarFeed.busy && feedUrl.length > 0
                 onClicked: {
-                    if (feedUrl.length && CalendarFeed.save(feedUrl.text)) feedUrl.clear();
+                    if (feedUrl.length && CalendarFeed.save(feedUrl.text))
+                        feedUrl.clear();
                 }
             }
             UI.Button {
@@ -78,7 +91,10 @@ Column {
                 width: (parent.width - parent.spacing) / 2
                 text: "Remove feed"
                 enabled: CalendarFeed.ready && !CalendarFeed.busy
-                onClicked: { feedUrl.clear(); CalendarFeed.forget(); }
+                onClicked: {
+                    feedUrl.clear();
+                    CalendarFeed.forget();
+                }
             }
         }
         UI.Text {

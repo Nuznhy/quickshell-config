@@ -17,12 +17,17 @@ Flickable {
         for (let i = 0; i < widgets.count; ++i) {
             const slot = widgets.itemAt(i);
             if (slot && slot.occupied) {
-                if (count++) length += Settings.widgetSpacing;
+                if (count++)
+                    length += Settings.widgetSpacing;
                 result.push(length);
                 length += Theme.verticalBar ? slot.widgetHeight : slot.widgetWidth;
-            } else result.push(length);
+            } else
+                result.push(length);
         }
-        return { offsets: result, length: length };
+        return {
+            offsets: result,
+            length: length
+        };
     }
     readonly property real naturalLength: positions.length
     readonly property real viewportLength: Theme.verticalBar ? height : width
@@ -35,14 +40,23 @@ Flickable {
     boundsBehavior: Flickable.StopAtBounds
     onMovementStarted: barWindow.closeAllPopups()
     function settleScroll() {
-        if (Theme.verticalBar) { contentX = 0; contentY = alignEnd ? Math.max(0, contentHeight - height) : 0; }
-        else { contentY = 0; contentX = alignEnd ? Math.max(0, contentWidth - width) : 0; }
+        if (Theme.verticalBar) {
+            contentX = 0;
+            contentY = alignEnd ? Math.max(0, contentHeight - height) : 0;
+        } else {
+            contentY = 0;
+            contentX = alignEnd ? Math.max(0, contentWidth - width) : 0;
+        }
     }
     onNaturalLengthChanged: Qt.callLater(settleScroll)
     onWidthChanged: Qt.callLater(settleScroll)
     onHeightChanged: Qt.callLater(settleScroll)
-    ScrollBar.vertical: UI.ScrollBar { policy: Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
-    ScrollBar.horizontal: UI.ScrollBar { policy: !Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff }
+    ScrollBar.vertical: UI.ScrollBar {
+        policy: Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+    }
+    ScrollBar.horizontal: UI.ScrollBar {
+        policy: !Theme.verticalBar && root.overflowing ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+    }
 
     Repeater {
         id: widgets
@@ -53,12 +67,8 @@ Flickable {
             id: slot
             required property string modelData
             required property int index
-            readonly property real widgetWidth: loader.item ? Math.max(0,
-                loader.item.Layout.preferredWidth >= 0 ? loader.item.Layout.preferredWidth : loader.item.implicitWidth) : 0
-            readonly property real widgetHeight: !Theme.verticalBar ? Settings.barHeight
-                : modelData === "clock" ? Settings.barHeight + 12
-                : loader.item ? Math.max(Settings.barHeight,
-                    loader.item.Layout.preferredHeight >= 0 ? loader.item.Layout.preferredHeight : loader.item.implicitHeight) : 0
+            readonly property real widgetWidth: loader.item ? Math.max(0, loader.item.Layout.preferredWidth >= 0 ? loader.item.Layout.preferredWidth : loader.item.implicitWidth) : 0
+            readonly property real widgetHeight: !Theme.verticalBar ? Settings.barHeight : modelData === "clock" ? Settings.barHeight + 12 : loader.item ? Math.max(Settings.barHeight, loader.item.Layout.preferredHeight >= 0 ? loader.item.Layout.preferredHeight : loader.item.implicitHeight) : 0
             readonly property bool occupied: loader.item !== null && loader.item.visible && widgetWidth > 0
             x: Theme.verticalBar ? 0 : (root.positions.offsets[index] || 0)
             y: Theme.verticalBar ? (root.positions.offsets[index] || 0) : 0

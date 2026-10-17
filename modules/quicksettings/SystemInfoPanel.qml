@@ -15,17 +15,24 @@ UI.ColumnLayout {
     readonly property bool showing: active && expanded
     property real revealProgress: expanded ? 1 : 0
     Behavior on revealProgress {
-        NumberAnimation { duration: Design.durationNormal; easing.type: Easing.InOutCubic }
+        NumberAnimation {
+            duration: Design.durationNormal
+            easing.type: Easing.InOutCubic
+        }
     }
     // Include the section gap in the reveal so it cannot jump at either end.
     spacing: 0
     onShowingChanged: {
         SystemInfo.openPanels += showing ? 1 : -1;
         BatteryState.openPanels += showing ? 1 : -1;
-        if (showing) NetworkState.refresh();
+        if (showing)
+            NetworkState.refresh();
     }
     Component.onDestruction: {
-        if (showing) { SystemInfo.openPanels--; BatteryState.openPanels--; }
+        if (showing) {
+            SystemInfo.openPanels--;
+            BatteryState.openPanels--;
+        }
     }
     NotificationButton {
         objectName: "system-info-expand"
@@ -55,15 +62,42 @@ UI.ColumnLayout {
                 spacing: Design.space8
                 Repeater {
                     model: [
-                        {label: "OS", value: SystemInfo.details.os || "…"},
-                        {label: "Kernel", value: SystemInfo.details.kernel || "…"},
-                        {label: "CPU", value: SystemInfo.details.cpu || "…"},
-                        {label: "GPU", value: SystemInfo.details.gpu || "…"},
-                        {label: "RAM", value: SystemInfo.details.ram || "…"},
-                        {label: "Home drive", value: SystemInfo.details.disk || "…"}
-                    ].concat(BatteryState.batteries.map(b => ({label: b.id, value: (b.percent === null ? "—" : b.percent + "%") + " · " + b.status})))
-                     .concat(NetworkState.connections.filter(c => c.state === "activated").map(c => ({label: c.vpn ? "VPN" : "Network", value: c.name + "\n" + c.devices.join(", ") + " · " + c.ipv4.concat(c.ipv6).join(", ")})))
-                     .concat(NetworkState.connections.some(c => c.state === "activated") ? [] : [{label: "Network", value: NetworkState.statusError || "Disconnected"}])
+                        {
+                            label: "OS",
+                            value: SystemInfo.details.os || "…"
+                        },
+                        {
+                            label: "Kernel",
+                            value: SystemInfo.details.kernel || "…"
+                        },
+                        {
+                            label: "CPU",
+                            value: SystemInfo.details.cpu || "…"
+                        },
+                        {
+                            label: "GPU",
+                            value: SystemInfo.details.gpu || "…"
+                        },
+                        {
+                            label: "RAM",
+                            value: SystemInfo.details.ram || "…"
+                        },
+                        {
+                            label: "Home drive",
+                            value: SystemInfo.details.disk || "…"
+                        }
+                    ].concat(BatteryState.batteries.map(b => ({
+                                label: b.id,
+                                value: (b.percent === null ? "—" : b.percent + "%") + " · " + b.status
+                            }))).concat(NetworkState.connections.filter(c => c.state === "activated").map(c => ({
+                                label: c.vpn ? "VPN" : "Network",
+                                value: c.name + "\n" + c.devices.join(", ") + " · " + c.ipv4.concat(c.ipv6).join(", ")
+                            }))).concat(NetworkState.connections.some(c => c.state === "activated") ? [] : [
+                        {
+                            label: "Network",
+                            value: NetworkState.statusError || "Disconnected"
+                        }
+                    ])
                     UI.RowLayout {
                         required property var modelData
                         Layout.fillWidth: true

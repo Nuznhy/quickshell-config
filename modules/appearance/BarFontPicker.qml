@@ -10,7 +10,10 @@ UI.ColumnLayout {
     id: root
     spacing: Design.space8
     property bool expanded: false
-    onVisibleChanged: { if (!visible) expanded = false; }
+    onVisibleChanged: {
+        if (!visible)
+            expanded = false;
+    }
     readonly property var families: Qt.fontFamilies().sort((a, b) => a.localeCompare(b))
     readonly property var matches: families.filter(name => name.toLowerCase().includes(search.text.trim().toLowerCase()))
 
@@ -31,9 +34,13 @@ UI.ColumnLayout {
         }
     }
     UI.Button {
-        highlighted: root.expanded
         id: trigger
-        background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: menu.reveal }
+        highlighted: root.expanded
+        background: UI.SelectTriggerSurface {
+            control: trigger
+            selected: trigger.highlighted
+            reveal: menu.reveal
+        }
         objectName: "bar-font-picker"
         Layout.fillWidth: true
         Layout.minimumWidth: 0
@@ -95,7 +102,8 @@ UI.ColumnLayout {
             }
             onClosed: {
                 root.expanded = false;
-                if (root.visible) trigger.forceActiveFocus();
+                if (root.visible)
+                    trigger.forceActiveFocus();
             }
 
             contentItem: UI.ColumnLayout {
@@ -115,9 +123,9 @@ UI.ColumnLayout {
                         }
                     }
                     onAccepted: {
-                        if (choices.currentIndex >= 0) root.choose(root.matches[choices.currentIndex]);
+                        if (choices.currentIndex >= 0)
+                            root.choose(root.matches[choices.currentIndex]);
                     }
-
                 }
                 ListView {
                     id: choices
@@ -130,8 +138,14 @@ UI.ColumnLayout {
                     keyNavigationEnabled: true
                     highlightMoveDuration: 0
                     ScrollBar.vertical: UI.ScrollBar {}
-                    Keys.onReturnPressed: { if (currentIndex >= 0) root.choose(root.matches[currentIndex]); }
-                    Keys.onEnterPressed: { if (currentIndex >= 0) root.choose(root.matches[currentIndex]); }
+                    Keys.onReturnPressed: {
+                        if (currentIndex >= 0)
+                            root.choose(root.matches[currentIndex]);
+                    }
+                    Keys.onEnterPressed: {
+                        if (currentIndex >= 0)
+                            root.choose(root.matches[currentIndex]);
+                    }
                     delegate: UI.MenuItem {
                         id: option
                         required property string modelData

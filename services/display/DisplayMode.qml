@@ -18,14 +18,16 @@ Singleton {
     readonly property string helper: Quickshell.shellPath("scripts/display/display-mode.py")
 
     function run(action) {
-        if (busy) return;
+        if (busy)
+            return;
         requestPending = true;
         worker.action = action;
         worker.command = ["python3", helper, action];
         worker.running = true;
     }
     function toggle() {
-        if (!available || busy) return;
+        if (!available || busy)
+            return;
         errorMessage = "";
         run("toggle");
     }
@@ -37,8 +39,17 @@ Singleton {
                 refreshTimer.restart();
         }
     }
-    Timer { id: refreshTimer; interval: 500; onTriggered: root.run("status") }
-    Timer { interval: 5000; repeat: true; running: true; onTriggered: root.run("status") }
+    Timer {
+        id: refreshTimer
+        interval: 500
+        onTriggered: root.run("status")
+    }
+    Timer {
+        interval: 5000
+        repeat: true
+        running: true
+        onTriggered: root.run("status")
+    }
     Process {
         id: worker
         property string action: "status"
@@ -51,7 +62,8 @@ Singleton {
                     root.reason = state.reason || "";
                     root.laptop = state.laptop || "";
                     root.outputs = state.outputs || [];
-                    if (state.error || worker.action === "toggle") root.errorMessage = state.error || "";
+                    if (state.error || worker.action === "toggle")
+                        root.errorMessage = state.error || "";
                 } catch (error) {
                     root.available = false;
                     root.errorMessage = "Could not read display mode.";
@@ -61,7 +73,8 @@ Singleton {
         stderr: StdioCollector {}
         onExited: code => {
             root.requestPending = false;
-            if (code !== 0) root.errorMessage = "Display mode helper failed.";
+            if (code !== 0)
+                root.errorMessage = "Display mode helper failed.";
         }
     }
 }

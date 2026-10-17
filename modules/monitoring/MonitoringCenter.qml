@@ -11,11 +11,12 @@ FocusScope {
     property int maximumHeight: 600
     implicitHeight: Math.min(maximumHeight, content.implicitHeight)
     // Only membership changes should recreate graph canvases.
-    readonly property string metricIds: JSON.stringify(SystemStats.metrics
-        .filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null))
-        .map(entry => entry.id))
+    readonly property string metricIds: JSON.stringify(SystemStats.metrics.filter(entry => entry.id === "cpu.power" || entry.available || (SystemStats.history[entry.id] || []).some(point => point.value !== null)).map(entry => entry.id))
     signal dismissed
-    onActiveChanged: { if (active) forceActiveFocus(); }
+    onActiveChanged: {
+        if (active)
+            forceActiveFocus();
+    }
     Keys.onEscapePressed: dismissed()
     component Label: UI.Text {
         color: Design.text
@@ -36,8 +37,15 @@ FocusScope {
             spacing: Design.space12
             UI.RowLayout {
                 Layout.fillWidth: true
-                Label { text: "PC monitoring"; role: "section"; Layout.fillWidth: true }
-                Label { text: "10 min"; color: Design.textSecondary }
+                Label {
+                    text: "PC monitoring"
+                    role: "section"
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "10 min"
+                    color: Design.textSecondary
+                }
             }
             Label {
                 Layout.fillWidth: true
@@ -55,7 +63,12 @@ FocusScope {
                     delegate: UI.Card {
                         id: card
                         required property string modelData
-                        readonly property var metric: SystemStats.metric(modelData) || ({id: modelData, label: "", available: false, reason: ""})
+                        readonly property var metric: SystemStats.metric(modelData) || ({
+                                id: modelData,
+                                label: "",
+                                available: false,
+                                reason: ""
+                            })
                         objectName: "monitoring-graph-" + modelData
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
@@ -73,7 +86,11 @@ FocusScope {
                                 elide: Text.ElideRight
                                 role: "label"
                             }
-                            Label { text: SystemStats.format(card.metric); role: "panel"; font.bold: true }
+                            Label {
+                                text: SystemStats.format(card.metric)
+                                role: "panel"
+                                font.bold: true
+                            }
                             Label {
                                 Layout.fillWidth: true
                                 visible: !card.metric.available
@@ -90,7 +107,11 @@ FocusScope {
                             UI.RowLayout {
                                 Layout.fillWidth: true
                                 visible: card.metric.available || (SystemStats.history[card.metric.id] || []).some(point => point.value !== null)
-                                Label { text: "−10m"; role: "caption"; color: Design.textSecondary }
+                                Label {
+                                    text: "−10m"
+                                    role: "caption"
+                                    color: Design.textSecondary
+                                }
                                 Label {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
@@ -102,7 +123,11 @@ FocusScope {
                                         return "0–" + range + (card.metric.maximum > 0 ? "" : " · peak");
                                     }
                                 }
-                                Label { text: "Now"; role: "caption"; color: Design.textSecondary }
+                                Label {
+                                    text: "Now"
+                                    role: "caption"
+                                    color: Design.textSecondary
+                                }
                             }
                         }
                     }

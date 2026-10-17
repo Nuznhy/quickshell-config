@@ -19,10 +19,26 @@ T.ComboBox {
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : Design.disabledOpacity
-    Binding { target: root; property: "enabled"; value: false; when: root.busy; restoreMode: Binding.RestoreBindingOrValue }
-    onEnabledChanged: { if (!enabled) popup.close(); }
-    HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
-    background: SelectTriggerSurface { control: root; selected: root.popup.visible; reveal: root.popup.reveal }
+    Binding {
+        target: root
+        property: "enabled"
+        value: false
+        when: root.busy
+        restoreMode: Binding.RestoreBindingOrValue
+    }
+    onEnabledChanged: {
+        if (!enabled)
+            popup.close();
+    }
+    HoverHandler {
+        enabled: root.enabled
+        cursorShape: Qt.PointingHandCursor
+    }
+    background: SelectTriggerSurface {
+        control: root
+        selected: root.popup.visible
+        reveal: root.popup.reveal
+    }
     contentItem: UI.Text {
         text: root.displayText
         font: root.font
@@ -50,7 +66,11 @@ T.ComboBox {
         text: root.textAt(index)
         highlighted: root.highlightedIndex === index
         hoverEnabled: true
-        background: ControlSurface { control: option; selected: option.highlighted || root.currentIndex === option.index; radius: 0 }
+        background: ControlSurface {
+            control: option
+            selected: option.highlighted || root.currentIndex === option.index
+            radius: 0
+        }
         contentItem: UI.Text {
             text: option.text
             color: option.highlighted || root.currentIndex === option.index ? Design.textOnAccent : Design.text

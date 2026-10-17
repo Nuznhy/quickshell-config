@@ -4,9 +4,19 @@ import qs.modules.bar
 import qs.config
 
 Item {
-    width: 900; height: 650
-    QtObject { id: fakeBar; signal closeAllPopups }
-    BarSection { id: section; section: "start"; barWindow: fakeBar; width: 300; height: 300 }
+    width: 900
+    height: 650
+    QtObject {
+        id: fakeBar
+        signal closeAllPopups
+    }
+    BarSection {
+        id: section
+        section: "start"
+        barWindow: fakeBar
+        width: 300
+        height: 300
+    }
     TestCase {
         name: "BarSection"
         when: windowShown
@@ -31,7 +41,8 @@ Item {
             tryCompare(section, "naturalLength", 3 * 30 + 2 * 12);
         }
         function test_disabled_and_empty_section() {
-            for (const id of BarLayout.ids("start")) BarLayout.setEnabled(id, false);
+            for (const id of BarLayout.ids("start"))
+                BarLayout.setEnabled(id, false);
             tryCompare(section, "naturalLength", 0);
             BarLayout.setEnabled("tray", true);
             tryCompare(section, "naturalLength", 30);

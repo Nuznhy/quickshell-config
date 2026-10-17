@@ -14,12 +14,17 @@ Singleton {
     property var request: ({})
     property string errorMessage: ""
     readonly property var hyprlandAppearance: ({
-        radius: Theme.barRadius, opacity: Theme.barOpacity,
-        verticalGap: Theme.verticalBar ? Theme.barSideMargin : Theme.barTopMargin,
-        horizontalGap: Theme.verticalBar ? Theme.barTopMargin : Theme.barSideMargin,
-        innerGap: Design.space8, borderWidth: Design.borderWidth
-    })
-    onHyprlandAppearanceChanged: { if (root.ready) hyprlandDebounce.restart(); }
+            radius: Theme.barRadius,
+            opacity: Theme.barOpacity,
+            verticalGap: Theme.verticalBar ? Theme.barSideMargin : Theme.barTopMargin,
+            horizontalGap: Theme.verticalBar ? Theme.barTopMargin : Theme.barSideMargin,
+            innerGap: Design.space8,
+            borderWidth: Design.borderWidth
+        })
+    onHyprlandAppearanceChanged: {
+        if (root.ready)
+            hyprlandDebounce.restart();
+    }
     readonly property bool busy: worker.running
     readonly property string helper: Quickshell.shellPath("scripts/appearance/app-themes.py")
 
@@ -29,13 +34,20 @@ Singleton {
     }
     function setEnabled(id, enabled) {
         const next = Object.assign({}, pending);
-        next[id] = { action: "set", target: id, enabled: enabled };
+        next[id] = {
+            action: "set",
+            target: id,
+            enabled: enabled
+        };
         pending = next;
         pump();
     }
     function retry(id) {
         const next = Object.assign({}, pending);
-        next[id] = { action: "retry", target: id };
+        next[id] = {
+            action: "retry",
+            target: id
+        };
         pending = next;
         pump();
     }
@@ -44,11 +56,11 @@ Singleton {
         debounce.restart();
     }
     function isApplying(id) {
-        return Object.prototype.hasOwnProperty.call(pending, id)
-            || (busy && (request.target === id || (request.action === "sync" && targets.some(t => t.id === id && t.enabled))));
+        return Object.prototype.hasOwnProperty.call(pending, id) || (busy && (request.target === id || (request.action === "sync" && targets.some(t => t.id === id && t.enabled))));
     }
     function pump() {
-        if (busy || !Theme.ready) return;
+        if (busy || !Theme.ready)
+            return;
         let next;
         const ids = Object.keys(pending);
         if (ids.length) {
@@ -58,27 +70,47 @@ Singleton {
             pending = remaining;
         } else if (syncPending && !debounce.running) {
             syncPending = false;
-            next = { action: "sync" };
+            next = {
+                action: "sync"
+            };
         } else if (discoverPending || !ready) {
             discoverPending = false;
-            next = { action: "discover" };
-        } else return;
-        request = Object.assign({}, next, { palette: Theme.palette, nvimPalette: Theme.nvimPalette, mode: Theme.mode, lockScreen: Theme.lockScreen, hyprlandAppearance: root.hyprlandAppearance });
+            next = {
+                action: "discover"
+            };
+        } else
+            return;
+        request = Object.assign({}, next, {
+            palette: Theme.palette,
+            nvimPalette: Theme.nvimPalette,
+            mode: Theme.mode,
+            lockScreen: Theme.lockScreen,
+            hyprlandAppearance: root.hyprlandAppearance
+        });
         errorMessage = "";
         worker.running = true;
     }
     Component.onCompleted: refresh()
     Connections {
         target: Theme
-        function onReadyChanged() { if (Theme.ready) root.refresh(); }
-        function onNvimPaletteChanged() { if (root.ready) root.scheduleSync(); }
-        function onPaletteChanged() { if (root.ready) root.scheduleSync(); }
+        function onReadyChanged() {
+            if (Theme.ready)
+                root.refresh();
+        }
+        function onNvimPaletteChanged() {
+            if (root.ready)
+                root.scheduleSync();
+        }
+        function onPaletteChanged() {
+            if (root.ready)
+                root.scheduleSync();
+        }
         function onLockScreenChanged() {
             // A queued toggle will read the latest options when it starts. Never
             // replace that toggle with a retry; also catch edits during enabling.
-            if (!root.ready || root.pending.hyprlock?.action === "set") return;
-            if (root.targets.some(t => t.id === "hyprlock" && t.enabled)
-                    || (root.busy && root.request.target === "hyprlock" && root.request.enabled === true))
+            if (!root.ready || root.pending.hyprlock?.action === "set")
+                return;
+            if (root.targets.some(t => t.id === "hyprlock" && t.enabled) || (root.busy && root.request.target === "hyprlock" && root.request.enabled === true))
                 root.retry("hyprlock");
         }
     }
@@ -87,13 +119,17 @@ Singleton {
         interval: 250
         onTriggered: {
             // Keep explicit toggles authoritative; they read the latest values.
-            if (root.pending.hyprland?.action === "set") return;
-            if (root.targets.some(t => t.id === "hyprland" && t.enabled)
-                    || (root.busy && root.request.target === "hyprland" && root.request.enabled === true))
+            if (root.pending.hyprland?.action === "set")
+                return;
+            if (root.targets.some(t => t.id === "hyprland" && t.enabled) || (root.busy && root.request.target === "hyprland" && root.request.enabled === true))
                 root.retry("hyprland");
         }
     }
-    Timer { id: debounce; interval: 250; onTriggered: root.pump() }
+    Timer {
+        id: debounce
+        interval: 250
+        onTriggered: root.pump()
+    }
     Process {
         id: worker
         command: ["python3", root.helper, "--state", Quickshell.statePath("app-themes")]
@@ -114,16 +150,21 @@ Singleton {
                             root.scheduleSync();
                         }
                     }
-                } catch (error) { root.errorMessage = "Could not read application theme status."; }
+                } catch (error) {
+                    root.errorMessage = "Could not read application theme status.";
+                }
             }
         }
-        stderr: StdioCollector { id: errors }
+        stderr: StdioCollector {
+            id: errors
+        }
         onExited: code => {
             stdinEnabled = true;
             if (code !== 0 && !root.errorMessage)
                 root.errorMessage = errors.text.trim() || "Application theming failed.";
             // A broken recovery file must not cause an endless startup retry.
-            if (code !== 0 && !root.ready) root.ready = true;
+            if (code !== 0 && !root.ready)
+                root.ready = true;
             Qt.callLater(root.pump);
         }
     }

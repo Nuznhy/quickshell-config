@@ -11,8 +11,17 @@ T.Switch {
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : Design.disabledOpacity
-    Binding { target: root; property: "enabled"; value: false; when: root.busy; restoreMode: Binding.RestoreBindingOrValue }
-    HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
+    Binding {
+        target: root
+        property: "enabled"
+        value: false
+        when: root.busy
+        restoreMode: Binding.RestoreBindingOrValue
+    }
+    HoverHandler {
+        enabled: root.enabled
+        cursorShape: Qt.PointingHandCursor
+    }
     contentItem: Item {}
     indicator: KitSurface {
         kitSlot: "switchIndicator"
@@ -24,6 +33,10 @@ T.Switch {
         color: Design.fill("neutral", root.checked, root.hovered, root.down, root.enabled, Design.accent)
         border.width: root.activeFocus ? Design.focusWidth : Design.borderWidth
         border.color: root.activeFocus ? Design.text : root.hovered && root.enabled ? Design.accent : Design.border
-        Behavior on color { ColorAnimation { duration: Design.durationFast } }
+        Behavior on color {
+            ColorAnimation {
+                duration: Design.durationFast
+            }
+        }
     }
 }

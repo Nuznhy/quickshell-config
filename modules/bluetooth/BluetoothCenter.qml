@@ -16,20 +16,31 @@ FocusScope {
     signal dismissed
     onActiveChanged: {
         BluetoothState.openPanels += active ? 1 : -1;
-        if (active) forceActiveFocus();
-        else { pin.text = ""; forgetTarget = null; }
+        if (active)
+            forceActiveFocus();
+        else {
+            pin.text = "";
+            forgetTarget = null;
+        }
     }
-    Component.onDestruction: { if (active) BluetoothState.openPanels--; }
+    Component.onDestruction: {
+        if (active)
+            BluetoothState.openPanels--;
+    }
     Keys.onEscapePressed: {
-        if (BluetoothState.prompt) BluetoothState.cancel();
-        else if (forgetTarget) forgetTarget = null;
-        else dismissed();
+        if (BluetoothState.prompt)
+            BluetoothState.cancel();
+        else if (forgetTarget)
+            forgetTarget = null;
+        else
+            dismissed();
     }
     Connections {
         target: BluetoothState
         function onPromptChanged() {
             pin.text = "";
-            if (BluetoothState.prompt && promptBox.needsInput && root.active) pin.forceActiveFocus();
+            if (BluetoothState.prompt && promptBox.needsInput && root.active)
+                pin.forceActiveFocus();
         }
     }
     component Label: UI.Text {
@@ -47,7 +58,6 @@ FocusScope {
     }
     component Card: UI.Card {
         Layout.fillWidth: true
-
     }
     component DeviceCard: Card {
         id: deviceCard
@@ -55,17 +65,15 @@ FocusScope {
         implicitHeight: cardContent.implicitHeight + Design.panelPadding * 2
         UI.ColumnLayout {
             id: cardContent
-            x: Design.panelPadding; y: Design.panelPadding
+            x: Design.panelPadding
+            y: Design.panelPadding
             width: parent.width - Design.panelPadding * 2
             spacing: Design.space8
             UI.RowLayout {
                 Layout.fillWidth: true
                 spacing: Design.space8
                 Label {
-                    text: deviceCard.device.icon.indexOf("audio") >= 0 || deviceCard.device.icon.indexOf("head") >= 0 ? "󰋋"
-                        : deviceCard.device.icon.indexOf("keyboard") >= 0 ? "󰌌"
-                        : deviceCard.device.icon.indexOf("mouse") >= 0 ? "󰍽"
-                        : deviceCard.device.icon.indexOf("phone") >= 0 ? "󰏲" : "󰂯"
+                    text: deviceCard.device.icon.indexOf("audio") >= 0 || deviceCard.device.icon.indexOf("head") >= 0 ? "󰋋" : deviceCard.device.icon.indexOf("keyboard") >= 0 ? "󰌌" : deviceCard.device.icon.indexOf("mouse") >= 0 ? "󰍽" : deviceCard.device.icon.indexOf("phone") >= 0 ? "󰏲" : "󰂯"
                     color: deviceCard.device.connected ? Design.accent : Design.textSecondary
                     role: "panel"
                 }
@@ -79,21 +87,20 @@ FocusScope {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: BluetoothState.status(deviceCard.device)
-                            + (deviceCard.device.batteryAvailable ? " · " + Math.round(deviceCard.device.battery * 100) + "% battery" : "")
+                        text: BluetoothState.status(deviceCard.device) + (deviceCard.device.batteryAvailable ? " · " + Math.round(deviceCard.device.battery * 100) + "% battery" : "")
                         color: deviceCard.device.connected ? Design.success : Design.textSecondary
                         role: "caption"
                     }
                 }
                 NotificationButton {
                     objectName: "deviceAction"
-                    text: BluetoothState.changing(deviceCard.device) ? "Working…" : deviceCard.device.connected ? "Disconnect"
-                        : deviceCard.device.paired || deviceCard.device.bonded ? "Connect" : "Pair"
-                    enabled: BluetoothState.enabled && !BluetoothState.busy && !BluetoothState.changing(deviceCard.device)
-                        && !deviceCard.device.blocked
+                    text: BluetoothState.changing(deviceCard.device) ? "Working…" : deviceCard.device.connected ? "Disconnect" : deviceCard.device.paired || deviceCard.device.bonded ? "Connect" : "Pair"
+                    enabled: BluetoothState.enabled && !BluetoothState.busy && !BluetoothState.changing(deviceCard.device) && !deviceCard.device.blocked
                     onClicked: {
-                        if (deviceCard.device.connected) BluetoothState.disconnectDevice(deviceCard.device);
-                        else BluetoothState.connectDevice(deviceCard.device);
+                        if (deviceCard.device.connected)
+                            BluetoothState.disconnectDevice(deviceCard.device);
+                        else
+                            BluetoothState.connectDevice(deviceCard.device);
                     }
                 }
             }
@@ -118,7 +125,8 @@ FocusScope {
     }
     UI.ColumnLayout {
         id: content
-        x: 0; y: 0
+        x: 0
+        y: 0
         width: parent.width
         spacing: Design.space12
         UI.RowLayout {
@@ -150,8 +158,7 @@ FocusScope {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: !BluetoothState.available ? "No Bluetooth adapter" : BluetoothState.blocked ? "Blocked by hardware"
-                            : BluetoothState.enabled ? "On" : "Off"
+                        text: !BluetoothState.available ? "No Bluetooth adapter" : BluetoothState.blocked ? "Blocked by hardware" : BluetoothState.enabled ? "On" : "Off"
                         color: Design.textSecondary
                         role: "caption"
                     }
@@ -170,7 +177,10 @@ FocusScope {
             UI.RowLayout {
                 anchors.fill: parent
                 anchors.margins: Design.panelPadding
-                Label { Layout.fillWidth: true; text: "Allow discovery" }
+                Label {
+                    Layout.fillWidth: true
+                    text: "Allow discovery"
+                }
                 ControlSwitch {
                     objectName: "allowDiscovery"
                     value: BluetoothState.discoverable
@@ -222,7 +232,8 @@ FocusScope {
             border.color: Design.accent
             UI.ColumnLayout {
                 id: promptContent
-                x: Design.panelPadding; y: Design.panelPadding
+                x: Design.panelPadding
+                y: Design.panelPadding
                 width: parent.width - Design.panelPadding * 2
                 spacing: Design.space8
                 Label {
@@ -232,9 +243,7 @@ FocusScope {
                 }
                 Label {
                     Layout.fillWidth: true
-                    text: promptBox.needsInput ? "Enter the code shown on your device"
-                        : BluetoothState.prompt?.kind === "display" ? "Type this code on your device, then press Enter"
-                        : BluetoothState.prompt?.kind === "confirm" ? "Does this code match your device?" : "Allow this device to connect?"
+                    text: promptBox.needsInput ? "Enter the code shown on your device" : BluetoothState.prompt?.kind === "display" ? "Type this code on your device, then press Enter" : BluetoothState.prompt?.kind === "confirm" ? "Does this code match your device?" : "Allow this device to connect?"
                     wrapMode: Text.Wrap
                     color: Design.textSecondary
                     role: "label"
@@ -281,7 +290,8 @@ FocusScope {
             implicitHeight: forgetContent.implicitHeight + Design.panelPadding * 2
             UI.ColumnLayout {
                 id: forgetContent
-                x: Design.panelPadding; y: Design.panelPadding
+                x: Design.panelPadding
+                y: Design.panelPadding
                 width: parent.width - Design.panelPadding * 2
                 spacing: Design.space8
                 Label {
@@ -291,7 +301,10 @@ FocusScope {
                 }
                 UI.RowLayout {
                     Layout.alignment: Qt.AlignRight
-                    NotificationButton { text: "Cancel"; onClicked: root.forgetTarget = null }
+                    NotificationButton {
+                        text: "Cancel"
+                        onClicked: root.forgetTarget = null
+                    }
                     NotificationButton {
                         objectName: "confirmForget"
                         text: "Forget"
@@ -307,10 +320,7 @@ FocusScope {
         UI.ScrollView {
             id: scroll
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(deviceList.implicitHeight, Math.max(100, root.maximumHeight - 218
-                - (promptBox.visible ? promptBox.implicitHeight + 12 : 0)
-                - (forgetBox.visible ? forgetBox.implicitHeight + 12 : 0)
-                - (message.visible ? message.implicitHeight : 0)))
+            Layout.preferredHeight: Math.min(deviceList.implicitHeight, Math.max(100, root.maximumHeight - 218 - (promptBox.visible ? promptBox.implicitHeight + 12 : 0) - (forgetBox.visible ? forgetBox.implicitHeight + 12 : 0) - (message.visible ? message.implicitHeight : 0)))
             contentWidth: availableWidth
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -325,7 +335,10 @@ FocusScope {
                     color: Design.textMuted
                     wrapMode: Text.Wrap
                 }
-                SectionTitle { visible: BluetoothState.enabled; text: "CONNECTED" }
+                SectionTitle {
+                    visible: BluetoothState.enabled
+                    text: "CONNECTED"
+                }
                 Label {
                     visible: BluetoothState.enabled && BluetoothState.connectedDevices.length === 0
                     text: "No connected devices"
@@ -333,9 +346,15 @@ FocusScope {
                 }
                 Repeater {
                     model: BluetoothState.enabled ? BluetoothState.connectedDevices : []
-                    DeviceCard { required property var modelData; device: modelData }
+                    DeviceCard {
+                        required property var modelData
+                        device: modelData
+                    }
                 }
-                SectionTitle { visible: BluetoothState.enabled; text: "PAIRED" }
+                SectionTitle {
+                    visible: BluetoothState.enabled
+                    text: "PAIRED"
+                }
                 Label {
                     visible: BluetoothState.enabled && BluetoothState.savedDevices.length === 0
                     text: "No paired devices"
@@ -343,9 +362,15 @@ FocusScope {
                 }
                 Repeater {
                     model: BluetoothState.enabled ? BluetoothState.savedDevices : []
-                    DeviceCard { required property var modelData; device: modelData }
+                    DeviceCard {
+                        required property var modelData
+                        device: modelData
+                    }
                 }
-                SectionTitle { visible: BluetoothState.enabled; text: "NEARBY" }
+                SectionTitle {
+                    visible: BluetoothState.enabled
+                    text: "NEARBY"
+                }
                 Label {
                     Layout.fillWidth: true
                     visible: BluetoothState.enabled && BluetoothState.nearbyDevices.length === 0
@@ -355,7 +380,10 @@ FocusScope {
                 }
                 Repeater {
                     model: BluetoothState.enabled ? BluetoothState.nearbyDevices : []
-                    DeviceCard { required property var modelData; device: modelData }
+                    DeviceCard {
+                        required property var modelData
+                        device: modelData
+                    }
                 }
             }
         }

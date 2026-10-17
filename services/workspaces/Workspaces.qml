@@ -20,7 +20,8 @@ Singleton {
     function requestRefresh() {
         refreshPending = true;
         // Do not restart a running timer: continuous title events must not starve updates.
-        if (!windowsProc.running && !windowRefresh.running) windowRefresh.start();
+        if (!windowsProc.running && !windowRefresh.running)
+            windowRefresh.start();
     }
     Timer {
         id: windowRefresh
@@ -39,9 +40,7 @@ Singleton {
                 root.workspaceIcons = root.pendingWorkspaceIcons;
         }
     }
-    readonly property var urgentWindowAddresses: Hyprland.toplevels.values
-        .filter(window => window.urgent && !window.activated)
-        .map(window => normalizeAddress(window.address))
+    readonly property var urgentWindowAddresses: Hyprland.toplevels.values.filter(window => window.urgent && !window.activated).map(window => normalizeAddress(window.address))
     readonly property var telegramTrayItems: SystemTray.items.values.filter(item => isTelegram(item.id))
 
     function isTelegram(appId) {
@@ -51,8 +50,7 @@ Singleton {
     function trayHasUnread(item) {
         // Telegram owns these icon states; they survive focus and clear with its badge count.
         const icon = item.icon.toString().split("?")[0];
-        return item.status === Status.NeedsAttention
-            || /-(attention|mute)-(symbolic|panel)$/.test(icon);
+        return item.status === Status.NeedsAttention || /-(attention|mute)-(symbolic|panel)$/.test(icon);
     }
 
     function needsAttention(appId, addresses) {
@@ -72,13 +70,16 @@ Singleton {
     function getWsIcons(wsId) {
         return workspaceIcons[wsId] || [];
     }
-    function getWsWindows(wsId) { return workspaceWindows[wsId] || []; }
+    function getWsWindows(wsId) {
+        return workspaceWindows[wsId] || [];
+    }
     function captureSource(address) {
         return Hyprland.toplevels.values.find(window => normalizeAddress(window.address) === address)?.wayland || null;
     }
 
     function focusWindow(address) {
-        if (!/^0x[0-9a-f]+$/i.test(address || "")) return;
+        if (!/^0x[0-9a-f]+$/i.test(address || ""))
+            return;
         Quickshell.execDetached(["bash", Quickshell.shellPath("scripts/workspaces/focus-window.sh"), address]);
     }
 
@@ -89,7 +90,8 @@ Singleton {
         } catch (error) {
             return; // Keep the last good state if hyprctl is temporarily unavailable.
         }
-        if (!Array.isArray(clients)) return;
+        if (!Array.isArray(clients))
+            return;
         const previews = ServiceScripts.WorkspacePreviewData.windows(clients);
         const previewJson = JSON.stringify(previews);
         if (previewJson !== windowsJson) {
@@ -113,7 +115,10 @@ Singleton {
             onStreamFinished: root.updateWindows(text)
         }
         Component.onCompleted: root.requestRefresh()
-        onExited: { if (root.refreshPending) Qt.callLater(root.requestRefresh); }
+        onExited: {
+            if (root.refreshPending)
+                Qt.callLater(root.requestRefresh);
+        }
     }
 
     // Update on Hyprland events
@@ -133,6 +138,5 @@ Singleton {
     }
 
     property int activeWorkspaceId: Hyprland.focusedWorkspace?.id ?? 1
-    readonly property var occupiedWorkspaceIds: Object.keys(workspaceIcons)
-        .map(id => Number(id)).sort((a, b) => a - b)
+    readonly property var occupiedWorkspaceIds: Object.keys(workspaceIcons).map(id => Number(id)).sort((a, b) => a - b)
 }

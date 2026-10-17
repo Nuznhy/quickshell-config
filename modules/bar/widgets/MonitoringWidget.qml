@@ -34,7 +34,12 @@ DropdownWidget {
             delegate: Item {
                 id: cell
                 required property string modelData
-                readonly property var metric: SystemStats.metric(modelData) || ({id: modelData, label: "", available: false, reason: ""})
+                readonly property var metric: SystemStats.metric(modelData) || ({
+                        id: modelData,
+                        label: "",
+                        available: false,
+                        reason: ""
+                    })
                 objectName: "monitoring-cell-" + modelData
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 readonly property bool longMode: Monitoring.mode(modelData) === "long"
@@ -61,8 +66,7 @@ DropdownWidget {
                     x: Theme.verticalBar ? 0 : 24
                     y: Theme.verticalBar ? Math.max(23, Theme.fontSize + 5) : (parent.height - height) / 2 - 3
                     width: Theme.verticalBar ? parent.width : parent.width - 24
-                    text: Theme.verticalBar && cell.metric.unit === "B" && cell.metric.available
-                        ? (cell.metric.value / 1073741824).toFixed(1) + "G\n/" + (cell.metric.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.metric)
+                    text: Theme.verticalBar && cell.metric.unit === "B" && cell.metric.available ? (cell.metric.value / 1073741824).toFixed(1) + "G\n/" + (cell.metric.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.metric)
                     horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
                     color: cell.metric.available ? Design.text : Design.textSecondary
                     font.family: Theme.barFontFamily
@@ -80,7 +84,11 @@ DropdownWidget {
                         height: parent.height
                         radius: parent.radius
                         color: Design.accent
-                        Behavior on width { NumberAnimation { duration: 180 } }
+                        Behavior on width {
+                            NumberAnimation {
+                                duration: 180
+                            }
+                        }
                     }
                 }
                 Accessible.name: cell.metric.label

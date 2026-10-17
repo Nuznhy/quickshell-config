@@ -19,7 +19,8 @@ UI.Slider {
     // Do not rebind on release: retain the user's value until fresh state arrives.
     Component.onCompleted: value = level
     onLevelChanged: {
-        if (!pressed && !pendingChange) value = level;
+        if (!pressed && !pendingChange)
+            value = level;
     }
     function sendValue() {
         pendingChange = false;
@@ -28,14 +29,19 @@ UI.Slider {
     }
     onMoved: {
         pendingChange = true;
-        if (!updateTimer.running) sendValue();
+        if (!updateTimer.running)
+            sendValue();
     }
     onPressedChanged: {
-        if (!pressed && pendingChange) sendValue();
+        if (!pressed && pendingChange)
+            sendValue();
     }
     Timer {
         id: updateTimer
         interval: 60
-        onTriggered: { if (root.pendingChange) root.sendValue(); }
+        onTriggered: {
+            if (root.pendingChange)
+                root.sendValue();
+        }
     }
 }

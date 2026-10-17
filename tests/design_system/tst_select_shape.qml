@@ -5,11 +5,14 @@ import qs.config
 
 Rectangle {
     id: scene
-    width: 400; height: 400
+    width: 400
+    height: 400
     color: "#ff00ff"
     UI.ComboBox {
         id: selector
-        x: 40; y: 40; width: 280
+        x: 40
+        y: 40
+        width: 280
         model: ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota"]
     }
     TestCase {

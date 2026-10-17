@@ -7,7 +7,12 @@ Rectangle {
     width: 800
     height: 390
     color: Theme.bg
-    WallpaperSelector { id: selector; x: 20; y: 20; width: 760 }
+    WallpaperSelector {
+        id: selector
+        x: 20
+        y: 20
+        width: 760
+    }
     TestCase {
         name: "Wallpapers"
         when: windowShown
@@ -19,15 +24,32 @@ Rectangle {
             Theme.separateWallpapers = false;
             Theme.mode = "dark";
             selector.wallpaperMode = Qt.binding(() => Theme.separateWallpapers ? Theme.mode : "shared");
-            Theme.connectedScreens = [{name: "DP-1"}, {name: "HDMI-A-1"}];
+            Theme.connectedScreens = [
+                {
+                    name: "DP-1"
+                },
+                {
+                    name: "HDMI-A-1"
+                }
+            ];
             selector.width = 760;
             wait(20);
         }
-        function card(name) { return findChild(selector, "wallpaper-card-" + name); }
+        function card(name) {
+            return findChild(selector, "wallpaper-card-" + name);
+        }
         function drop(urls, actions) {
-            return {urls: urls, hasUrls: urls.length > 0, supportedActions: actions,
-                accepted: false, action: Qt.IgnoreAction,
-                accept: function(action) { this.accepted = true; this.action = action; }};
+            return {
+                urls: urls,
+                hasUrls: urls.length > 0,
+                supportedActions: actions,
+                accepted: false,
+                action: Qt.IgnoreAction,
+                accept: function (action) {
+                    this.accepted = true;
+                    this.action = action;
+                }
+            };
         }
         function test_grid_wraps_without_overflow() {
             compare(selector.columns, 2);
@@ -50,9 +72,7 @@ Rectangle {
         }
         function test_rejects_remote_multiple_and_move_only_drops() {
             const image = Qt.resolvedUrl("test wallpaper.svg").toString();
-            for (const event of [drop(["https://example.com/image.png"], Qt.CopyAction),
-                                 drop([image, image], Qt.CopyAction), drop([image], Qt.MoveAction),
-                                 drop([], Qt.CopyAction)]) {
+            for (const event of [drop(["https://example.com/image.png"], Qt.CopyAction), drop([image, image], Qt.CopyAction), drop([image], Qt.MoveAction), drop([], Qt.CopyAction)]) {
                 card("DP-1").acceptDrop(event);
                 compare(event.accepted, false);
             }
@@ -71,7 +91,11 @@ Rectangle {
             compare(card("DP-1").errorMessage, "");
         }
         function test_disconnected_monitor_cannot_receive_picker_result() {
-            Theme.connectedScreens = [{name: "DP-1"}];
+            Theme.connectedScreens = [
+                {
+                    name: "DP-1"
+                }
+            ];
             wait(20);
             selector.choose("HDMI-A-1", Qt.resolvedUrl("test wallpaper.svg"));
             wait(30);

@@ -19,23 +19,30 @@ FocusScope {
     property date agendaDate: selectedDate
     readonly property var dayEvents: agenda.eventsOn(selectedDate)
     property string renderedAgenda: ""
-    ListModel { id: eventModel }
+    ListModel {
+        id: eventModel
+    }
 
     function agendaRows() {
-        return dayEvents.map(event => ({title: event.title, calendar: event.calendar,
-            timeLabel: event.allDay ? "All day" :
-                Qt.formatDateTime(new Date(event.start), "hh:mm") + " – " +
-                Qt.formatDateTime(new Date(event.end), sameDay(new Date(event.start), new Date(event.end)) ? "hh:mm" : "ddd hh:mm")}));
+        return dayEvents.map(event => ({
+                    title: event.title,
+                    calendar: event.calendar,
+                    timeLabel: event.allDay ? "All day" : Qt.formatDateTime(new Date(event.start), "hh:mm") + " – " + Qt.formatDateTime(new Date(event.end), sameDay(new Date(event.start), new Date(event.end)) ? "hh:mm" : "ddd hh:mm")
+                }));
     }
     function commitAgenda() {
         const rows = agendaRows();
         // Keep one model and update existing rows instead of resetting the view.
         for (let i = 0; i < rows.length; ++i) {
-            if (i < eventModel.count) eventModel.set(i, rows[i]);
-            else eventModel.append(rows[i]);
+            if (i < eventModel.count)
+                eventModel.set(i, rows[i]);
+            else
+                eventModel.append(rows[i]);
         }
-        if (eventModel.count > rows.length) eventModel.remove(rows.length, eventModel.count - rows.length);
-        if (!sameDay(agendaDate, selectedDate)) eventList.positionViewAtBeginning();
+        if (eventModel.count > rows.length)
+            eventModel.remove(rows.length, eventModel.count - rows.length);
+        if (!sameDay(agendaDate, selectedDate))
+            eventList.positionViewAtBeginning();
         agendaDate = selectedDate;
         renderedAgenda = Qt.formatDate(selectedDate, "yyyy-MM-dd") + JSON.stringify(rows);
     }
@@ -48,16 +55,31 @@ FocusScope {
             return;
         }
         const next = Qt.formatDate(selectedDate, "yyyy-MM-dd") + JSON.stringify(agendaRows());
-        if (next === renderedAgenda) return;
+        if (next === renderedAgenda)
+            return;
         dayTransition.restart();
     }
     onDayEventsChanged: Qt.callLater(updateAgenda)
     onSelectedDateChanged: Qt.callLater(updateAgenda)
     SequentialAnimation {
         id: dayTransition
-        NumberAnimation { target: agendaBody; property: "opacity"; to: 0; duration: 65; easing.type: Easing.OutQuad }
-        ScriptAction { script: root.commitAgenda() }
-        NumberAnimation { target: agendaBody; property: "opacity"; to: 1; duration: 115; easing.type: Easing.OutQuad }
+        NumberAnimation {
+            target: agendaBody
+            property: "opacity"
+            to: 0
+            duration: 65
+            easing.type: Easing.OutQuad
+        }
+        ScriptAction {
+            script: root.commitAgenda()
+        }
+        NumberAnimation {
+            target: agendaBody
+            property: "opacity"
+            to: 1
+            duration: 115
+            easing.type: Easing.OutQuad
+        }
     }
 
     CalendarEvents {
@@ -69,8 +91,7 @@ FocusScope {
     }
 
     function sameDay(a, b) {
-        return a.getFullYear() === b.getFullYear()
-            && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     }
 
     function reset() {
@@ -107,7 +128,6 @@ FocusScope {
         id: control
         font.family: Design.fontFamily
         font.pixelSize: Design.bodySize
-
     }
 
     component MonthButton: CalendarButton {
@@ -134,9 +154,16 @@ FocusScope {
                     fillColor: "transparent"
                     capStyle: ShapePath.RoundCap
                     joinStyle: ShapePath.RoundJoin
-                    startX: 8; startY: 2
-                    PathLine { x: 4; y: 6 }
-                    PathLine { x: 8; y: 10 }
+                    startX: 8
+                    startY: 2
+                    PathLine {
+                        x: 4
+                        y: 6
+                    }
+                    PathLine {
+                        x: 8
+                        y: 10
+                    }
                 }
             }
         }
@@ -164,8 +191,12 @@ FocusScope {
             Row {
                 anchors.right: parent.right
                 spacing: Design.space4
-                MonthButton { direction: -1 }
-                MonthButton { direction: 1 }
+                MonthButton {
+                    direction: -1
+                }
+                MonthButton {
+                    direction: 1
+                }
             }
         }
 
@@ -193,9 +224,9 @@ FocusScope {
                 Repeater {
                     model: 42
                     UI.Button {
+                        id: dayCell
                         highlighted: isToday || selected
                         variant: "ghost"
-                        id: dayCell
                         required property int index
                         readonly property date cellDate: root.dateAt(index)
                         readonly property bool isToday: root.sameDay(cellDate, root.today)
@@ -224,7 +255,9 @@ FocusScope {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 3
-                            width: 4; height: 4; radius: 2
+                            width: 4
+                            height: 4
+                            radius: 2
                             color: dayCell.highlighted ? Design.textOnAccent : Design.accent
                             visible: CalendarFeed.enabled && agenda.eventsOn(dayCell.cellDate).length > 0
                         }
@@ -233,7 +266,10 @@ FocusScope {
             }
         }
 
-        UI.Divider { width: parent.width; height: implicitHeight }
+        UI.Divider {
+            width: parent.width
+            height: implicitHeight
+        }
 
         Item {
             width: parent.width
@@ -252,12 +288,12 @@ FocusScope {
             CalendarButton {
                 id: todayButton
                 anchors.right: parent.right
-                width: 64; height: 30
+                width: 64
+                height: 30
                 text: "Today"
                 onClicked: root.reset()
             }
         }
-
     }
     Rectangle {
         visible: CalendarFeed.enabled
@@ -280,7 +316,11 @@ FocusScope {
             Column {
                 width: parent.width - refreshButton.width - parent.spacing
                 spacing: Design.space4
-                UI.Text { text: "Events"; role: "section"; font.bold: true }
+                UI.Text {
+                    text: "Events"
+                    role: "section"
+                    font.bold: true
+                }
                 UI.Text {
                     width: parent.width
                     text: Qt.formatDate(root.agendaDate, "dddd, d MMMM")
@@ -309,7 +349,9 @@ FocusScope {
             elide: Text.ElideRight
             role: "caption"
             color: agenda.errorMessage ? Design.warning : Design.textSecondary
-            HoverHandler { id: statusHover }
+            HoverHandler {
+                id: statusHover
+            }
             ToolTip.visible: statusHover.hovered && agenda.errorMessage.length > 0
             ToolTip.text: agenda.errorMessage
         }
@@ -346,7 +388,8 @@ FocusScope {
                     width: eventList.width - Design.space12
                     height: eventContent.implicitHeight + Design.space24
                     Rectangle {
-                        x: 0; y: Design.space12
+                        x: 0
+                        y: Design.space12
                         width: 3
                         height: parent.height - Design.space24
                         radius: 1.5

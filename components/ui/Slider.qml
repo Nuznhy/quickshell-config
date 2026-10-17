@@ -13,7 +13,10 @@ T.Slider {
     focusPolicy: Qt.StrongFocus
     wheelEnabled: false
     opacity: enabled ? 1 : Design.disabledOpacity
-    HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
+    HoverHandler {
+        enabled: root.enabled
+        cursorShape: Qt.PointingHandCursor
+    }
     background: KitSurface {
         kitSlot: "sliderTrack"
         control: root

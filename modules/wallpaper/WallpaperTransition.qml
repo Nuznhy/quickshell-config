@@ -26,28 +26,40 @@ Item {
     property int activeStyle: 0
     property bool completed: false
 
-    function bufferFor(index) { return index === 0 ? first : second; }
-    function schedule() { if (completed) Qt.callLater(updateTarget); }
+    function bufferFor(index) {
+        return index === 0 ? first : second;
+    }
+    function schedule() {
+        if (completed)
+            Qt.callLater(updateTarget);
+    }
     function updateTarget() {
-        if (!ready) return;
+        if (!ready)
+            return;
         const target = source.toString();
         const modeChanged = previousMode !== mode;
         previousMode = mode;
         // Settle the in-flight transition before accepting the latest request.
         // This bounds memory to two image buffers even during rapid toggling.
-        if (transitioning) finish();
-        if (pendingIndex >= 0) bufferFor(pendingIndex).imageSource = "";
+        if (transitioning)
+            finish();
+        if (pendingIndex >= 0)
+            bufferFor(pendingIndex).imageSource = "";
         pendingIndex = -1;
         pendingSource = "";
         errorMessage = "";
-        if (target === displayedSource) return;
+        if (target === displayedSource)
+            return;
         animatePending = modeChanged && frontIndex >= 0;
         activeStyle = style;
         progress = 0;
         clearing = target === "";
         if (clearing) {
-            if (animatePending) { transitioning = true; reveal.start(); }
-            else finish();
+            if (animatePending) {
+                transitioning = true;
+                reveal.start();
+            } else
+                finish();
             return;
         }
         pendingSource = target;
@@ -56,11 +68,15 @@ Item {
         imageChanged(pendingIndex, bufferFor(pendingIndex).imageStatus);
     }
     function imageChanged(index, status) {
-        if (index < 0 || index !== pendingIndex || transitioning) return;
+        if (index < 0 || index !== pendingIndex || transitioning)
+            return;
         const image = bufferFor(index);
         if (status === Image.Ready) {
-            if (animatePending) { transitioning = true; reveal.start(); }
-            else finish();
+            if (animatePending) {
+                transitioning = true;
+                reveal.start();
+            } else
+                finish();
         } else if (status === Image.Error) {
             errorMessage = "Could not load wallpaper: " + pendingSource;
             console.warn(errorMessage);
@@ -77,12 +93,16 @@ Item {
         pendingIndex = -1;
         transitioning = false;
         progress = 0;
-        if (oldFront >= 0 && oldFront !== frontIndex) bufferFor(oldFront).imageSource = "";
+        if (oldFront >= 0 && oldFront !== frontIndex)
+            bufferFor(oldFront).imageSource = "";
     }
     onSourceChanged: schedule()
     onModeChanged: schedule()
     onReadyChanged: schedule()
-    Component.onCompleted: { completed = true; schedule(); }
+    Component.onCompleted: {
+        completed = true;
+        schedule();
+    }
 
     NumberAnimation {
         id: reveal
@@ -104,8 +124,7 @@ Item {
         anchors.fill: parent
         visible: root.frontIndex === index || incoming
         z: incoming ? 1 : 0
-        opacity: root.clearing && root.transitioning ? 1 - root.progress
-            : incoming && root.activeStyle < 2 ? root.progress : 1
+        opacity: root.clearing && root.transitioning ? 1 - root.progress : incoming && root.activeStyle < 2 ? root.progress : 1
         scale: incoming && root.activeStyle === 1 ? 1.06 - 0.06 * root.progress : 1
         // Fade the image and its opaque background as one surface.
         layer.enabled: opacity > 0 && opacity < 1
@@ -116,11 +135,16 @@ Item {
             height: buffer.incoming && (root.activeStyle === 4 || root.activeStyle === 5) ? root.height * root.progress : root.height
             x: buffer.incoming && root.activeStyle === 3 ? root.width - width : 0
             y: buffer.incoming && root.activeStyle === 5 ? root.height - height : 0
-            Rectangle { anchors.fill: parent; color: root.backgroundColor }
+            Rectangle {
+                anchors.fill: parent
+                color: root.backgroundColor
+            }
             Image {
                 id: image
-                x: -viewport.x; y: -viewport.y
-                width: root.width; height: root.height
+                x: -viewport.x
+                y: -viewport.y
+                width: root.width
+                height: root.height
                 asynchronous: true
                 cache: false
                 fillMode: Image.PreserveAspectCrop
@@ -129,6 +153,12 @@ Item {
             }
         }
     }
-    Layer { id: first; index: 0 }
-    Layer { id: second; index: 1 }
+    Layer {
+        id: first
+        index: 0
+    }
+    Layer {
+        id: second
+        index: 1
+    }
 }

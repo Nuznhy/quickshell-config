@@ -16,9 +16,13 @@ FocusScope {
     signal dismissed
     onActiveChanged: {
         Brightness.openPanels += active ? 1 : -1;
-        if (active) forceActiveFocus();
+        if (active)
+            forceActiveFocus();
     }
-    Component.onDestruction: { if (active) Brightness.openPanels--; }
+    Component.onDestruction: {
+        if (active)
+            Brightness.openPanels--;
+    }
     Keys.onEscapePressed: dismissed()
     component Label: UI.Text {
         color: Design.text
@@ -38,7 +42,11 @@ FocusScope {
             spacing: Design.space12
             UI.RowLayout {
                 Layout.fillWidth: true
-                Label { text: "Brightness"; role: "section"; Layout.fillWidth: true }
+                Label {
+                    text: "Brightness"
+                    role: "section"
+                    Layout.fillWidth: true
+                }
                 NotificationButton {
                     text: Brightness.loading ? "Detecting…" : "Refresh"
                     enabled: !Brightness.loading && !Brightness.changing
@@ -55,15 +63,27 @@ FocusScope {
 
                     UI.ColumnLayout {
                         id: details
-                        x: Design.panelPadding; y: Design.panelPadding
+                        x: Design.panelPadding
+                        y: Design.panelPadding
                         width: parent.width - Design.panelPadding * 2
                         spacing: Design.space4
                         UI.RowLayout {
                             Layout.fillWidth: true
-                            Label { text: card.modelData.name; Layout.fillWidth: true }
-                            Label { text: card.modelData.supported ? Math.round(slider.value) + "%" : "Unavailable"; color: Design.textSecondary }
+                            Label {
+                                text: card.modelData.name
+                                Layout.fillWidth: true
+                            }
+                            Label {
+                                text: card.modelData.supported ? Math.round(slider.value) + "%" : "Unavailable"
+                                color: Design.textSecondary
+                            }
                         }
-                        Label { text: card.modelData.connection; color: Design.textSecondary; role: "caption"; Layout.fillWidth: true }
+                        Label {
+                            text: card.modelData.connection
+                            color: Design.textSecondary
+                            role: "caption"
+                            Layout.fillWidth: true
+                        }
                         AudioSlider {
                             id: slider
                             Layout.fillWidth: true

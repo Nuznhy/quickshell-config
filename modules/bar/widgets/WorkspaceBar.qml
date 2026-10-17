@@ -91,7 +91,12 @@ Grid {
                     easing.type: Easing.OutCubic
                 }
             }
-            Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on height {
+                NumberAnimation {
+                    duration: 220
+                    easing.type: Easing.OutCubic
+                }
+            }
             Behavior on reveal {
                 NumberAnimation {
                     duration: 240
@@ -132,8 +137,10 @@ Grid {
                 HoverHandler {
                     id: workspaceHover
                     onHoveredChanged: {
-                        if (hovered && wsSlot.present) preview.request(wsRect.wsId, wsRect, appIcons.hoveredAddress);
-                        else preview.leave(wsRect.wsId);
+                        if (hovered && wsSlot.present)
+                            preview.request(wsRect.wsId, wsRect, appIcons.hoveredAddress);
+                        else
+                            preview.leave(wsRect.wsId);
                     }
                 }
 
@@ -181,8 +188,7 @@ Grid {
                     Item {
                         objectName: "workspace-separator-" + wsRect.wsId
                         readonly property bool dot: WorkspaceAppearance.separator === "·"
-                        width: dot ? 3 : Theme.verticalBar
-                            ? Math.min(separatorMetrics.advanceWidth, Theme.sideBarWidth - 26) : separatorMetrics.advanceWidth
+                        width: dot ? 3 : Theme.verticalBar ? Math.min(separatorMetrics.advanceWidth, Theme.sideBarWidth - 26) : separatorMetrics.advanceWidth
                         height: dot ? 3 : separatorMetrics.boundingRect.height
                         visible: iconGroup.visible && WorkspaceAppearance.separator !== ""
                         opacity: 0.6
@@ -199,8 +205,8 @@ Grid {
                             color: wsRect.isActive ? Design.danger : Design.text
                         }
                         UI.Text {
-                            role: "bar"
                             id: separatorText
+                            role: "bar"
                             anchors.fill: parent
                             visible: !parent.dot
                             text: WorkspaceAppearance.separator

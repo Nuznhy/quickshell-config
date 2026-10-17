@@ -10,12 +10,19 @@ Item {
     property bool expanded: false
     readonly property var activePreset: Theme.presets.find(preset => preset.id === Theme.preset) || Theme.presets[0]
     implicitHeight: 80
-    onVisibleChanged: { if (!visible) expanded = false; }
+    onVisibleChanged: {
+        if (!visible)
+            expanded = false;
+    }
 
     UI.Button {
-        highlighted: root.expanded
         id: trigger
-        background: UI.SelectTriggerSurface { control: trigger; selected: trigger.highlighted; reveal: menu.reveal }
+        highlighted: root.expanded
+        background: UI.SelectTriggerSurface {
+            control: trigger
+            selected: trigger.highlighted
+            reveal: menu.reveal
+        }
         anchors.fill: parent
         enabled: Theme.ready
         leftPadding: Design.space12
@@ -69,8 +76,8 @@ Item {
                 Repeater {
                     model: Theme.presets
                     UI.MenuItem {
-                        highlighted: selectedTheme
                         id: choice
+                        highlighted: selectedTheme
                         required property var modelData
                         readonly property bool selectedTheme: modelData.id === Theme.preset
                         Layout.fillWidth: true

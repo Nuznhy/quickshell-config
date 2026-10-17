@@ -12,9 +12,21 @@ TestCase {
     height: 340
     visible: true
     when: windowShown
-    QuickSettings { id: panel; x: 12; y: 12; width: 306; height: implicitHeight }
-    SignalSpy { id: settingsSpy; target: panel; signalName: "settingsRequested" }
-    function control(name) { return findChild(panel, name); }
+    QuickSettings {
+        id: panel
+        x: 12
+        y: 12
+        width: 306
+        height: implicitHeight
+    }
+    SignalSpy {
+        id: settingsSpy
+        target: panel
+        signalName: "settingsRequested"
+    }
+    function control(name) {
+        return findChild(panel, name);
+    }
     function init() {
         panel.active = false;
         Theme.mode = "dark";
@@ -69,10 +81,12 @@ TestCase {
         verify(row.visible);
         // Exercise the real Slider via its keyboard control.
         function findSlider(item) {
-            if (item.from !== undefined && item.to !== undefined) return item;
+            if (item.from !== undefined && item.to !== undefined)
+                return item;
             for (const child of item.children || []) {
                 let result = findSlider(child);
-                if (result) return result;
+                if (result)
+                    return result;
             }
             return null;
         }

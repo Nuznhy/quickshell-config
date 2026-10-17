@@ -12,30 +12,53 @@ Singleton {
     readonly property var registry: ConfigScripts.BarLayoutData.widgets
     signal aboutToChange
 
-    function ids(section) { return state.sections[section] || []; }
-    function isEnabled(id) { return !state.disabled.includes(id); }
-    function entry(id) { return ConfigScripts.BarLayoutData.widget(id); }
+    function ids(section) {
+        return state.sections[section] || [];
+    }
+    function isEnabled(id) {
+        return !state.disabled.includes(id);
+    }
+    function entry(id) {
+        return ConfigScripts.BarLayoutData.widget(id);
+    }
     function commit(next) {
-        if (!ready || (!errorMessage && JSON.stringify(next) === JSON.stringify(state))) return;
+        if (!ready || (!errorMessage && JSON.stringify(next) === JSON.stringify(state)))
+            return;
         aboutToChange();
         state = next;
         errorMessage = "";
         saveTimer.restart();
     }
-    function move(id, section, index) { commit(ConfigScripts.BarLayoutData.move(state, id, section, index)); }
-    function setEnabled(id, enabled) { commit(ConfigScripts.BarLayoutData.setEnabled(state, id, enabled)); }
-    function reset() { commit(ConfigScripts.BarLayoutData.defaults()); }
-    function save() { file.setText(JSON.stringify(state, null, 2) + "\n"); }
+    function move(id, section, index) {
+        commit(ConfigScripts.BarLayoutData.move(state, id, section, index));
+    }
+    function setEnabled(id, enabled) {
+        commit(ConfigScripts.BarLayoutData.setEnabled(state, id, enabled));
+    }
+    function reset() {
+        commit(ConfigScripts.BarLayoutData.defaults());
+    }
+    function save() {
+        file.setText(JSON.stringify(state, null, 2) + "\n");
+    }
 
-    Timer { id: saveTimer; interval: 250; onTriggered: root.save() }
+    Timer {
+        id: saveTimer
+        interval: 250
+        onTriggered: root.save()
+    }
     FileView {
         id: file
         path: Quickshell.statePath("bar-layout.json")
         printErrors: false
         onLoaded: {
-            if (root.ready) return;
-            try { root.state = ConfigScripts.BarLayoutData.normalize(JSON.parse(text())); }
-            catch (error) { root.errorMessage = "Could not read the bar layout. Default layout restored."; }
+            if (root.ready)
+                return;
+            try {
+                root.state = ConfigScripts.BarLayoutData.normalize(JSON.parse(text()));
+            } catch (error) {
+                root.errorMessage = "Could not read the bar layout. Default layout restored.";
+            }
             root.ready = true;
         }
         onLoadFailed: error => {

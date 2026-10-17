@@ -5,9 +5,15 @@ import qs.config
 import qs.services.appearance
 
 Rectangle {
-    width: 760; height: 680
+    width: 760
+    height: 680
     color: Theme.bg
-    LockScreenSettings { id: panel; x: 20; y: 20; width: parent.width - 40 }
+    LockScreenSettings {
+        id: panel
+        x: 20
+        y: 20
+        width: parent.width - 40
+    }
     TestCase {
         name: "LockScreenSettings"
         when: windowShown
@@ -51,7 +57,8 @@ Rectangle {
             input.forceActiveFocus();
             input.selectAll();
             keyClick(Qt.Key_NumberSign);
-            for (let i = 0; i < 6; ++i) keyClick(Qt.Key_A);
+            for (let i = 0; i < 6; ++i)
+                keyClick(Qt.Key_A);
             compare(Theme.lockBackgroundColor, "#aaaaaa");
             mouseClick(findChild(panel, "lock-background-theme"));
             compare(Theme.lockBackgroundMode, "theme");

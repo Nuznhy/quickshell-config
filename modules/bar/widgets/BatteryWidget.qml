@@ -21,7 +21,10 @@ DropdownWidget {
     // Allow the authentication agent to receive focus while applying a limit.
     focusGrabEnabled: !BatteryState.changing
     popupDismissEnabled: !BatteryState.changing
-    onVisibleChanged: { if (!visible) dropdownOpen = false; }
+    onVisibleChanged: {
+        if (!visible)
+            dropdownOpen = false;
+    }
     UI.GridLayout {
         id: cells
         anchors.verticalCenter: parent.verticalCenter

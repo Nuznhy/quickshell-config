@@ -4,8 +4,13 @@ import qs.modules.settings
 import qs.config
 
 Item {
-    width: 900; height: 620
-    BarLayoutEditor { id: editor; anchors.fill: parent; anchors.margins: 20 }
+    width: 900
+    height: 620
+    BarLayoutEditor {
+        id: editor
+        anchors.fill: parent
+        anchors.margins: 20
+    }
     TestCase {
         name: "BarLayoutEditor"
         when: windowShown
@@ -39,7 +44,11 @@ Item {
             mouseClick(control("toggle-clock"));
             verify(BarLayout.isEnabled("clock"));
         }
-        SignalSpy { id: settingsSpy; target: editor; signalName: "settingsRequested" }
+        SignalSpy {
+            id: settingsSpy
+            target: editor
+            signalName: "settingsRequested"
+        }
         function test_monitoring_gear_does_not_drag_or_toggle() {
             settingsSpy.clear();
             verify(!BarLayout.isEnabled("monitoring"));

@@ -9,12 +9,8 @@ Item {
     implicitWidth: Math.max(30, Theme.fontSize + 8)
     implicitHeight: Settings.barHeight
     activeFocusOnTab: true
-    readonly property string actionText: DisplayMode.mirrored
-        ? "Restore configured monitor layout" : "Duplicate laptop screen"
-    readonly property string description: DisplayMode.changing ? "Changing displays…"
-        : DisplayMode.errorMessage || (!DisplayMode.available ? DisplayMode.reason
-        : actionText + "\n" + DisplayMode.laptop + " → " + DisplayMode.outputs.join(", ")
-            + (DisplayMode.mirrored ? "" : "\nAutomatic resolution"))
+    readonly property string actionText: DisplayMode.mirrored ? "Restore configured monitor layout" : "Duplicate laptop screen"
+    readonly property string description: DisplayMode.changing ? "Changing displays…" : DisplayMode.errorMessage || (!DisplayMode.available ? DisplayMode.reason : actionText + "\n" + DisplayMode.laptop + " → " + DisplayMode.outputs.join(", ") + (DisplayMode.mirrored ? "" : "\nAutomatic resolution"))
     Accessible.role: Accessible.Button
     Accessible.name: actionText
     Accessible.description: description
@@ -31,8 +27,7 @@ Item {
         role: "bar"
         anchors.centerIn: parent
         text: DisplayMode.mirrored ? "󰍺" : "󰍹"
-        color: DisplayMode.errorMessage ? Design.danger : !DisplayMode.available ? Design.textSecondary
-            : DisplayMode.mirrored ? Design.accent : Design.text
+        color: DisplayMode.errorMessage ? Design.danger : !DisplayMode.available ? Design.textSecondary : DisplayMode.mirrored ? Design.accent : Design.text
         font.family: Design.fontFamily
         font.pixelSize: Theme.fontSize
     }

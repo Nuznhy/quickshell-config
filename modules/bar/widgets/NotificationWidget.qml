@@ -35,7 +35,9 @@ DropdownWidget {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.topMargin: Design.space8
-            width: 6; height: 6; radius: Design.radiusSmall
+            width: 6
+            height: 6
+            radius: Design.radiusSmall
             color: Design.danger
         }
     }

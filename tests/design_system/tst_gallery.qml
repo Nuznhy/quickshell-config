@@ -7,16 +7,27 @@ import qs.kits as KitScripts
 Item {
     width: 960
     height: 820
-    Gallery { id: gallery; anchors.fill: parent }
+    Gallery {
+        id: gallery
+        anchors.fill: parent
+    }
     TestCase {
         name: "DesignGallery"
         when: windowShown
-        function cleanupTestCase() { gallery.kit = "default"; }
+        function cleanupTestCase() {
+            gallery.kit = "default";
+        }
         function test_render_palettes_data() {
             const rows = [];
             for (const kit of KitScripts.Registry.kits) {
                 for (const p of ConfigScripts.Palettes.presets) {
-                    for (const mode of ["dark", "light"]) rows.push({tag: kit.id + "-" + p.id + "-" + mode, kit: kit.id, preset: p.id, mode: mode});
+                    for (const mode of ["dark", "light"])
+                        rows.push({
+                            tag: kit.id + "-" + p.id + "-" + mode,
+                            kit: kit.id,
+                            preset: p.id,
+                            mode: mode
+                        });
                 }
             }
             return rows;
@@ -50,7 +61,9 @@ Item {
             verify(gallery.content.width <= gallery.width);
             verify(gallery.content.implicitHeight > gallery.height);
             let done = false;
-            verify(gallery.grabToImage(result => { done = result.saveToFile("/tmp/qs-design-gallery-narrow.png"); }));
+            verify(gallery.grabToImage(result => {
+                done = result.saveToFile("/tmp/qs-design-gallery-narrow.png");
+            }));
             tryVerify(() => done);
             gallery.parent.width = 960;
             gallery.parent.height = 820;

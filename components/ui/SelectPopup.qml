@@ -29,8 +29,16 @@ Popup {
         bottomLeftRadius: Math.max(0, root.bottomRadius - root.padding)
         bottomRightRadius: bottomLeftRadius
     }
-    Binding { target: root.contentItem; property: "layer.enabled"; value: true }
-    Binding { target: root.contentItem; property: "layer.effect"; value: viewportEffect }
+    Binding {
+        target: root.contentItem
+        property: "layer.enabled"
+        value: true
+    }
+    Binding {
+        target: root.contentItem
+        property: "layer.effect"
+        value: viewportEffect
+    }
     Component {
         id: viewportEffect
         MultiEffect {
@@ -39,11 +47,31 @@ Popup {
         }
     }
     enter: Transition {
-        NumberAnimation { target: root; property: "reveal"; to: 1; duration: Design.durationNormal; easing.type: Easing.InOutCubic }
-        NumberAnimation { property: "opacity"; to: 1; duration: Design.durationNormal }
+        NumberAnimation {
+            target: root
+            property: "reveal"
+            to: 1
+            duration: Design.durationNormal
+            easing.type: Easing.InOutCubic
+        }
+        NumberAnimation {
+            property: "opacity"
+            to: 1
+            duration: Design.durationNormal
+        }
     }
     exit: Transition {
-        NumberAnimation { target: root; property: "reveal"; to: 0; duration: Design.durationNormal; easing.type: Easing.InOutCubic }
-        NumberAnimation { property: "opacity"; to: 0; duration: Design.durationNormal }
+        NumberAnimation {
+            target: root
+            property: "reveal"
+            to: 0
+            duration: Design.durationNormal
+            easing.type: Easing.InOutCubic
+        }
+        NumberAnimation {
+            property: "opacity"
+            to: 0
+            duration: Design.durationNormal
+        }
     }
 }

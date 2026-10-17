@@ -20,23 +20,41 @@ Item {
         if (animate && styleSettings.lines === "animated") {
             lineAnimation.to = targetLines;
             lineAnimation.start();
-        } else lineOpacity = targetLines;
+        } else
+            lineOpacity = targetLines;
     }
     function updateBackground(animate) {
         backgroundAnimation.stop();
         if (animate && styleSettings.background === "animated") {
             backgroundAnimation.to = targetBackground;
             backgroundAnimation.start();
-        } else backgroundOpacity = targetBackground;
+        } else
+            backgroundOpacity = targetBackground;
     }
     onTargetLinesChanged: updateLines(true)
     onTargetBackgroundChanged: updateBackground(true)
     // Mode changes also settle animations already in flight.
-    onStyleSettingsChanged: { updateLines(false); updateBackground(false); }
-    Component.onCompleted: { updateLines(false); updateBackground(false); }
+    onStyleSettingsChanged: {
+        updateLines(false);
+        updateBackground(false);
+    }
+    Component.onCompleted: {
+        updateLines(false);
+        updateBackground(false);
+    }
 
-    NumberAnimation { id: lineAnimation; target: root; property: "lineOpacity"; duration: root.styleSettings.duration }
-    NumberAnimation { id: backgroundAnimation; target: root; property: "backgroundOpacity"; duration: root.styleSettings.duration }
+    NumberAnimation {
+        id: lineAnimation
+        target: root
+        property: "lineOpacity"
+        duration: root.styleSettings.duration
+    }
+    NumberAnimation {
+        id: backgroundAnimation
+        target: root
+        property: "backgroundOpacity"
+        duration: root.styleSettings.duration
+    }
 
     Loader {
         anchors.fill: parent

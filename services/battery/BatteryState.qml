@@ -7,7 +7,11 @@ import qs.config
 Singleton {
     id: root
     property var batteries: []
-    property var powerProfiles: ({available: false, current: "", profiles: []})
+    property var powerProfiles: ({
+            available: false,
+            current: "",
+            profiles: []
+        })
     property int openPanels: 0
     property string errorMessage: ""
     property string message: ""
@@ -17,16 +21,21 @@ Singleton {
     readonly property bool charging: batteries.some(b => b.status === "Charging")
     readonly property real percent: {
         const known = batteries.filter(b => b.percent !== null);
-        if (!known.length) return -1;
+        if (!known.length)
+            return -1;
         if (known.every(b => b.unit === "Wh" && b.full > 0))
             return known.reduce((sum, b) => sum + b.percent * b.full, 0) / known.reduce((sum, b) => sum + b.full, 0);
         return known.reduce((sum, b) => sum + b.percent, 0) / known.length;
     }
     readonly property string icon: charging ? "󰂄" : percent < 0 ? "󰂑" : percent <= 15 ? "󰁺" : percent <= 35 ? "󰁼" : percent <= 60 ? "󰁿" : percent <= 85 ? "󰂁" : "󰁹"
     readonly property string helper: Quickshell.shellPath("scripts/battery/battery.py")
-    function refresh() { if (!status.running && !changing) status.running = true; }
+    function refresh() {
+        if (!status.running && !changing)
+            status.running = true;
+    }
     function setLimit(id, value) {
-        if (changing) return;
+        if (changing)
+            return;
         errorMessage = "";
         message = "";
         actionKind = "limit";
@@ -34,7 +43,8 @@ Singleton {
         action.running = true;
     }
     function setProfile(profile) {
-        if (changing || !powerProfiles.available || !powerProfiles.profiles.some(p => p.id === profile)) return;
+        if (changing || !powerProfiles.available || !powerProfiles.profiles.some(p => p.id === profile))
+            return;
         errorMessage = "";
         message = "";
         actionKind = "profile";
@@ -44,29 +54,48 @@ Singleton {
     function accept(text, mutation) {
         try {
             const data = JSON.parse(text);
-            if (JSON.stringify(batteries) !== JSON.stringify(data.batteries || [])) batteries = data.batteries || [];
-            const profiles = data.powerProfiles || {available: false, current: "", profiles: []};
-            if (JSON.stringify(powerProfiles) !== JSON.stringify(profiles)) powerProfiles = profiles;
+            if (JSON.stringify(batteries) !== JSON.stringify(data.batteries || []))
+                batteries = data.batteries || [];
+            const profiles = data.powerProfiles || {
+                available: false,
+                current: "",
+                profiles: []
+            };
+            if (JSON.stringify(powerProfiles) !== JSON.stringify(profiles))
+                powerProfiles = profiles;
             if (mutation) {
                 errorMessage = data.error || "";
                 message = data.message || "";
             }
-        } catch (error) { errorMessage = "Could not read battery information."; }
+        } catch (error) {
+            errorMessage = "Could not read battery information.";
+        }
     }
-    onOpenPanelsChanged: { if (openPanels > 0) refresh(); }
+    onOpenPanelsChanged: {
+        if (openPanels > 0)
+            refresh();
+    }
     Component.onCompleted: refresh()
     Process {
         id: status
         command: ["python3", root.helper]
-        stdout: StdioCollector { onStreamFinished: { if (!root.changing) root.accept(text, false); } }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!root.changing)
+                    root.accept(text, false);
+            }
+        }
         stderr: StdioCollector {}
     }
     Process {
         id: action
-        stdout: StdioCollector { onStreamFinished: root.accept(text, true) }
+        stdout: StdioCollector {
+            onStreamFinished: root.accept(text, true)
+        }
         stderr: StdioCollector {}
         onExited: code => {
-            if (code !== 0) root.errorMessage = root.errorMessage || "Could not apply the battery setting.";
+            if (code !== 0)
+                root.errorMessage = root.errorMessage || "Could not apply the battery setting.";
             Qt.callLater(root.refresh);
         }
     }

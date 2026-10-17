@@ -17,10 +17,16 @@ FocusScope {
     readonly property bool dragging: dragId !== ""
     implicitWidth: 840
     implicitHeight: 520
-    onVisibleChanged: { if (!visible) cancelDrag(); }
+    onVisibleChanged: {
+        if (!visible)
+            cancelDrag();
+    }
     Keys.onEscapePressed: event => {
-        if (dragging) { cancelDrag(); event.accepted = true; }
-        else event.accepted = false;
+        if (dragging) {
+            cancelDrag();
+            event.accepted = true;
+        } else
+            event.accepted = false;
     }
 
     function cancelDrag() {
@@ -36,7 +42,8 @@ FocusScope {
         for (let i = 0; i < lanes.count; ++i) {
             const lane = lanes.itemAt(i);
             const p = lane.viewport.mapFromItem(root, point.x, point.y);
-            if (p.x < 0 || p.x > lane.viewport.width || p.y < 0 || p.y > lane.viewport.height) continue;
+            if (p.x < 0 || p.x > lane.viewport.width || p.y < 0 || p.y > lane.viewport.height)
+                continue;
             destination = lane.section;
             insertionIndex = Math.max(0, Math.min(lane.count, Math.floor((p.y + lane.viewport.contentY + 26) / 58)));
             break;
@@ -45,7 +52,8 @@ FocusScope {
     function finishDrag() {
         const id = dragId, section = destination, index = insertionIndex;
         cancelDrag();
-        if (id && section && index >= 0) BarLayout.move(id, section, index);
+        if (id && section && index >= 0)
+            BarLayout.move(id, section, index);
     }
 
     Timer {
@@ -55,7 +63,8 @@ FocusScope {
         onTriggered: {
             for (let i = 0; i < lanes.count; ++i) {
                 const lane = lanes.itemAt(i);
-                if (lane.section !== root.destination) continue;
+                if (lane.section !== root.destination)
+                    continue;
                 const view = lane.viewport;
                 const p = view.mapFromItem(root, root.pointer.x, root.pointer.y);
                 const delta = p.y < 28 ? -8 : p.y > view.height - 28 ? 8 : 0;
@@ -70,7 +79,9 @@ FocusScope {
         spacing: Design.space16
         UI.RowLayout {
             Layout.fillWidth: true
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
             NotificationButton {
                 objectName: "resetLayout"
                 text: "Reset layout"
@@ -98,7 +109,8 @@ FocusScope {
 
                     border.color: root.destination === section ? Design.accent : Design.border
                     UI.Text {
-                        x: Design.panelPadding; y: 14
+                        x: Design.panelPadding
+                        y: 14
                         text: (Theme.verticalBar ? ["Top", "Middle", "Bottom"] : ["Start", "Center", "End"])[lane.index]
                         color: Design.text
                         font.family: Design.fontFamily
@@ -133,7 +145,8 @@ FocusScope {
                                 required property string modelData
                                 required property int index
                                 objectName: "card-" + modelData
-                                x: 2; y: 2 + index * 58
+                                x: 2
+                                y: 2 + index * 58
                                 width: scroll.width - 4
                                 height: 50
                                 radius: Design.radiusControl
@@ -155,11 +168,13 @@ FocusScope {
                                         root.forceActiveFocus();
                                     }
                                     onPositionChanged: event => {
-                                        if (!pressed || root.dragCanceled) return;
+                                        if (!pressed || root.dragCanceled)
+                                            return;
                                         const p = mapToItem(root, event.x, event.y);
                                         if (!root.dragging && Math.abs(p.x - start.x) + Math.abs(p.y - start.y) > 8)
                                             root.dragId = card.modelData;
-                                        if (root.dragging) root.updateTarget(p);
+                                        if (root.dragging)
+                                            root.updateTarget(p);
                                     }
                                     onReleased: root.finishDrag()
                                     onCanceled: root.cancelDrag()
@@ -213,13 +228,13 @@ FocusScope {
                 }
             }
         }
-
     }
     Rectangle {
         visible: root.dragging
         x: Math.max(0, Math.min(root.width - width, root.pointer.x + 12))
         y: Math.max(0, Math.min(root.height - height, root.pointer.y + 12))
-        width: 180; height: 42
+        width: 180
+        height: 42
         z: 10
         radius: Design.radiusControl
         color: Design.accent

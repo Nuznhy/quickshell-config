@@ -22,8 +22,13 @@ UI.ColumnLayout {
         default property alias items: body.data
         Layout.fillWidth: true
         padding: Design.panelPadding
-        background: UI.Card { border.color: Design.border }
-        contentItem: UI.ColumnLayout { id: body; spacing: Design.space12 }
+        background: UI.Card {
+            border.color: Design.border
+        }
+        contentItem: UI.ColumnLayout {
+            id: body
+            spacing: Design.space12
+        }
     }
     UI.RowLayout {
         Layout.fillWidth: true
@@ -33,7 +38,11 @@ UI.ColumnLayout {
             Accessible.name: "Back to bar layout"
             onClicked: root.backRequested()
         }
-        Label { text: "Workspaces"; role: "panel"; font.bold: true }
+        Label {
+            text: "Workspaces"
+            role: "panel"
+            font.bold: true
+        }
         NotificationButton {
             objectName: "workspace-settings-reset"
             text: "Reset"
@@ -48,7 +57,9 @@ UI.ColumnLayout {
     Card {
         UI.RowLayout {
             Layout.fillWidth: true
-            Label { text: "Show app icons" }
+            Label {
+                text: "Show app icons"
+            }
             ControlSwitch {
                 objectName: "workspace-show-icons"
                 value: WorkspaceAppearance.showIcons
@@ -66,7 +77,16 @@ UI.ColumnLayout {
             Layout.fillWidth: true
             spacing: Design.space8
             Repeater {
-                model: [{id: "app", label: "App icons"}, {id: "nerd", label: "Nerd Font icons"}]
+                model: [
+                    {
+                        id: "app",
+                        label: "App icons"
+                    },
+                    {
+                        id: "nerd",
+                        label: "Nerd Font icons"
+                    }
+                ]
                 NotificationButton {
                     required property var modelData
                     objectName: "workspace-icon-style-" + modelData.id
@@ -88,7 +108,10 @@ UI.ColumnLayout {
         }
     }
     Card {
-        Label { text: "Separator"; role: "section" }
+        Label {
+            text: "Separator"
+            role: "section"
+        }
         Label {
             text: "Between the workspace number and its icons. Leave empty for no separator."
             role: "label"
@@ -98,7 +121,24 @@ UI.ColumnLayout {
             Layout.fillWidth: true
             spacing: Design.space8
             Repeater {
-                model: [{label: "None", value: ""}, {label: "Dot", value: "·"}, {label: "Line", value: "|"}, {label: "Slash", value: "/"}]
+                model: [
+                    {
+                        label: "None",
+                        value: ""
+                    },
+                    {
+                        label: "Dot",
+                        value: "·"
+                    },
+                    {
+                        label: "Line",
+                        value: "|"
+                    },
+                    {
+                        label: "Slash",
+                        value: "/"
+                    }
+                ]
                 NotificationButton {
                     required property var modelData
                     Layout.fillWidth: true
@@ -121,13 +161,14 @@ UI.ColumnLayout {
             Accessible.name: "Workspace icon separator"
             onTextEdited: WorkspaceAppearance.setOption("separator", text)
             onEditingFinished: text = Qt.binding(() => WorkspaceAppearance.separator)
-
         }
     }
     Card {
         UI.RowLayout {
             Layout.fillWidth: true
-            Label { text: "Icon capsule" }
+            Label {
+                text: "Icon capsule"
+            }
             ControlSwitch {
                 objectName: "workspace-icon-capsule"
                 value: WorkspaceAppearance.capsule

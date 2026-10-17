@@ -19,16 +19,19 @@ UI.Card {
     HoverHandler {
         onHoveredChanged: {
             const watcher = Notifications.watchers[root.entry.key];
-            if (root.toast && watcher) watcher.hovered = hovered;
+            if (root.toast && watcher)
+                watcher.hovered = hovered;
         }
     }
     Component.onDestruction: {
         const watcher = Notifications.watchers[entry.key];
-        if (toast && watcher) watcher.hovered = false;
+        if (toast && watcher)
+            watcher.hovered = false;
     }
     UI.ColumnLayout {
         id: content
-        x: Design.panelPadding; y: Design.panelPadding
+        x: Design.panelPadding
+        y: Design.panelPadding
         width: parent.width - Design.panelPadding * 2
         spacing: Design.space8
         UI.RowLayout {
@@ -50,7 +53,9 @@ UI.Card {
             }
             Rectangle {
                 visible: !root.entry.read && !root.toast
-                implicitWidth: 6; implicitHeight: 6; radius: Design.radiusSmall
+                implicitWidth: 6
+                implicitHeight: 6
+                radius: Design.radiusSmall
                 color: Design.accent
             }
             UI.Text {
@@ -63,7 +68,8 @@ UI.Card {
                 text: "×"
                 implicitWidth: 24
                 implicitHeight: Design.compactHeight
-                leftPadding: 0; rightPadding: 0
+                leftPadding: 0
+                rightPadding: 0
                 Accessible.name: root.toast ? "Dismiss notification" : "Remove from history"
                 onClicked: root.dismissed()
             }

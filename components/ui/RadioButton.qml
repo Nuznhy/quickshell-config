@@ -12,8 +12,14 @@ T.RadioButton {
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : Design.disabledOpacity
-    HoverHandler { enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
-    indicator: ChoiceIndicator { control: root; radio: true }
+    HoverHandler {
+        enabled: root.enabled
+        cursorShape: Qt.PointingHandCursor
+    }
+    indicator: ChoiceIndicator {
+        control: root
+        radio: true
+    }
     contentItem: UI.Text {
         text: root.text
         leftPadding: root.indicator.width + root.spacing

@@ -24,9 +24,24 @@ TestCase {
         compare(new Set(all).size, ConfigScripts.BarLayoutData.widgets.length);
     }
     function test_invalid_state() {
-        for (const value of [null, {}, {version: 2}, {version: 1, sections: {start: []}}]) {
+        for (const value of [null,
+            {},
+            {
+                version: 2
+            },
+            {
+                version: 1,
+                sections: {
+                    start: []
+                }
+            }
+        ]) {
             let failed = false;
-            try { ConfigScripts.BarLayoutData.normalize(value); } catch (error) { failed = true; }
+            try {
+                ConfigScripts.BarLayoutData.normalize(value);
+            } catch (error) {
+                failed = true;
+            }
             verify(failed);
         }
     }

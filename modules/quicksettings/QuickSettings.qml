@@ -12,8 +12,13 @@ UI.ColumnLayout {
     property bool active: false
     signal settingsRequested
     spacing: Design.space12
-    onActiveChanged: { QuickControls.openPanels += active ? 1 : -1; }
-    Component.onDestruction: { if (active) QuickControls.openPanels--; }
+    onActiveChanged: {
+        QuickControls.openPanels += active ? 1 : -1;
+    }
+    Component.onDestruction: {
+        if (active)
+            QuickControls.openPanels--;
+    }
 
     UI.RowLayout {
         Layout.fillWidth: true

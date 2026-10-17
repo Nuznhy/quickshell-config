@@ -29,18 +29,71 @@ QtObject {
         property real signalStrength: 0.9
     }
     property var wiredDevices: [wired]
-    property var wifiDevices: [{}]
+    property var wifiDevices: [
+        {}
+    ]
     property var wifiNetworks: [wifi]
-    property var vpnProfiles: [{uuid: "test-vpn", name: "Work VPN", active: false, state: "disconnected"}]
-    function setWifi(value) { lastAction = {kind: "wifi", enabled: value}; if (!failAction) wifiEnabled = value; }
-    function setWired(device, value) { lastAction = {kind: "wired", enabled: value}; if (!failAction) device.connected = value; }
-    function setVpn(profile, value) {
-        lastAction = {kind: "vpn", uuid: profile.uuid, enabled: value};
-        if (!failAction) vpnProfiles = [{uuid: profile.uuid, name: profile.name, active: value, state: value ? "activated" : "disconnected"}];
+    property var vpnProfiles: [
+        {
+            uuid: "test-vpn",
+            name: "Work VPN",
+            active: false,
+            state: "disconnected"
+        }
+    ]
+    function setWifi(value) {
+        lastAction = {
+            kind: "wifi",
+            enabled: value
+        };
+        if (!failAction)
+            wifiEnabled = value;
     }
-    function securityLabel(network) { return "WPA2"; }
-    function connectWifi(network) { passwordNetwork = network; }
-    function disconnectWifi(network) { lastAction = {kind: "disconnect"}; }
-    function submitPassword(value) { lastAction = {kind: "password", supplied: value.length > 0}; passwordNetwork = null; }
-    function openSettings() { lastAction = {kind: "editor"}; }
+    function setWired(device, value) {
+        lastAction = {
+            kind: "wired",
+            enabled: value
+        };
+        if (!failAction)
+            device.connected = value;
+    }
+    function setVpn(profile, value) {
+        lastAction = {
+            kind: "vpn",
+            uuid: profile.uuid,
+            enabled: value
+        };
+        if (!failAction)
+            vpnProfiles = [
+                {
+                    uuid: profile.uuid,
+                    name: profile.name,
+                    active: value,
+                    state: value ? "activated" : "disconnected"
+                }
+            ];
+    }
+    function securityLabel(network) {
+        return "WPA2";
+    }
+    function connectWifi(network) {
+        passwordNetwork = network;
+    }
+    function disconnectWifi(network) {
+        lastAction = {
+            kind: "disconnect"
+        };
+    }
+    function submitPassword(value) {
+        lastAction = {
+            kind: "password",
+            supplied: value.length > 0
+        };
+        passwordNetwork = null;
+    }
+    function openSettings() {
+        lastAction = {
+            kind: "editor"
+        };
+    }
 }

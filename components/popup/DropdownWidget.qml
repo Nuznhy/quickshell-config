@@ -37,13 +37,20 @@ Item {
 
     default property alias iconContent: iconContainer.data
 
-    onXChanged: { if (dropdownOpen) popup.anchor.updateAnchor(); }
-    onYChanged: { if (dropdownOpen) popup.anchor.updateAnchor(); }
+    onXChanged: {
+        if (dropdownOpen)
+            popup.anchor.updateAnchor();
+    }
+    onYChanged: {
+        if (dropdownOpen)
+            popup.anchor.updateAnchor();
+    }
 
     Connections {
         target: barWindow
         function onCloseAllPopups() {
-            if (root.popupDismissEnabled) dropdownOpen = false;
+            if (root.popupDismissEnabled)
+                dropdownOpen = false;
         }
     }
 
@@ -66,7 +73,10 @@ Item {
         acceptedButtons: root.rightClickEnabled ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
         onWheel: wheel => {
-            if (!root.wheelEnabled) { wheel.accepted = false; return; }
+            if (!root.wheelEnabled) {
+                wheel.accepted = false;
+                return;
+            }
             root.wheelScrolled(wheel.angleDelta.y);
         }
         onClicked: mouse => {
@@ -99,11 +109,10 @@ Item {
         anchor.window: root.barWindow
         anchor.adjustment: PopupAdjustment.SlideX | PopupAdjustment.SlideY
         anchor.onAnchoring: {
-            if (!root.barWindow?.contentItem) return;
+            if (!root.barWindow?.contentItem)
+                return;
             const point = iconContainer.mapToItem(root.barWindow.contentItem, 0, 0);
-            const placement = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y,
-                iconContainer.width, iconContainer.height, root.barWindow.width, root.barWindow.height,
-                popup.width, popup.height, root.stemAlignment, cardRect.stemWidth, root.showStem);
+            const placement = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y, iconContainer.width, iconContainer.height, root.barWindow.width, root.barWindow.height, popup.width, popup.height, root.stemAlignment, cardRect.stemWidth, root.showStem);
             popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
         }
         // Layouts can publish intermediate sizes while removing delegates or
@@ -111,17 +120,13 @@ Item {
         Binding {
             target: popup
             property: "implicitWidth"
-            value: root.widthToContent
-                ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + Settings.popupPadding * 2
-                : root.popupWidth
+            value: root.widthToContent ? (popupLoader.item ? popupLoader.item.implicitWidth : 0) + Settings.popupPadding * 2 : root.popupWidth
             delayed: true
         }
         Binding {
             target: popup
             property: "implicitHeight"
-            value: root.sizeToContent
-                ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + Settings.popupPadding * 2
-                : root.popupHeight
+            value: root.sizeToContent ? (popupLoader.item ? popupLoader.item.implicitHeight : 0) + cardRect.stemHeight + Settings.popupPadding * 2 : root.popupHeight
             delayed: true
         }
         color: "transparent"

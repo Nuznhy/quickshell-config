@@ -10,6 +10,11 @@ Surface {
         height: width
         radius: height / 2
         color: surface.control.checked ? Design.textOnAccent : Design.text
-        Behavior on x { NumberAnimation { duration: Design.durationNormal; easing.type: Easing.OutCubic } }
+        Behavior on x {
+            NumberAnimation {
+                duration: Design.durationNormal
+                easing.type: Easing.OutCubic
+            }
+        }
     }
 }

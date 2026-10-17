@@ -24,7 +24,9 @@ Item {
 
     Connections {
         target: volumeWidget.QsWindow.window
-        function onCloseAllPopups() { volumeWidget.popupOpen = false; }
+        function onCloseAllPopups() {
+            volumeWidget.popupOpen = false;
+        }
     }
 
     HyprlandFocusGrab {
@@ -40,8 +42,8 @@ Item {
     }
 
     UI.Text {
-        role: "bar"
         id: volumeText
+        role: "bar"
         anchors.centerIn: parent
         text: (Audio.volumeMuted ? "󰖁" : "󰕾") + (Theme.verticalBar ? "\n" : " ") + Audio.volumeLevel
         horizontalAlignment: Text.AlignHCenter
@@ -71,7 +73,8 @@ Item {
             const shouldOpen = !volumeWidget.popupOpen;
             volumeWidget.QsWindow.window?.closeAllPopups();
             volumeWidget.popupOpen = shouldOpen;
-            if (shouldOpen) Audio.refresh();
+            if (shouldOpen)
+                Audio.refresh();
         }
     }
 
@@ -83,9 +86,7 @@ Item {
             const window = volumeWidget.QsWindow.window;
             if (window && window.contentItem) {
                 const point = volumeWidget.mapToItem(window.contentItem, 0, 0);
-                const placement = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y,
-                    volumeWidget.width, volumeWidget.height, window.width, window.height,
-                    popup.width, popup.height, "center", 0, false);
+                const placement = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y, volumeWidget.width, volumeWidget.height, window.width, window.height, popup.width, popup.height, "center", 0, false);
                 popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);
             }
         }
@@ -127,7 +128,10 @@ Item {
                         selectedName: Audio.defaultOutput
                         busy: Audio.switching
                         onSelected: name => Audio.selectOutput(name)
-                        onExpandedChanged: { if (expanded) microphoneDropdown.expanded = false; }
+                        onExpandedChanged: {
+                            if (expanded)
+                                microphoneDropdown.expanded = false;
+                        }
                     }
 
                     AudioLevelControl {
@@ -148,7 +152,10 @@ Item {
                         selectedName: Audio.defaultMicrophone
                         busy: Audio.switchingMicrophone
                         onSelected: name => Audio.selectMicrophone(name)
-                        onExpandedChanged: { if (expanded) outputDropdown.expanded = false; }
+                        onExpandedChanged: {
+                            if (expanded)
+                                outputDropdown.expanded = false;
+                        }
                     }
 
                     AudioLevelControl {
@@ -178,7 +185,5 @@ Item {
                 }
             }
         }
-
     }
-
 }

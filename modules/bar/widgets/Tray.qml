@@ -39,10 +39,12 @@ DropdownWidget {
         font.pixelSize: Theme.fontSize + 2
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        rotation: (Theme.barPosition === "left" ? -90 : Theme.barPosition === "right" ? 90 : Theme.barPosition === "bottom" ? 180 : 0)
-            + (root.dropdownOpen ? 180 : 0)
+        rotation: (Theme.barPosition === "left" ? -90 : Theme.barPosition === "right" ? 90 : Theme.barPosition === "bottom" ? 180 : 0) + (root.dropdownOpen ? 180 : 0)
         Behavior on rotation {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 160
+                easing.type: Easing.OutCubic
+            }
         }
     }
 
@@ -53,8 +55,8 @@ DropdownWidget {
         Keys.onEscapePressed: root.dropdownOpen = false
 
         UI.Text {
-            role: "bar"
             id: emptyLabel
+            role: "bar"
             anchors.centerIn: parent
             visible: root.itemCount === 0
             text: "No tray applications"
@@ -81,7 +83,8 @@ DropdownWidget {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
                     function openMenu() {
-                        if (!modelData.hasMenu) return;
+                        if (!modelData.hasMenu)
+                            return;
                         if (root.currentMenu && root.currentMenu !== menuAnchor)
                             root.currentMenu.close();
                         root.currentMenu = menuAnchor;
@@ -98,7 +101,11 @@ DropdownWidget {
                         radius: Design.radiusControl
                         color: Design.border
                         opacity: trayItem.containsMouse ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
                     }
 
                     IconImage {
@@ -111,7 +118,10 @@ DropdownWidget {
                         visible: status === Image.Ready
                         scale: trayItem.containsMouse ? 1.15 : 1
                         Behavior on scale {
-                            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
+                            }
                         }
                     }
 

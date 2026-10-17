@@ -4,14 +4,26 @@ import qs.modules.appearance
 import qs.config
 
 Rectangle {
-    width: 600; height: 480
+    width: 600
+    height: 480
     color: Theme.bg
-    BarFontPicker { id: picker; x: 20; y: 20; width: 560 }
+    BarFontPicker {
+        id: picker
+        x: 20
+        y: 20
+        width: 560
+    }
     TestCase {
         name: "BarFont"
         when: windowShown
-        function init() { Theme.setBarFontFamily(Theme.defaultBarFontFamily); }
-        function cleanup() { picker.expanded = false; picker.visible = true; wait(180); }
+        function init() {
+            Theme.setBarFontFamily(Theme.defaultBarFontFamily);
+        }
+        function cleanup() {
+            picker.expanded = false;
+            picker.visible = true;
+            wait(180);
+        }
         function test_trigger_toggles_and_hiding_closes() {
             const trigger = findChild(picker, "bar-font-picker");
             mouseClick(trigger);

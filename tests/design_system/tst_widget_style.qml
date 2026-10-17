@@ -6,26 +6,63 @@ import qs.config
 import qs.config as ConfigScripts
 
 Rectangle {
-    width: 680; height: 700
+    width: 680
+    height: 700
     color: "#191724"
-    WidgetStyleSettings { id: settings; x: 20; y: 100; width: 620 }
-    BarHoverIndicator { id: first; x: 20; y: 20; width: 100; height: 42; hovered: false }
-    BarHoverIndicator { id: second; x: 160; y: 20; width: 100; height: 42; hovered: first.hovered }
+    WidgetStyleSettings {
+        id: settings
+        x: 20
+        y: 100
+        width: 620
+    }
+    BarHoverIndicator {
+        id: first
+        x: 20
+        y: 20
+        width: 100
+        height: 42
+        hovered: false
+    }
+    BarHoverIndicator {
+        id: second
+        x: 160
+        y: 20
+        width: 100
+        height: 42
+        hovered: first.hovered
+    }
     TestCase {
         name: "WidgetStyling"
         when: windowShown
         function init() {
-            first.hovered = false; first.active = false; first.focused = false;
+            first.hovered = false;
+            first.active = false;
+            first.focused = false;
             Theme.verticalBar = false;
             Theme.resetWidgetStyle();
             wait(350);
         }
         function test_defaults_validation() {
             compare(ConfigScripts.WidgetStyle.normalize(undefined), ConfigScripts.WidgetStyle.defaults());
-            compare(ConfigScripts.WidgetStyle.normalize({lines: "invalid", background: "instant", duration: -1, strength: "12"}),
-                {lines: "animated", background: "instant", duration: 300, strength: 12});
-            compare(ConfigScripts.WidgetStyle.normalize({duration: 410, strength: 12.4}).duration, 420);
-            compare(ConfigScripts.WidgetStyle.normalize({duration: Infinity, strength: 50}), ConfigScripts.WidgetStyle.defaults());
+            compare(ConfigScripts.WidgetStyle.normalize({
+                lines: "invalid",
+                background: "instant",
+                duration: -1,
+                strength: "12"
+            }), {
+                lines: "animated",
+                background: "instant",
+                duration: 300,
+                strength: 12
+            });
+            compare(ConfigScripts.WidgetStyle.normalize({
+                duration: 410,
+                strength: 12.4
+            }).duration, 420);
+            compare(ConfigScripts.WidgetStyle.normalize({
+                duration: Infinity,
+                strength: 50
+            }), ConfigScripts.WidgetStyle.defaults());
         }
         function test_modes_and_interruption() {
             first.hovered = true;
@@ -36,7 +73,8 @@ Rectangle {
             compare(first.lineOpacity, 0);
             Theme.setWidgetStyle("lines", "instant");
             compare(first.lineOpacity, 1);
-            first.hovered = false; first.active = false;
+            first.hovered = false;
+            first.active = false;
             compare(first.lineOpacity, 0);
             Theme.setWidgetStyle("background", "animated");
             first.hovered = true;
@@ -51,8 +89,10 @@ Rectangle {
             first.hovered = true;
             compare(first.backgroundOpacity, 0.24);
             compare(second.backgroundOpacity, first.backgroundOpacity);
-            compare(first.width, 100); compare(first.height, 42);
-            first.hovered = false; first.active = true;
+            compare(first.width, 100);
+            compare(first.height, 42);
+            first.hovered = false;
+            first.active = true;
             compare(first.backgroundOpacity, 0);
             first.focused = true;
             verify(findChild(first, "widget-focus-outline").visible);
@@ -65,10 +105,12 @@ Rectangle {
         function test_controls_preview_and_reset() {
             const duration = findChild(settings, "widget-style-duration");
             const strength = findChild(settings, "widget-style-strength");
-            verify(duration.enabled); verify(!strength.enabled);
+            verify(duration.enabled);
+            verify(!strength.enabled);
             findChild(settings, "widget-style-lines").selected(0);
             findChild(settings, "widget-style-background").selected(1);
-            verify(!duration.enabled); verify(strength.enabled);
+            verify(!duration.enabled);
+            verify(strength.enabled);
             Theme.setWidgetStyle("strength", 23);
             const preview = findChild(settings, "widget-style-preview");
             mouseMove(preview, 20, 20);

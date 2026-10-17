@@ -2,9 +2,16 @@ import QtQuick
 import QtTest
 import qs.modules.bluetooth
 import qs.services.bluetooth
+
 Item {
-    width: 460; height: 1000
-    BluetoothCenter { id: center; width: 430; maximumHeight: 900; active: true }
+    width: 460
+    height: 1000
+    BluetoothCenter {
+        id: center
+        width: 430
+        maximumHeight: 900
+        active: true
+    }
     TestCase {
         name: "BluetoothCenter"
         when: windowShown
@@ -59,7 +66,11 @@ Item {
             compare(center.forgetTarget, null);
         }
         function test_pairing_input_and_close() {
-            BluetoothState.prompt = { id: 1, kind: "pin", code: "" };
+            BluetoothState.prompt = {
+                id: 1,
+                kind: "pin",
+                code: ""
+            };
             const input = control("pairingInput");
             input.text = "1234";
             wait(30);
@@ -68,7 +79,11 @@ Item {
             compare(BluetoothState.lastAction.accepted, true);
             compare(BluetoothState.lastAction.supplied, true);
             compare(input.text, "");
-            BluetoothState.prompt = { id: 2, kind: "pin", code: "" };
+            BluetoothState.prompt = {
+                id: 2,
+                kind: "pin",
+                code: ""
+            };
             input.text = "9876";
             center.active = false;
             compare(input.text, "");

@@ -50,11 +50,23 @@ Item {
             delegate: Rectangle {
                 id: window
                 required property string modelData
-                readonly property var entry: root.windows.find(item => item.address === modelData)
-                    || {address: modelData, x: 0, y: 0, width: 0, height: 0, rank: 10000, title: "", floating: false, fullscreen: false}
+                readonly property var entry: root.windows.find(item => item.address === modelData) || {
+                    address: modelData,
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
+                    rank: 10000,
+                    title: "",
+                    floating: false,
+                    fullscreen: false
+                }
                 objectName: "workspace-preview-window-" + modelData
                 readonly property var rect: ServiceScripts.WorkspacePreviewData.project(entry, root.monitorBounds, desktop.width, desktop.height)
-                x: rect.x; y: rect.y; width: rect.width; height: rect.height
+                x: rect.x
+                y: rect.y
+                width: rect.width
+                height: rect.height
                 // Hyprland's recent-focus rank approximates stacking within layers.
                 z: (entry.fullscreen ? 30000 : entry.floating ? 20000 : 10000) - Math.min(9999, entry.rank)
                 color: Design.surface
@@ -105,10 +117,16 @@ Item {
         }
         Rectangle {
             objectName: "workspace-preview-highlight"
-            readonly property var rect: root.selectedWindow
-                ? ServiceScripts.WorkspacePreviewData.project(root.selectedWindow, root.monitorBounds, desktop.width, desktop.height)
-                : {x: 0, y: 0, width: 0, height: 0}
-            x: rect.x; y: rect.y; width: rect.width; height: rect.height
+            readonly property var rect: root.selectedWindow ? ServiceScripts.WorkspacePreviewData.project(root.selectedWindow, root.monitorBounds, desktop.width, desktop.height) : {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            }
+            x: rect.x
+            y: rect.y
+            width: rect.width
+            height: rect.height
             visible: !!root.selectedWindow
             z: 100000
             color: "transparent"
