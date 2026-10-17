@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "modules/settings"
-import "config"
+import qs.modules.settings
+import qs.config
 
 Item {
     width: 900; height: 620

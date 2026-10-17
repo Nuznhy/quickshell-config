@@ -1,11 +1,12 @@
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Controls
 import Quickshell
 import QtQuick.Layouts
-import "../../../config"
-import "../../../components"
-import "../../../services"
+import qs.config
+import qs.components.popup
+import qs.modules.media
+import qs.services.media
 
 DropdownWidget {
     id: root

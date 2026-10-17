@@ -2,14 +2,13 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "Palettes.js" as Palettes
-import "WidgetStyle.js" as WidgetStyle
-import "WallpaperColors.js" as WallpaperColors
+import qs.config as ConfigScripts
+import qs.kits as KitScripts
 
 Singleton {
     id: root
 
-    readonly property var presets: generatedPalette ? Palettes.presets.concat([{id: "wallpaper", name: "Wallpaper"}]) : Palettes.presets
+    readonly property var presets: generatedPalette ? ConfigScripts.Palettes.presets.concat([{id: "wallpaper", name: "Wallpaper"}]) : ConfigScripts.Palettes.presets
     property var generatedPalette: null
     property var generatedVividPalette: null
     property bool wallpaperNvimVivid: false
@@ -18,6 +17,7 @@ Singleton {
     property string wallpaperColorMethod: "dominant"
     property string wallpaperColorVariant: "tonal"
     property bool wallpaperColorAuto: false
+    property string uiKit: "default"
     property string preset: "rose-pine"
     property string mode: "dark"
     property int wallpaperTransitionStyle: 0
@@ -25,7 +25,7 @@ Singleton {
         // Pick one of six effects, excluding the previous effect. Shared by screens.
         wallpaperTransitionStyle = (wallpaperTransitionStyle + 1 + Math.floor(Math.random() * 5)) % 6;
     }
-    property var widgetStyle: WidgetStyle.defaults()
+    property var widgetStyle: ConfigScripts.WidgetStyle.defaults()
     property real barOpacity: 1
     property int barTopMargin: 0
     property int barSideMargin: 0
@@ -62,14 +62,20 @@ Singleton {
     property bool ready: false
     property string errorMessage: ""
     readonly property bool isDark: mode === "dark"
-    readonly property var palette: preset === "wallpaper" && generatedPalette ? generatedPalette[mode] : Palettes.palette(preset, mode)
+    readonly property var palette: preset === "wallpaper" && generatedPalette ? generatedPalette[mode] : ConfigScripts.Palettes.palette(preset, mode)
 
     function preview(id) {
-        return id === "wallpaper" && generatedPalette ? generatedPalette[mode] : Palettes.palette(id, mode);
+        return id === "wallpaper" && generatedPalette ? generatedPalette[mode] : ConfigScripts.Palettes.palette(id, mode);
+    }
+
+    function selectUiKit(id) {
+        if (!ready || !KitScripts.Registry.hasKit(id) || id === uiKit) return;
+        uiKit = id;
+        save();
     }
 
     function selectPreset(id) {
-        if (!ready || (!Palettes.hasPreset(id) && !(id === "wallpaper" && generatedPalette))) return;
+        if (!ready || (!ConfigScripts.Palettes.hasPreset(id) && !(id === "wallpaper" && generatedPalette))) return;
         preset = id;
         save();
     }
@@ -86,8 +92,8 @@ Singleton {
     }
 
     function applyWallpaperPalette(value, vivid) {
-        if (!ready || !WallpaperColors.valid(value)) return false;
-        generatedVividPalette = WallpaperColors.valid(vivid) ? vivid : null;
+        if (!ready || !ConfigScripts.WallpaperColors.valid(value)) return false;
+        generatedVividPalette = ConfigScripts.WallpaperColors.valid(vivid) ? vivid : null;
         generatedPalette = value;
         preset = "wallpaper";
         save();
@@ -103,7 +109,7 @@ Singleton {
     function save() {
         appearanceSaveTimer.stop();
         errorMessage = "";
-        stateFile.setText(JSON.stringify({ preset: preset, mode: mode, barOpacity: barOpacity,
+        stateFile.setText(JSON.stringify({ uiKit: uiKit, preset: preset, mode: mode, barOpacity: barOpacity,
             barTopMargin: barTopMargin, barSideMargin: barSideMargin, barRadius: barRadius, widgetStyle: widgetStyle,
             disabledBarScreens: disabledBarScreens, fontSize: fontSize, barFontFamily: barFontFamily, barPosition: barPosition,
             wallpapers: wallpapers, wallpaperFolder: wallpaperFolder,
@@ -218,14 +224,14 @@ Singleton {
     }
 
     function setWidgetStyle(name, value) {
-        if (!ready || !Object.prototype.hasOwnProperty.call(WidgetStyle.defaults(), name)) return;
-        widgetStyle = WidgetStyle.normalize(Object.assign({}, widgetStyle, {[name]: value}));
+        if (!ready || !Object.prototype.hasOwnProperty.call(ConfigScripts.WidgetStyle.defaults(), name)) return;
+        widgetStyle = ConfigScripts.WidgetStyle.normalize(Object.assign({}, widgetStyle, {[name]: value}));
         appearanceSaveTimer.restart();
     }
 
     function resetWidgetStyle() {
         if (!ready) return;
-        widgetStyle = WidgetStyle.defaults();
+        widgetStyle = ConfigScripts.WidgetStyle.defaults();
         appearanceSaveTimer.restart();
     }
 
@@ -264,16 +270,17 @@ Singleton {
             try {
                 var saved = JSON.parse(text());
                 if (!saved || typeof saved !== "object") throw new Error("Invalid theme settings");
+                root.uiKit = KitScripts.Registry.normalize(saved.uiKit);
                 const colors = saved.wallpaperColors || {};
-                root.generatedPalette = WallpaperColors.valid(colors.palettes) ? colors.palettes : null;
+                root.generatedPalette = ConfigScripts.WallpaperColors.valid(colors.palettes) ? colors.palettes : null;
                 root.wallpaperColorMonitor = typeof colors.monitor === "string" ? colors.monitor : "";
                 root.wallpaperColorMethod = ["dominant", "vibrant", "average", "muted", "dark", "light", "balanced"].includes(colors.method) ? colors.method : "dominant";
                 root.wallpaperColorVariant = ["neutral", "tonal", "vivid"].includes(colors.variant) ? colors.variant : "tonal";
                 root.wallpaperColorAuto = colors.auto === true;
                 root.wallpaperNvimVivid = colors.nvimVivid === true;
-                root.generatedVividPalette = WallpaperColors.valid(colors.vividPalettes) ? colors.vividPalettes : null;
+                root.generatedVividPalette = ConfigScripts.WallpaperColors.valid(colors.vividPalettes) ? colors.vividPalettes : null;
                 root.preset = saved.preset === "wallpaper" && root.generatedPalette ? "wallpaper"
-                    : Palettes.hasPreset(saved.preset) ? saved.preset : "rose-pine";
+                    : ConfigScripts.Palettes.hasPreset(saved.preset) ? saved.preset : "rose-pine";
                 root.mode = saved.mode === "light" ? "light" : "dark";
                 root.fontSize = typeof saved.fontSize === "number" && Number.isFinite(saved.fontSize)
                     ? Math.round(Math.max(12, Math.min(28, saved.fontSize))) : 20;
@@ -285,7 +292,7 @@ Singleton {
                 root.barTopMargin = root.geometryValue(saved.barTopMargin, 40);
                 root.barSideMargin = root.geometryValue(saved.barSideMargin, 40);
                 root.barRadius = root.geometryValue(saved.barRadius, root.maximumBarRadius);
-                root.widgetStyle = WidgetStyle.normalize(saved.widgetStyle);
+                root.widgetStyle = ConfigScripts.WidgetStyle.normalize(saved.widgetStyle);
                 root.disabledBarScreens = Array.isArray(saved.disabledBarScreens)
                     ? [...new Set(saved.disabledBarScreens.filter(name => typeof name === "string" && name.length > 0))] : [];
                 root.wallpapers = root.restoreWallpapers(saved.wallpapers);

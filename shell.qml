@@ -1,11 +1,12 @@
 //@ pragma UseQApplication
 import Quickshell
 import QtQuick
-import "modules/bar"
-import "modules/notifications"
-import "modules/wallpaper"
-import "modules/settings"
-import "services"
+import qs.modules.bar
+import qs.modules.notifications
+import qs.modules.wallpaper
+import qs.modules.settings
+import qs.services.appearance
+import qs.services.wallpaper
 
 ShellRoot {
     Component.onCompleted: { AppTheming.refresh(); WallpaperTheme.initialize(); }

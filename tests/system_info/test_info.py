@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-spec = importlib.util.spec_from_file_location('system_info', Path(__file__).resolve().parents[2]/'scripts/system-info.py')
+spec = importlib.util.spec_from_file_location('system_info', Path(__file__).resolve().parents[2]/'scripts/quicksettings/system-info.py')
 info = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(info)
 

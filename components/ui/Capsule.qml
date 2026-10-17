@@ -1,5 +1,5 @@
 import QtQuick
-import "../../config"
+import qs.config
 
 Card {
     readonly property color foreground: Design.readableText(color)

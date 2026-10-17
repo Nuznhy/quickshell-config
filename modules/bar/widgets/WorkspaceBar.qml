@@ -1,11 +1,12 @@
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.shared
+import qs.components.ui as UI
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import "../../../config"
-import "../../../services"
-import "../../../components"
+import qs.config
+import qs.services.workspaces
+import qs.modules.workspaces
 
 Grid {
     id: workspaceBar

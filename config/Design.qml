@@ -5,55 +5,56 @@ QtObject {
     id: root
     // Used only by the standalone gallery. Never changes saved appearance.
     property var previewPalette: null
-    readonly property var palette: previewPalette || Theme
+    property string previewMode: ""
+    readonly property var palette: UiKit.resolvePalette(previewPalette || Theme, previewMode || Theme.mode || "dark")
     readonly property string fontFamily: Theme.fontFamily
     readonly property string iconFontFamily: "JetBrainsMono Nerd Font"
 
-    readonly property int space2: 2
-    readonly property int space4: 4
-    readonly property int space8: 8
-    readonly property int space12: 12
-    readonly property int space16: 16
-    readonly property int space20: 20
-    readonly property int space24: 24
-    readonly property int space32: 32
-    readonly property int controlGap: space8
-    readonly property int panelPadding: space12
-    readonly property int sectionGap: space16
-    readonly property int windowPadding: space20
+    readonly property int space2: UiKit.tokens.space2
+    readonly property int space4: UiKit.tokens.space4
+    readonly property int space8: UiKit.tokens.space8
+    readonly property int space12: UiKit.tokens.space12
+    readonly property int space16: UiKit.tokens.space16
+    readonly property int space20: UiKit.tokens.space20
+    readonly property int space24: UiKit.tokens.space24
+    readonly property int space32: UiKit.tokens.space32
+    readonly property int controlGap: UiKit.tokens.controlGap
+    readonly property int panelPadding: UiKit.tokens.panelPadding
+    readonly property int sectionGap: UiKit.tokens.sectionGap
+    readonly property int windowPadding: UiKit.tokens.windowPadding
 
-    readonly property int captionSize: 10
-    readonly property int labelSize: 11
-    readonly property int bodySize: 12
-    readonly property int sectionHeadingSize: 16
-    readonly property int panelHeadingSize: 20
-    readonly property int pageHeadingSize: 24
-    readonly property real bodyLineHeight: 1.35
-    readonly property real headingLineHeight: 1.2
-    readonly property int iconSmall: 12
-    readonly property int iconSize: 16
-    readonly property int iconLarge: 20
-    readonly property int iconHero: 24
-    readonly property int iconDisplay: 32
-    readonly property int artworkPlaceholderSize: 60
+    readonly property int captionSize: UiKit.tokens.captionSize
+    readonly property int labelSize: UiKit.tokens.labelSize
+    readonly property int bodySize: UiKit.tokens.bodySize
+    readonly property int sectionHeadingSize: UiKit.tokens.sectionHeadingSize
+    readonly property int panelHeadingSize: UiKit.tokens.panelHeadingSize
+    readonly property int pageHeadingSize: UiKit.tokens.pageHeadingSize
+    readonly property real bodyLineHeight: UiKit.tokens.bodyLineHeight
+    readonly property real headingLineHeight: UiKit.tokens.headingLineHeight
+    readonly property int iconSmall: UiKit.tokens.iconSmall
+    readonly property int iconSize: UiKit.tokens.iconSize
+    readonly property int iconLarge: UiKit.tokens.iconLarge
+    readonly property int iconHero: UiKit.tokens.iconHero
+    readonly property int iconDisplay: UiKit.tokens.iconDisplay
+    readonly property int artworkPlaceholderSize: UiKit.tokens.artworkPlaceholderSize
 
-    readonly property int radiusSmall: 4
-    readonly property int radiusControl: 8
-    readonly property int radiusCard: 12
-    readonly property int borderWidth: 1
-    readonly property int focusWidth: 2
-    readonly property int controlHeight: 32
-    readonly property int compactHeight: 28
-    readonly property int selectorHeight: 40
-    readonly property int switchWidth: 40
-    readonly property int switchHeight: 22
-    readonly property int switchThumb: 16
-    readonly property int sliderTrack: 6
-    readonly property int sliderThumb: 16
-    readonly property int durationFast: 120
-    readonly property int durationNormal: 160
-    readonly property int durationSlow: 300
-    readonly property real disabledOpacity: 0.4
+    readonly property int radiusSmall: UiKit.tokens.radiusSmall
+    readonly property int radiusControl: UiKit.tokens.radiusControl
+    readonly property int radiusCard: UiKit.tokens.radiusCard
+    readonly property int borderWidth: UiKit.tokens.borderWidth
+    readonly property int focusWidth: UiKit.tokens.focusWidth
+    readonly property int controlHeight: UiKit.tokens.controlHeight
+    readonly property int compactHeight: UiKit.tokens.compactHeight
+    readonly property int selectorHeight: UiKit.tokens.selectorHeight
+    readonly property int switchWidth: UiKit.tokens.switchWidth
+    readonly property int switchHeight: UiKit.tokens.switchHeight
+    readonly property int switchThumb: UiKit.tokens.switchThumb
+    readonly property int sliderTrack: UiKit.tokens.sliderTrack
+    readonly property int sliderThumb: UiKit.tokens.sliderThumb
+    readonly property int durationFast: UiKit.tokens.durationFast
+    readonly property int durationNormal: UiKit.tokens.durationNormal
+    readonly property int durationSlow: UiKit.tokens.durationSlow
+    readonly property real disabledOpacity: UiKit.tokens.disabledOpacity
 
     readonly property color background: palette.bg
     readonly property color surface: palette.surface

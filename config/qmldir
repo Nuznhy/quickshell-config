@@ -1,7 +1,15 @@
-singleton Theme 1.0 Theme.qml
+module qs.config
+singleton BarLayout 1.0 BarLayout.qml
 singleton Design 1.0 Design.qml
 singleton Icons 1.0 Icons.qml
-singleton Settings 1.0 Settings.qml
-singleton BarLayout 1.0 BarLayout.qml
 singleton Monitoring 1.0 Monitoring.qml
+singleton Settings 1.0 Settings.qml
+singleton Theme 1.0 Theme.qml
+singleton UiKit 1.0 UiKit.qml
 singleton WorkspaceAppearance 1.0 WorkspaceAppearance.qml
+AppGlyphs 1.0 AppGlyphs.js
+BarLayoutData 1.0 BarLayoutData.js
+Palettes 1.0 Palettes.js
+WallpaperColors 1.0 WallpaperColors.js
+WidgetStyle 1.0 WidgetStyle.js
+WorkspaceAppearanceData 1.0 WorkspaceAppearanceData.js

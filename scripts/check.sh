@@ -2,6 +2,8 @@
 set -euo pipefail
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+python3 scripts/checks/check-imports.py
+
 formatter="${QMLFORMAT:-/usr/lib/qt6/bin/qmlformat}"
 if ! command -v "$formatter" >/dev/null 2>&1; then
     printf 'Qt 6 qmlformat not found. Set QMLFORMAT to its path.\n' >&2

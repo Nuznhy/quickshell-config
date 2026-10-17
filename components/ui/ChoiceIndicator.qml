@@ -1,9 +1,9 @@
-import "." as UI
 import QtQuick
-import "../../config"
+import qs.config
 
-Rectangle {
-    required property var control
+KitSurface {
+    kitSlot: "choiceIndicator"
+    required control
     property bool radio: false
     implicitWidth: Design.iconSize
     implicitHeight: implicitWidth
@@ -13,12 +13,4 @@ Rectangle {
     color: Design.fill("neutral", control.checked, control.hovered, control.down, control.enabled, Design.accent)
     border.width: control.activeFocus ? Design.focusWidth : Design.borderWidth
     border.color: control.activeFocus ? Design.text : Design.border
-    UI.Text {
-        anchors.centerIn: parent
-        text: parent.radio ? "●" : "✓"
-        visible: parent.control.checked
-        color: Design.textOnAccent
-        font.pixelSize: Design.captionSize
-        lineHeight: 1
-    }
 }

@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import unittest
 
-path = Path(__file__).resolve().parents[2] / 'scripts/network-status.py'
+path = Path(__file__).resolve().parents[2] / 'scripts/network/network-status.py'
 spec = importlib.util.spec_from_file_location('network_status', path)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

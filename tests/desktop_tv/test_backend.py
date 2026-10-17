@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location('desktop_tv', ROOT / 'scripts/desktop-tv.py')
+spec = importlib.util.spec_from_file_location('desktop_tv', ROOT / 'scripts/display/desktop-tv.py')
 backend = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(backend)
 

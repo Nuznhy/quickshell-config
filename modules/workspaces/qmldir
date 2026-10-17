@@ -1,0 +1,5 @@
+module qs.modules.workspaces
+AnimatedAppIcons 1.0 AnimatedAppIcons.qml
+WorkspacePreview 1.0 WorkspacePreview.qml
+WorkspacePreviewContent 1.0 WorkspacePreviewContent.qml
+WorkspaceSettingsPanel 1.0 WorkspaceSettingsPanel.qml

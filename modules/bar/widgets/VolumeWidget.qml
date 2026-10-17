@@ -1,14 +1,16 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.shared
+import qs.components.ui as UI
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import "../../../config"
-import "../../../services"
-import "../../../components"
-import "../../../components/PopupPlacement.js" as PopupPlacement
+import qs.config
+import qs.services.audio
+import qs.components.popup
+import qs.modules.audio
+import qs.components.popup as PopupScripts
 
 Item {
     id: volumeWidget
@@ -81,7 +83,7 @@ Item {
             const window = volumeWidget.QsWindow.window;
             if (window && window.contentItem) {
                 const point = volumeWidget.mapToItem(window.contentItem, 0, 0);
-                const placement = PopupPlacement.position(Theme.barPosition, point.x, point.y,
+                const placement = PopupScripts.PopupPlacement.position(Theme.barPosition, point.x, point.y,
                     volumeWidget.width, volumeWidget.height, window.width, window.height,
                     popup.width, popup.height, "center", 0, false);
                 popup.anchor.rect = Qt.rect(placement.x, placement.y, 1, 1);

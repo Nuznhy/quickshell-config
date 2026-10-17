@@ -2,12 +2,12 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "WorkspaceAppearanceData.js" as Data
+import qs.config as ConfigScripts
 
 Singleton {
     id: root
     property bool ready: false
-    property var state: Data.defaults()
+    property var state: ConfigScripts.WorkspaceAppearanceData.defaults()
     property string errorMessage: ""
     readonly property bool showIcons: state.showIcons
     readonly property string iconStyle: state.iconStyle
@@ -16,12 +16,12 @@ Singleton {
 
     function setOption(key, value) {
         if (!ready || !["showIcons", "iconStyle", "separator", "capsule"].includes(key)) return;
-        state = Data.normalize(Object.assign({}, state, {[key]: value}));
+        state = ConfigScripts.WorkspaceAppearanceData.normalize(Object.assign({}, state, {[key]: value}));
         saveTimer.restart();
     }
     function reset() {
         if (!ready) return;
-        state = Data.defaults();
+        state = ConfigScripts.WorkspaceAppearanceData.defaults();
         saveTimer.restart();
     }
     Timer { id: saveTimer; interval: 250; onTriggered: file.setText(JSON.stringify(root.state, null, 2) + "\n") }
@@ -31,7 +31,7 @@ Singleton {
         printErrors: false
         onLoaded: {
             if (root.ready) return;
-            try { root.state = Data.normalize(JSON.parse(text())); }
+            try { root.state = ConfigScripts.WorkspaceAppearanceData.normalize(JSON.parse(text())); }
             catch (error) { root.errorMessage = "Could not read workspace settings. Defaults restored."; }
             root.ready = true;
         }

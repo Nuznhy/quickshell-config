@@ -1,0 +1,3 @@
+module qs.services.quicksettings
+singleton QuickControls 1.0 QuickControls.qml
+singleton SystemInfo 1.0 SystemInfo.qml

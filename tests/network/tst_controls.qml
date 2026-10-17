@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "components"
-import "services"
+import qs.modules.network
+import qs.services.network
 
 Item {
     width: 460; height: 900

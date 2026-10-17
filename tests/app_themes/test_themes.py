@@ -14,9 +14,9 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(ROOT / 'scripts/appearance'))
 import app_theme_formats as formats
-spec = importlib.util.spec_from_file_location('app_themes', ROOT / 'scripts/app-themes.py')
+spec = importlib.util.spec_from_file_location('app_themes', ROOT / 'scripts/appearance/app-themes.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
@@ -323,7 +323,7 @@ class ThemeTests(unittest.TestCase):
         self.assertEqual(path.read_text(), '# manual edit\n')
 
     def test_hyprlock_caps_status(self):
-        spec = importlib.util.spec_from_file_location('lock_status', ROOT / 'scripts/hyprlock-status.py')
+        spec = importlib.util.spec_from_file_location('lock_status', ROOT / 'scripts/power/hyprlock-status.py')
         status = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(status)
         self.assertEqual(status.caps_status({'keyboards': []}), 'Caps Lock: unknown')

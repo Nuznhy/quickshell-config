@@ -1,8 +1,8 @@
 import QtQuick
 import QtTest
-import "components"
-import "modules/bar/widgets"
-import "config"
+import qs.modules.wallpaper
+import qs.modules.bar.widgets
+import qs.config
 
 Rectangle {
     width: 640; height: 400

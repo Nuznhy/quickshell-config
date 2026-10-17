@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "components"
-import "config"
+import qs.modules.wallpaper
+import qs.config
 
 Rectangle {
     width: 800; height: 760

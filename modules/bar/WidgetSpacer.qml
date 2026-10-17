@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import "../../config"
+import qs.config
 
 Item {
     implicitWidth: Settings.widgetSpacing

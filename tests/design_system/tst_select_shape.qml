@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "components/ui" as UI
-import "config"
+import qs.components.ui as UI
+import qs.config
 
 Rectangle {
     id: scene
@@ -29,7 +29,7 @@ Rectangle {
             verify(selector.popup.reveal > 0 && selector.popup.reveal < 1);
             selector.popup.open();
             tryCompare(selector.popup, "reveal", 1);
-            compare(selector.popup.opacity, 1);
+            tryCompare(selector.popup, "opacity", 1);
             selector.currentIndex = selector.count - 1;
             selector.popup.contentItem.positionViewAtEnd();
             wait(200);

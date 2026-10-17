@@ -1,5 +1,5 @@
-import "." as UI
-import "../../config"
+import qs.components.ui as UI
+import qs.config
 
 UI.Text {
     property bool invalid: false

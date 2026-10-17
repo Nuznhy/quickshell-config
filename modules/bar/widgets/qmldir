@@ -1,0 +1,19 @@
+module qs.modules.bar.widgets
+BatteryWidget 1.0 BatteryWidget.qml
+BluetoothWidget 1.0 BluetoothWidget.qml
+BrightnessWidget 1.0 BrightnessWidget.qml
+Clock 1.0 Clock.qml
+Cpu 1.0 Cpu.qml
+DesktopTvWidget 1.0 DesktopTvWidget.qml
+DisplayModeWidget 1.0 DisplayModeWidget.qml
+KeyboardLanguage 1.0 KeyboardLanguage.qml
+MediaWidget 1.0 MediaWidget.qml
+Memory 1.0 Memory.qml
+MonitoringWidget 1.0 MonitoringWidget.qml
+NotificationWidget 1.0 NotificationWidget.qml
+PowerWidget 1.0 PowerWidget.qml
+ThemeModeWidget 1.0 ThemeModeWidget.qml
+ThemeWidget 1.0 ThemeWidget.qml
+Tray 1.0 Tray.qml
+VolumeWidget 1.0 VolumeWidget.qml
+WorkspaceBar 1.0 WorkspaceBar.qml

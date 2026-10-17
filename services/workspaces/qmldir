@@ -1,0 +1,4 @@
+module qs.services.workspaces
+singleton Workspaces 1.0 Workspaces.qml
+WorkspacePreviewData 1.0 WorkspacePreviewData.js
+WorkspaceWindows 1.0 WorkspaceWindows.js

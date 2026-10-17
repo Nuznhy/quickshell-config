@@ -1,9 +1,9 @@
 import QtQuick
 import QtTest
-import "services/WorkspaceWindows.js" as Windows
-import "components"
-import "config"
-import "services"
+import qs.services.workspaces as ServiceScripts
+import qs.modules.workspaces
+import qs.config
+import qs.services.workspaces
 
 Item {
     width: 300; height: 200
@@ -16,7 +16,7 @@ Item {
             return {address: address, workspace: {id: workspace}, class: app || "ghostty", initialClass: app || "ghostty", mapped: true, focusHistoryID: 0};
         }
         function icon(appClass, initialClass) { return {appId: appClass, source: ""}; }
-        function pair() { return Windows.build([client("0xabc",1),client("0xdef",1)],icon)[1]; }
+        function pair() { return ServiceScripts.WorkspaceWindows.build([client("0xabc",1),client("0xdef",1)],icon)[1]; }
         function init() {
             first.icons = []; second.icons = []; Theme.verticalBar = false;
             first.nerdFontIcons = false;
@@ -26,15 +26,15 @@ Item {
         function test_same_app_windows_and_icon_cache() {
             let calls = 0;
             const clients = [client("0xabc",1),client("0xdef",1),client("0xff",2)];
-            const result = Windows.build(clients,(app, initial) => {calls++; return icon(app, initial);});
+            const result = ServiceScripts.WorkspaceWindows.build(clients,(app, initial) => {calls++; return icon(app, initial);});
             compare(result[1].length,2); compare(result[2].length,1); compare(calls,1);
             compare(result[1][0].addresses,["0xabc"]); compare(result[1][1].addresses,["0xdef"]);
             clients[0].focusHistoryID = 10;
-            compare(JSON.stringify(Windows.build(clients,icon)),JSON.stringify(result));
+            compare(JSON.stringify(ServiceScripts.WorkspaceWindows.build(clients,icon)),JSON.stringify(result));
         }
         function test_nerd_icons_map_apps_and_unknown_apps_have_fallback() {
             first.nerdFontIcons = true;
-            first.icons = Windows.build([client("0xabc", 1, "org.telegram.desktop"),
+            first.icons = ServiceScripts.WorkspaceWindows.build([client("0xabc", 1, "org.telegram.desktop"),
                 client("0xdef", 1, "unknown-app")], icon)[1];
             wait(250);
             compare(findChild(first, "workspace-app-glyph-0xabc").text, "");
@@ -44,7 +44,7 @@ Item {
         }
         function test_filtering_and_normalization() {
             const unmapped=client("0xbbb",2); unmapped.mapped=false;
-            const result=Windows.build([client("0XABC",1),client("0xabc",1),client("0x123",-99),unmapped,client("bad address",3)],icon);
+            const result=ServiceScripts.WorkspaceWindows.build([client("0XABC",1),client("0xabc",1),client("0x123",-99),unmapped,client("bad address",3)],icon);
             compare(Object.keys(result),["1"]);
             compare(result[1].length,1); compare(result[1][0].address,"0xabc");
         }

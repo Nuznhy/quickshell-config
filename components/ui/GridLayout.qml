@@ -1,5 +1,5 @@
 import QtQuick.Layouts as L
-import "../../config"
+import qs.config
 
 L.GridLayout {
     columnSpacing: Design.controlGap

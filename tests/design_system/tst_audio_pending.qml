@@ -1,6 +1,6 @@
 import QtQuick
 import QtTest
-import "components"
+import qs.modules.audio
 
 TestCase {
     name: "AudioPendingPresentation"

@@ -1,0 +1,6 @@
+module qs.modules.wallpaper
+WallpaperPage 1.0 WallpaperPage.qml
+WallpaperSelector 1.0 WallpaperSelector.qml
+WallpaperThemeSettings 1.0 WallpaperThemeSettings.qml
+WallpaperTransition 1.0 WallpaperTransition.qml
+Wallpapers 1.0 Wallpapers.qml

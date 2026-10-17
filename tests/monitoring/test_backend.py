@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 def load(name, file):
-    spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / file)
+    spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts/monitoring' / file)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

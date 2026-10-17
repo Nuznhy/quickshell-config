@@ -1,0 +1,5 @@
+module qs.components.shared
+AppearanceSlider 1.0 AppearanceSlider.qml
+BarHoverIndicator 1.0 BarHoverIndicator.qml
+ControlSwitch 1.0 ControlSwitch.qml
+NotificationButton 1.0 NotificationButton.qml

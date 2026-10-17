@@ -1,0 +1,4 @@
+module qs.modules.settings
+BarLayoutEditor 1.0 BarLayoutEditor.qml
+LockScreenSettings 1.0 LockScreenSettings.qml
+SettingsWindow 1.0 SettingsWindow.qml

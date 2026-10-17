@@ -1,9 +1,11 @@
 import QtQuick
 import QtTest
-import "components"
-import "services"
-import "config"
-import "widgets"
+import qs.modules.battery
+import qs.modules.quicksettings
+import qs.services.battery
+import qs.services.quicksettings
+import qs.config
+import qs.widgets
 
 TestCase {
     id: testCase

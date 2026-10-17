@@ -1,12 +1,17 @@
 import QtQuick
-import "../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import "../../config"
-import "../../services"
-import "../../components"
+import qs.config
+import qs.services.settings
+import qs.components.shared
+import qs.modules.appearance
+import qs.modules.calendar
+import qs.modules.monitoring
+import qs.modules.wallpaper
+import qs.modules.workspaces
 
 FloatingWindow {
     id: root

@@ -1,0 +1,2 @@
+module qs.services.monitoring
+singleton SystemStats 1.0 SystemStats.qml

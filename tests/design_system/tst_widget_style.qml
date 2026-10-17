@@ -1,8 +1,9 @@
 import QtQuick
 import QtTest
-import "components"
-import "config"
-import "config/WidgetStyle.js" as Style
+import qs.modules.appearance
+import qs.components.shared
+import qs.config
+import qs.config as ConfigScripts
 
 Rectangle {
     width: 680; height: 700
@@ -20,11 +21,11 @@ Rectangle {
             wait(350);
         }
         function test_defaults_validation() {
-            compare(Style.normalize(undefined), Style.defaults());
-            compare(Style.normalize({lines: "invalid", background: "instant", duration: -1, strength: "12"}),
+            compare(ConfigScripts.WidgetStyle.normalize(undefined), ConfigScripts.WidgetStyle.defaults());
+            compare(ConfigScripts.WidgetStyle.normalize({lines: "invalid", background: "instant", duration: -1, strength: "12"}),
                 {lines: "animated", background: "instant", duration: 300, strength: 12});
-            compare(Style.normalize({duration: 410, strength: 12.4}).duration, 420);
-            compare(Style.normalize({duration: Infinity, strength: 50}), Style.defaults());
+            compare(ConfigScripts.WidgetStyle.normalize({duration: 410, strength: 12.4}).duration, 420);
+            compare(ConfigScripts.WidgetStyle.normalize({duration: Infinity, strength: 50}), ConfigScripts.WidgetStyle.defaults());
         }
         function test_modes_and_interruption() {
             first.hovered = true;
@@ -81,7 +82,7 @@ Rectangle {
             wait(200);
             grabImage(settings).save('/tmp/qs-widget-styling-vertical.png');
             mouseClick(findChild(settings, "widget-style-reset"));
-            compare(Theme.widgetStyle, Style.defaults());
+            compare(Theme.widgetStyle, ConfigScripts.WidgetStyle.defaults());
             compare(Theme.verticalBar, true);
         }
     }

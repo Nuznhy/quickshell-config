@@ -1,5 +1,4 @@
 import QtQuick
-import "../../config"
 
 ControlSurface {
     // Follow the popup transition in both directions, including interrupted opens.

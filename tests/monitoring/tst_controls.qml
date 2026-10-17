@@ -1,9 +1,9 @@
 import QtQuick
 import QtTest
-import "config"
-import "services"
-import "components"
-import "modules/bar/widgets"
+import qs.config
+import qs.services.monitoring
+import qs.modules.monitoring
+import qs.modules.bar.widgets
 Rectangle {
     width: 900; height: 760
     color: Theme.bg

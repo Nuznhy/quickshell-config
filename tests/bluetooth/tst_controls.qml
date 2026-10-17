@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "components"
-import "services"
+import qs.modules.bluetooth
+import qs.services.bluetooth
 Item {
     width: 460; height: 1000
     BluetoothCenter { id: center; width: 430; maximumHeight: 900; active: true }

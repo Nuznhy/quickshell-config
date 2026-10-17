@@ -7,7 +7,7 @@ var presets = [
       light: ["#faf4ed", "#fffaf3", "#f2e9e1", "#9893a5", "#797593", "#575279", "#b4637a", "#a96d18", "#b87772", "#286983", "#427b8a", "#907aa9", "#f4ede8", "#dfdad9", "#cecacd"] },
     { id: "catppuccin", name: "Catppuccin", dark: ["#1e1e2e", "#181825", "#313244", "#6c7086", "#a6adc8", "#cdd6f4", "#f38ba8", "#f9e2af", "#f5c2e7", "#89b4fa", "#94e2d5", "#cba6f7", "#313244", "#45475a", "#585b70"],
       light: ["#eff1f5", "#e6e9ef", "#dce0e8", "#8c8fa1", "#6c6f85", "#4c4f69", "#d20f39", "#986800", "#b52ca0", "#1e66f5", "#167d8d", "#8839ef", "#dce0e8", "#ccd0da", "#bcc0cc"] },
-    // Catalog sources and role mapping are documented in config/PALETTE_SOURCES.md.
+    // Catalog sources and role mapping are documented in docs/palettes.md.
     { id: "gruvbox", name: "Gruvbox", dark: ["#282828", "#3c3836", "#504945", "#665c54", "#bdae93", "#d5c4a1", "#fb4934", "#fabd2f", "#fe8019", "#83a598", "#8ec07c", "#d3869b", "#3c3836", "#504945", "#665c54"],
       light: ["#fbf1c7", "#ebdbb2", "#d5c4a1", "#bdae93", "#665c54", "#504945", "#9d0006", "#b57614", "#af3a03", "#076678", "#427b58", "#8f3f71", "#ebdbb2", "#d5c4a1", "#bdae93"] },
     { id: "solarized", name: "Solarized", dark: ["#002b36", "#073642", "#586e75", "#657b83", "#839496", "#93a1a1", "#dc322f", "#b58900", "#cb4b16", "#268bd2", "#2aa198", "#6c71c4", "#073642", "#586e75", "#657b83"],

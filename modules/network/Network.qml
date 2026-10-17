@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import "../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Layouts
 import Quickshell
-import "../../config"
-import "../../components"
-import "../../services"
+import qs.config
+import qs.components.popup
+import qs.services.network
 
 DropdownWidget {
     id: root

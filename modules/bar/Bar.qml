@@ -3,7 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import "../../config"
+import qs.config
+import qs.components.ui as UI
 
 PanelWindow {
     id: barRoot
@@ -32,6 +33,7 @@ PanelWindow {
     }
     Connections {
         target: Theme
+        function onUiKitChanged() { barRoot.closeAllPopups(); }
         function onBarPositionChanged() { barRoot.closeAllPopups(); }
     }
     anchors {
@@ -51,7 +53,8 @@ PanelWindow {
         right: !Theme.verticalBar ? Theme.barSideMargin : Theme.barPosition === "right" ? Theme.barTopMargin : 0
     }
 
-    Rectangle {
+    UI.KitSurface {
+        kitSlot: "barSurface"
         anchors.fill: parent
         color: Design.background
         radius: Theme.barRadius

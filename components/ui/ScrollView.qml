@@ -1,5 +1,5 @@
 import QtQuick.Controls as C
-import "." as UI
+import qs.components.ui as UI
 
 C.ScrollView {
     id: root

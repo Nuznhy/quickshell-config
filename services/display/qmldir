@@ -1,0 +1,3 @@
+module qs.services.display
+singleton DesktopTv 1.0 DesktopTv.qml
+singleton DisplayMode 1.0 DisplayMode.qml

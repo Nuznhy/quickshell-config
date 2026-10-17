@@ -1,0 +1,2 @@
+module qs.services.network
+singleton NetworkState 1.0 NetworkState.qml

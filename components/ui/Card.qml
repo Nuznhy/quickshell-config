@@ -1,7 +1,8 @@
 import QtQuick
-import "../../config"
+import qs.config
 
-Rectangle {
+KitSurface {
+    kitSlot: "cardSurface"
     radius: Design.radiusCard
     color: Design.surface
 }

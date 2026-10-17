@@ -1,6 +1,6 @@
 import QtQuick
 import QtTest
-import "components/ui" as UI
+import qs.components.ui as UI
 
 Rectangle {
     id: scene

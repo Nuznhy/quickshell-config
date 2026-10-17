@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Templates as T
-import "." as UI
-import "../../config"
+import qs.components.ui as UI
+import qs.config
 
 T.TextField {
     id: root
@@ -34,21 +34,13 @@ T.TextField {
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
-    background: Rectangle {
+    background: KitSurface {
+        kitSlot: "textFieldSurface"
+        control: root
         radius: Design.radiusControl
         color: Design.surface
         border.width: root.activeFocus ? Design.focusWidth : Design.borderWidth
         border.color: root.invalid ? Design.danger : root.activeFocus ? Design.accent : root.hovered && root.enabled ? Design.textSecondary : Design.border
         Behavior on border.color { ColorAnimation { duration: Design.durationFast } }
-        // Invalid status and keyboard focus remain independently visible.
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -Design.space2
-            visible: root.invalid && root.activeFocus
-            color: "transparent"
-            radius: Design.radiusControl + Design.space2
-            border.width: Design.borderWidth
-            border.color: Design.accent
-        }
     }
 }

@@ -1,8 +1,10 @@
 import QtQuick
 import Quickshell
-import "../../../config"
-import "../../../services"
-import "../../../components"
+import qs.config
+import qs.services.settings
+import qs.components.popup
+import qs.modules.quicksettings
+import qs.modules.appearance
 
 DropdownWidget {
     id: root

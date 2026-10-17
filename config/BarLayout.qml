@@ -2,19 +2,19 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "BarLayoutData.js" as Data
+import qs.config as ConfigScripts
 
 Singleton {
     id: root
-    property var state: Data.defaults()
+    property var state: ConfigScripts.BarLayoutData.defaults()
     property bool ready: false
     property string errorMessage: ""
-    readonly property var registry: Data.widgets
+    readonly property var registry: ConfigScripts.BarLayoutData.widgets
     signal aboutToChange
 
     function ids(section) { return state.sections[section] || []; }
     function isEnabled(id) { return !state.disabled.includes(id); }
-    function entry(id) { return Data.widget(id); }
+    function entry(id) { return ConfigScripts.BarLayoutData.widget(id); }
     function commit(next) {
         if (!ready || (!errorMessage && JSON.stringify(next) === JSON.stringify(state))) return;
         aboutToChange();
@@ -22,9 +22,9 @@ Singleton {
         errorMessage = "";
         saveTimer.restart();
     }
-    function move(id, section, index) { commit(Data.move(state, id, section, index)); }
-    function setEnabled(id, enabled) { commit(Data.setEnabled(state, id, enabled)); }
-    function reset() { commit(Data.defaults()); }
+    function move(id, section, index) { commit(ConfigScripts.BarLayoutData.move(state, id, section, index)); }
+    function setEnabled(id, enabled) { commit(ConfigScripts.BarLayoutData.setEnabled(state, id, enabled)); }
+    function reset() { commit(ConfigScripts.BarLayoutData.defaults()); }
     function save() { file.setText(JSON.stringify(state, null, 2) + "\n"); }
 
     Timer { id: saveTimer; interval: 250; onTriggered: root.save() }
@@ -34,7 +34,7 @@ Singleton {
         printErrors: false
         onLoaded: {
             if (root.ready) return;
-            try { root.state = Data.normalize(JSON.parse(text())); }
+            try { root.state = ConfigScripts.BarLayoutData.normalize(JSON.parse(text())); }
             catch (error) { root.errorMessage = "Could not read the bar layout. Default layout restored."; }
             root.ready = true;
         }

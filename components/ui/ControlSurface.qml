@@ -1,8 +1,9 @@
 import QtQuick
-import "../../config"
+import qs.config
 
-Rectangle {
-    required property var control
+KitSurface {
+    kitSlot: "controlSurface"
+    required control
     property string variant: "neutral"
     property bool selected: false
     property color accentColor: Design.accent

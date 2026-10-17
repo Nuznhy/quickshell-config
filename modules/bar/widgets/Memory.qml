@@ -1,8 +1,8 @@
 import QtQuick
-import "../../../components/ui" as UI
-import "../../../config"
-import "../../../services"
-import "../../../components"
+import qs.components.shared
+import qs.components.ui as UI
+import qs.config
+import qs.services.monitoring
 
 Item {
     id: memWidget

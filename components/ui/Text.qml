@@ -1,5 +1,5 @@
 import QtQuick as Quick
-import "../../config"
+import qs.config
 
 Quick.Text {
     property string role: "body"

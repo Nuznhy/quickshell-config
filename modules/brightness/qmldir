@@ -1,0 +1,2 @@
+module qs.modules.brightness
+BrightnessCenter 1.0 BrightnessCenter.qml

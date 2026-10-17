@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-spec = importlib.util.spec_from_file_location('focus_notification', Path(__file__).resolve().parents[2] / 'scripts/focus-notification.py')
+spec = importlib.util.spec_from_file_location('focus_notification', Path(__file__).resolve().parents[2] / 'scripts/notifications/focus-notification.py')
 focus = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(focus)
 

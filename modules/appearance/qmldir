@@ -1,0 +1,10 @@
+module qs.modules.appearance
+ApplicationThemes 1.0 ApplicationThemes.qml
+BarFontPicker 1.0 BarFontPicker.qml
+PaletteSwatches 1.0 PaletteSwatches.qml
+SettingsIcon 1.0 SettingsIcon.qml
+SettingsIconEditor 1.0 SettingsIconEditor.qml
+ThemeDropdown 1.0 ThemeDropdown.qml
+ThemePicker 1.0 ThemePicker.qml
+UiKitPicker 1.0 UiKitPicker.qml
+WidgetStyleSettings 1.0 WidgetStyleSettings.qml

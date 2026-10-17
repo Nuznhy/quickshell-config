@@ -1,9 +1,10 @@
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Layouts
 import Quickshell
-import "../../../config"
-import "../../../components"
+import qs.config
+import qs.components.popup
+import qs.modules.brightness
 
 DropdownWidget {
     id: root

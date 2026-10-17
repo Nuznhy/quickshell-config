@@ -1,0 +1,3 @@
+module qs.modules.network
+Network 1.0 Network.qml
+NetworkCenter 1.0 NetworkCenter.qml

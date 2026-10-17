@@ -1,0 +1,5 @@
+module qs.modules.audio
+ApplicationMixer 1.0 ApplicationMixer.qml
+AudioDeviceDropdown 1.0 AudioDeviceDropdown.qml
+AudioLevelControl 1.0 AudioLevelControl.qml
+AudioSlider 1.0 AudioSlider.qml

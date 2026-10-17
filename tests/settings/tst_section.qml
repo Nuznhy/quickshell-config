@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "modules/bar"
-import "config"
+import qs.modules.bar
+import qs.config
 
 Item {
     width: 900; height: 650

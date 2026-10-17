@@ -1,0 +1,4 @@
+module qs.modules.monitoring
+MonitoringCenter 1.0 MonitoringCenter.qml
+MonitoringGraph 1.0 MonitoringGraph.qml
+MonitoringSettings 1.0 MonitoringSettings.qml

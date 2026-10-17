@@ -1,0 +1,4 @@
+module qs.components.popup
+DropdownWidget 1.0 DropdownWidget.qml
+PopupReveal 1.0 PopupReveal.qml
+PopupPlacement 1.0 PopupPlacement.js

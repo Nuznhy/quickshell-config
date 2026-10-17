@@ -1,8 +1,8 @@
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.shared
+import qs.components.ui as UI
 import QtQuick.Controls
-import "../../../config"
-import "../../../components"
+import qs.config
 
 Item {
     id: root

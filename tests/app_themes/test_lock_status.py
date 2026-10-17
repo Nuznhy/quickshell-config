@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-spec = importlib.util.spec_from_file_location('lock_status', Path(__file__).resolve().parents[2] / 'scripts/hyprlock-status.py')
+spec = importlib.util.spec_from_file_location('lock_status', Path(__file__).resolve().parents[2] / 'scripts/power/hyprlock-status.py')
 status = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(status)
 

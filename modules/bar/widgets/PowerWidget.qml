@@ -1,9 +1,10 @@
 import QtQuick
-import "../../../components/ui" as UI
+import qs.components.ui as UI
 import Quickshell
 import Quickshell.Io
-import "../../../config"
-import "../../../components"
+import qs.config
+import qs.components.popup
+import qs.modules.power
 
 DropdownWidget {
     id: root
@@ -28,7 +29,7 @@ DropdownWidget {
             if (action.running) return;
             root.errorMessage = "";
             root.dropdownOpen = false;
-            action.command = ["python3", decodeURIComponent(Qt.resolvedUrl("../../../scripts/power-action.py").toString().replace(/^file:\/\//, "")), requested];
+            action.command = ["python3", Quickshell.shellPath("scripts/power/power-action.py"), requested];
             action.running = true;
         }
     }

@@ -1,8 +1,13 @@
 import QtQuick
 import QtQuick.Controls as C
-import "../../config"
+import qs.config
 
 C.Popup {
+    id: root
+    Connections {
+        target: UiKit
+        function onActiveIdChanged() { root.close(); }
+    }
     padding: Design.space8
     margins: Design.space8
     popupType: C.Popup.Item

@@ -1,0 +1,2 @@
+module qs.services.battery
+singleton BatteryState 1.0 BatteryState.qml

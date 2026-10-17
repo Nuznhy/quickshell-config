@@ -1,0 +1,10 @@
+module qs.kits.default
+ChoiceIndicator 1.0 ChoiceIndicator.qml
+DropdownSurface 1.0 DropdownSurface.qml
+Kit 1.0 Kit.qml
+SliderTrack 1.0 SliderTrack.qml
+Surface 1.0 Surface.qml
+SwitchIndicator 1.0 SwitchIndicator.qml
+TextFieldSurface 1.0 TextFieldSurface.qml
+WidgetIndicator 1.0 WidgetIndicator.qml
+Tokens 1.0 Tokens.js

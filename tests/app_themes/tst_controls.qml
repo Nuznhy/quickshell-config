@@ -1,8 +1,8 @@
 import QtQuick
 import QtTest
-import "components"
-import "services"
-import "config"
+import qs.modules.appearance
+import qs.services.appearance
+import qs.config
 Rectangle {
     width: 800; height: 600
     color: Theme.bg

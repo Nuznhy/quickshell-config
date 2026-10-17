@@ -1,10 +1,10 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import "../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Controls
 import QtQuick.Layouts
-import "../../config"
-import "../../components"
+import qs.config
+import qs.components.shared
 
 FocusScope {
     id: root

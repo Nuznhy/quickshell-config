@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch, call
 
-spec = importlib.util.spec_from_file_location('power', Path(__file__).resolve().parents[2] / 'scripts/power-action.py')
+spec = importlib.util.spec_from_file_location('power', Path(__file__).resolve().parents[2] / 'scripts/power/power-action.py')
 power = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(power)
 

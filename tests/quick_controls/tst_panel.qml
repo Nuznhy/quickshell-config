@@ -1,8 +1,9 @@
 import QtQuick
 import QtTest
-import "components"
-import "config"
-import "services"
+import qs.modules.quicksettings
+import qs.config
+import qs.services.notifications
+import qs.services.quicksettings
 
 TestCase {
     id: testCase

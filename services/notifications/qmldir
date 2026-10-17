@@ -1,0 +1,2 @@
+module qs.services.notifications
+singleton Notifications 1.0 Notifications.qml

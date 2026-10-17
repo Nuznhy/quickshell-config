@@ -1,0 +1,3 @@
+module qs.modules.media
+MediaDetails 1.0 MediaDetails.qml
+MediaSeekSlider 1.0 MediaSeekSlider.qml

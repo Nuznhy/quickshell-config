@@ -1,13 +1,13 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import "../../components/ui" as UI
+import qs.components.ui as UI
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "../../components"
-import "../../config"
-import "../../services"
+
+import qs.config
+import qs.services.notifications
 
 PanelWindow {
     id: root

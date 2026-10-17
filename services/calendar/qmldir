@@ -1,0 +1,4 @@
+module qs.services.calendar
+CalendarEvents 1.0 CalendarEvents.qml
+singleton CalendarFeed 1.0 CalendarFeed.qml
+singleton Time 1.0 Time.qml

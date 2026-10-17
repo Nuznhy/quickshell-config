@@ -8,24 +8,26 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'scripts'))
-from design_test_support import install_design
+sys.path.insert(0, str(ROOT / 'tests/runners'))
+from design_test_support import prepare_service_dirs, write_service_registry, prepare_component_dirs, install_design
 
 
 class RuntimeTests(unittest.TestCase):
     def test_dates_navigation_and_privacy_lifecycle(self):
         with tempfile.TemporaryDirectory(prefix='qs-calendar-test-') as directory:
             base = Path(directory)
+            prepare_service_dirs(base)
+            prepare_component_dirs(base)
             for folder in ['services', 'components', 'config', 'scripts', 'runtime']:
-                (base / folder).mkdir(mode=0o700)
-            for name in ['services/CalendarEvents.qml', 'services/CalendarFeed.qml',
-                         'components/CalendarPanel.qml', 'components/CalendarSettingsPanel.qml']:
+                (base / folder).mkdir(parents=True, exist_ok=True, mode=0o700)
+            for name in ['services/calendar/CalendarEvents.qml', 'services/calendar/CalendarFeed.qml',
+                         'modules/calendar/CalendarPanel.qml', 'modules/calendar/CalendarSettingsPanel.qml']:
                 shutil.copyfile(ROOT / name, base / name)
-            (base / 'services/qmldir').write_text('singleton CalendarFeed 1.0 CalendarFeed.qml\nCalendarEvents 1.0 CalendarEvents.qml\n')
+            write_service_registry(base, 'singleton CalendarFeed 1.0 CalendarFeed.qml\nCalendarEvents 1.0 CalendarEvents.qml\n')
             (base / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\n')
             (base / 'config/Theme.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { property string fontFamily: "sans-serif" }\n')
             install_design(base)
-            (base / 'scripts/ical-calendar.py').write_text('''import json, sys, time
+            (base / 'scripts/calendar/ical-calendar.py').write_text('''import json, sys, time
 time.sleep(0.3)
 if sys.argv[1] == 'manage':
     request = json.load(sys.stdin)
@@ -37,8 +39,8 @@ print(json.dumps({'events': [{'title': sys.argv[2], 'calendar': 'Test', 'allDay'
 ''')
             (base / 'shell.qml').write_text('''import QtQuick
 import Quickshell
-import "services"
-import "components"
+import qs.services.calendar
+import qs.modules.calendar
 ShellRoot {
     id: root
     property int phase: 0

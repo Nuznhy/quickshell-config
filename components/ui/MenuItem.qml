@@ -1,6 +1,5 @@
-import "." as UI
+import qs.components.ui as UI
 import QtQuick
-import "../../config"
 
 Button {
     id: root

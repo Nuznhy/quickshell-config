@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls as C
 import QtTest
-import "components/ui" as UI
-import "config"
+import qs.components.ui as UI
+import qs.config
 
 Item {
     id: scene

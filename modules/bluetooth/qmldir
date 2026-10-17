@@ -1,0 +1,2 @@
+module qs.modules.bluetooth
+BluetoothCenter 1.0 BluetoothCenter.qml

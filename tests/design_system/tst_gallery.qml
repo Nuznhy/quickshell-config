@@ -1,7 +1,8 @@
 import QtQuick
 import QtTest
-import "tools/design-gallery"
-import "config/Palettes.js" as Palettes
+import qs.tools.gallery
+import qs.config as ConfigScripts
+import qs.kits as KitScripts
 
 Item {
     width: 960
@@ -10,10 +11,18 @@ Item {
     TestCase {
         name: "DesignGallery"
         when: windowShown
+        function cleanupTestCase() { gallery.kit = "default"; }
         function test_render_palettes_data() {
-            return Palettes.presets.reduce((rows, p) => rows.concat(["dark", "light"].map(mode => ({tag: p.id + "-" + mode, preset: p.id, mode: mode}))), []);
+            const rows = [];
+            for (const kit of KitScripts.Registry.kits) {
+                for (const p of ConfigScripts.Palettes.presets) {
+                    for (const mode of ["dark", "light"]) rows.push({tag: kit.id + "-" + p.id + "-" + mode, kit: kit.id, preset: p.id, mode: mode});
+                }
+            }
+            return rows;
         }
         function test_render_palettes(data) {
+            gallery.kit = data.kit;
             gallery.preset = data.preset;
             gallery.mode = data.mode;
             gallery.contentItem.contentY = 0;
@@ -33,6 +42,7 @@ Item {
             tryVerify(() => done);
         }
         function test_narrow_layout() {
+            gallery.kit = "default";
             gallery.parent.width = 640;
             gallery.parent.height = 480;
             gallery.contentItem.contentY = 0;

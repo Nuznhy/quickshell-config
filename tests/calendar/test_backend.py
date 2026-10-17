@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location('ical_calendar', ROOT / 'scripts/ical-calendar.py')
+spec = importlib.util.spec_from_file_location('ical_calendar', ROOT / 'scripts/calendar/ical-calendar.py')
 feed = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(feed)
 PRIVATE_URL = 'https://calendar.example.test/private-test-token/basic.ics'
@@ -135,7 +135,7 @@ class SecurityTests(unittest.TestCase):
             self.assertNotIn('private-test-token', output.getvalue())
 
     def test_accidental_url_argument_is_not_echoed(self):
-        result = subprocess.run([sys.executable, str(ROOT / 'scripts/ical-calendar.py'), 'configure', PRIVATE_URL],
+        result = subprocess.run([sys.executable, str(ROOT / 'scripts/calendar/ical-calendar.py'), 'configure', PRIVATE_URL],
                                 text=True, capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 2)
         self.assertNotIn('private-test-token', result.stdout + result.stderr)

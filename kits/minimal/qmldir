@@ -1,0 +1,3 @@
+module qs.kits.minimal
+ControlSurface 1.0 ControlSurface.qml
+Kit 1.0 Kit.qml

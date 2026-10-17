@@ -1,0 +1,2 @@
+module qs.modules.battery
+BatteryCenter 1.0 BatteryCenter.qml

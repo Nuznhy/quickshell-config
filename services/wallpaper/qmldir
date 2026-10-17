@@ -1,0 +1,2 @@
+module qs.services.wallpaper
+singleton WallpaperTheme 1.0 WallpaperTheme.qml

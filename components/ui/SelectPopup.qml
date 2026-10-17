@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Effects
-import "../../config"
+import qs.config
 
 Popup {
     id: root

@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Window
 import Quickshell
 import Quickshell.Io
-import "components"
-import "services"
+import qs.components.popup
+import qs.modules.notifications
+import qs.services.notifications
 ShellRoot {
     property int historyChanges: 0
     Connections {

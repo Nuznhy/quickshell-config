@@ -1,7 +1,7 @@
-import "." as UI
+import qs.components.ui as UI
 import QtQuick
 import QtQuick.Templates as T
-import "../../config"
+import qs.config
 
 T.RadioButton {
     id: root

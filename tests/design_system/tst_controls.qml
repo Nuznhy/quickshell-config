@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Controls as C
 import QtTest
-import "components/ui" as UI
-import "components"
-import "config"
-import "config/Palettes.js" as Palettes
+import qs.components.ui as UI
+import qs.components.shared
+import qs.modules.audio
+import qs.modules.calendar
+import qs.modules.media
+import qs.config
+import qs.config as ConfigScripts
 
 Item {
     id: scene
@@ -214,12 +217,12 @@ Item {
             compare(selector.selectedDescription, "No devices available");
         }
         function test_palette_changes_update_existing_controls_data() {
-            return Palettes.presets.reduce((rows, p) => rows.concat(["dark", "light"].map(mode => ({tag: p.id + "-" + mode, preset: p.id, mode: mode}))), []);
+            return ConfigScripts.Palettes.presets.reduce((rows, p) => rows.concat(["dark", "light"].map(mode => ({tag: p.id + "-" + mode, preset: p.id, mode: mode}))), []);
         }
         function test_palette_changes_update_existing_controls(data) {
             const button = make(buttonFactory);
             button.variant = "primary";
-            Design.previewPalette = Palettes.palette(data.preset, data.mode);
+            Design.previewPalette = ConfigScripts.Palettes.palette(data.preset, data.mode);
             wait(Design.durationNormal);
             compare(button.background.color, Design.accent);
             compare(button.contentItem.color, Design.textOnAccent);

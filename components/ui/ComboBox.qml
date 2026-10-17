@@ -1,8 +1,8 @@
-import "." as UI
+import qs.components.ui as UI
 import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Templates as T
-import "../../config"
+import qs.config
 
 T.ComboBox {
     id: root

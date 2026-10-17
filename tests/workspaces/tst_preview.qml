@@ -1,10 +1,10 @@
 import QtQuick
 import QtTest
-import "config"
-import "services"
-import "components"
-import "modules/bar/widgets"
-import "services/WorkspacePreviewData.js" as Data
+import qs.config
+import qs.services.workspaces
+import qs.modules.workspaces
+import qs.modules.bar.widgets
+import qs.services.workspaces as ServiceScripts
 
 Rectangle {
     width: 700; height: 480
@@ -26,7 +26,7 @@ Rectangle {
             Theme.verticalBar=false;
             WorkspaceAppearance.reset();
             content.highlightedAddress="";
-            Workspaces.previewWindows=Data.windows([sample("0xabc",1920,960),sample("0xdef",2880,960)])[1];
+            Workspaces.previewWindows=ServiceScripts.WorkspacePreviewData.windows([sample("0xabc",1920,960),sample("0xdef",2880,960)])[1];
             Workspaces.workspaceIcons={"1":[{appId:"ghostty",source:"",address:"0xabc",addresses:["0xabc"]},{appId:"ghostty",source:"",address:"0xdef",addresses:["0xdef"]}]};
             mouseMove(content.parent,650,450);
             wait(300);
@@ -93,18 +93,18 @@ Rectangle {
         }
         function test_geometry_uses_monitor_origin_and_logical_scale() {
             const monitor={x:-1920,y:-100,width:3840,height:2160,scale:2,lastIpcObject:{transform:0}};
-            const bounds=Data.bounds(monitor,null);
+            const bounds=ServiceScripts.WorkspacePreviewData.bounds(monitor,null);
             compare(bounds.width,1920); compare(bounds.height,1080);
-            const rect=Data.project({x:-960,y:440,width:960,height:540},bounds,380,213.75);
+            const rect=ServiceScripts.WorkspacePreviewData.project({x:-960,y:440,width:960,height:540},bounds,380,213.75);
             compare(rect.x,190); compare(rect.y,106.875); compare(rect.width,190);
             monitor.lastIpcObject.transform=1;
-            compare(Data.bounds(monitor,null).width,1080);
-            compare(Data.bounds(monitor,{width:1000,height:2000}).height,2000);
+            compare(ServiceScripts.WorkspacePreviewData.bounds(monitor,null).width,1080);
+            compare(ServiceScripts.WorkspacePreviewData.bounds(monitor,{width:1000,height:2000}).height,2000);
         }
         function test_unmapped_and_invalid_windows_excluded() {
             const hidden=sample("0xbbb",0,100); hidden.hidden=true;
             const invalid=sample("0xccc",0,0);
-            const result=Data.windows([sample("0XABC",0,100),sample("0xabc",0,100),hidden,invalid]);
+            const result=ServiceScripts.WorkspacePreviewData.windows([sample("0XABC",0,100),sample("0xabc",0,100),hidden,invalid]);
             compare(result[1].length,1); compare(result[1][0].address,"0xabc");
         }
         function test_highlight_matches_exact_duplicate_window() {

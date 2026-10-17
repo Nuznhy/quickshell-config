@@ -1,7 +1,7 @@
 import QtQuick
 import QtTest
-import "components"
-import "config"
+import qs.modules.appearance
+import qs.config
 
 Rectangle {
     width: 600; height: 480

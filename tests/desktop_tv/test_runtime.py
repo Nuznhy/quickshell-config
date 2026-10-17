@@ -9,22 +9,24 @@ import unittest
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
-from design_test_support import install_design
+sys.path.insert(0, str(ROOT / "tests/runners"))
+from design_test_support import prepare_service_dirs, write_service_registry, prepare_component_dirs, install_design
 
 
 class RuntimeTests(unittest.TestCase):
     def test_widget_switches_both_ways(self):
         with tempfile.TemporaryDirectory(prefix='qs-desktop-tv-') as directory:
             base = Path(directory)
+            prepare_service_dirs(base)
+            prepare_component_dirs(base)
             for name in ['config', 'services', 'scripts', 'modules/bar/widgets',
                          'components', 'runtime', 'bin']:
-                (base / name).mkdir(parents=True, mode=0o700)
-            for name in ['services/DesktopTv.qml', 'scripts/desktop-tv.py',
+                (base / name).mkdir(parents=True, exist_ok=True, mode=0o700)
+            for name in ['services/display/DesktopTv.qml', 'scripts/display/desktop-tv.py',
                          'modules/bar/widgets/DesktopTvWidget.qml',
-                         'components/BarHoverIndicator.qml']:
+                         'components/shared/BarHoverIndicator.qml']:
                 shutil.copyfile(ROOT / name, base / name)
-            (base / 'services/qmldir').write_text('singleton DesktopTv 1.0 DesktopTv.qml\n')
+            write_service_registry(base, 'singleton DesktopTv 1.0 DesktopTv.qml\n')
             (base / 'config/qmldir').write_text(
                 'singleton Theme 1.0 Theme.qml\nsingleton Settings 1.0 Settings.qml\n')
             (base / 'config/Theme.qml').write_text('''pragma Singleton
@@ -74,8 +76,8 @@ else:
             fake.chmod(0o700)
             (base / 'shell.qml').write_text('''import QtQuick
 import Quickshell
-import "services"
-import "modules/bar/widgets"
+import qs.services.display
+import qs.modules.bar.widgets
 ShellRoot {
     property int phase: 0
     property int elapsed: 0

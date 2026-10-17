@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Templates as T
-import "../../config"
+import qs.config
 
 T.ScrollBar {
     id: root

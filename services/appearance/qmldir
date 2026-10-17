@@ -1,0 +1,2 @@
+module qs.services.appearance
+singleton AppTheming 1.0 AppTheming.qml
