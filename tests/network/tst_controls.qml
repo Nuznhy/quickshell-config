@@ -36,7 +36,24 @@ Item {
                 }
             ];
             NetworkState.lastAction = {};
+            NetworkState.connections = [];
             wait(50);
+        }
+        function test_connection_dns() {
+            const connection = {
+                name: "LAN", type: "802-3-ethernet", vpn: false,
+                state: "activated", devices: ["eth0"],
+                ipv4: ["192.0.2.7"], ipv6: [],
+                dns: ["192.0.2.53", "2001:db8::53"]
+            };
+            NetworkState.connections = [connection];
+            wait(50);
+            compare(control("connectionDns").text, "DNS: 192.0.2.53, 2001:db8::53");
+            compare(control("connectionDns").selectByMouse, true);
+            connection.dns = [];
+            NetworkState.connections = [connection];
+            wait(50);
+            compare(control("connectionDns").text, "DNS: Not available");
         }
         function test_wifi_toggle_and_failed_action() {
             const toggle = control("wifiToggle");

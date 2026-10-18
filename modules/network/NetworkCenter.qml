@@ -217,6 +217,22 @@ FocusScope {
                                 color: Design.textMuted
                                 role: "label"
                             }
+                            TextEdit {
+                                objectName: "connectionDns"
+                                Layout.fillWidth: true
+                                readonly property var servers: currentCard.modelData.dns || []
+                                text: servers.length > 0 ? "DNS: " + servers.join(", ") : "DNS: Not available"
+                                textFormat: TextEdit.PlainText
+                                readOnly: true
+                                selectByMouse: true
+                                color: Design.textSecondary
+                                selectionColor: Design.accent
+                                selectedTextColor: Design.background
+                                font.family: Design.fontFamily
+                                font.pixelSize: Design.labelSize
+                                wrapMode: TextEdit.WrapAnywhere
+                                Accessible.name: text
+                            }
                         }
                     }
                 }

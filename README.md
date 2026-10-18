@@ -6,7 +6,7 @@ for each screen, shared desktop services, and selectable light and dark themes.
 ## Features
 
 - Configurable widget layout, horizontal and vertical bars, and workspace previews.
-- Audio, network, Bluetooth, brightness, media, battery, and system monitoring.
+- Audio, network (including connection IP addresses and DNS servers), Bluetooth, brightness, media, battery, and system monitoring.
 - Notifications with history and Do Not Disturb, plus an optional calendar feed.
 - Per-monitor wallpapers, wallpaper-derived colors, UI kits, and application themes.
 - Quick settings, Night Shift, and Hyprlock integration.

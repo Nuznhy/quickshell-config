@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read NetworkManager connection metadata and IP addresses; never request secrets."""
+"""Read NetworkManager connection metadata, IP addresses, and DNS; never request secrets."""
 import json
 
 VPN_TYPES = {"vpn", "wireguard"}
@@ -24,6 +24,12 @@ def snapshot(client):
             "devices": [device.get_iface() for device in connection.get_devices()],
             "ipv4": addresses(connection.get_ip4_config()),
             "ipv6": addresses(connection.get_ip6_config()),
+            "dns": list(dict.fromkeys(
+                server
+                for config in (connection.get_ip4_config(), connection.get_ip6_config())
+                if config
+                for server in config.get_nameservers()
+            )),
         })
     profiles = []
     for connection in client.get_connections():
