@@ -148,6 +148,7 @@ ShellRoot {
         }
         function clearPreview(): void { UiKit.previewKit = ""; UiKit.minimalKit.tokens = {}; Design.previewPalette = null; }
         function nativePalette(mode: string): void { Theme.mode = mode; Theme.palette = ConfigScripts.Palettes.palette("windows7-aero", mode); }
+        function xpPalette(mode: string): void { Theme.mode = mode; Theme.palette = ConfigScripts.Palettes.palette("windowsxp-luna", mode); }
         function widgetStyle(): void { Theme.widgetStyle = {lines: "off", background: "instant", duration: 400, strength: 20}; }
         function unrelated(): void { Theme.barRadius += 1; }
         function hyprEnable(): void { AppTheming.setEnabled("hyprland", true); }
@@ -231,6 +232,13 @@ ShellRoot {
             ipc('nativePalette', 'dark')
             settled(lambda r: 'background = #242424' in path.read_text())
             assert 'palette = 5=#7eb4ea' in path.read_text()
+            ipc('kit', 'windowsxp')
+            ipc('xpPalette', 'light')
+            settled(lambda r: 'background = #ece9d8' in path.read_text())
+            assert 'palette = 5=#245edb' in path.read_text()
+            ipc('xpPalette', 'dark')
+            settled(lambda r: 'background = #202838' in path.read_text())
+            assert 'palette = 5=#225bc5' in path.read_text()
             modified = path.stat().st_mtime_ns
             ipc('unrelated')
             time.sleep(.4)

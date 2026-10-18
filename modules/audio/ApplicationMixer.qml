@@ -129,13 +129,12 @@ UI.ColumnLayout {
                                     source: root.applicationIcon(streamRow.iconName, streamRow.desktopId, streamRow.binaryName, streamRow.appName)
                                     visible: status === Image.Ready
                                 }
-                                UI.Text {
+                                UI.Icon {
                                     anchors.centerIn: parent
                                     visible: applicationIcon.status !== Image.Ready
                                     text: "󰕾"
                                     color: Design.textSecondary
-                                    font.family: Design.fontFamily
-                                    font.pixelSize: Design.iconLarge
+                                    size: Design.iconLarge
                                 }
                             }
                             AudioSlider {

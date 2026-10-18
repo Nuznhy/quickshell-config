@@ -72,6 +72,11 @@ QtObject {
     readonly property color success: palette.foam || palette.iris
     readonly property color info: palette.pine || palette.iris
 
+    function barColor(role) {
+        const overrides = UiKit.active.barPalette;
+        return overrides[role] !== undefined ? overrides[role] : root[role];
+    }
+
     function textSize(role) {
         switch (role) {
         case "caption":
@@ -109,7 +114,7 @@ QtObject {
             return text;
         return contrast("#ffffff", fillColor) > contrast("#000000", fillColor) ? "#ffffff" : "#000000";
     }
-    function fill(variant, selected, hovered, down, active, accentColor) {
+    function fill(variant, selected, hovered, down, active, accentColor, controlKind) {
         const emphasized = selected || variant === "primary" || variant === "destructive";
         const base = emphasized ? (variant === "destructive" ? danger : accentColor) : variant === "ghost" ? "transparent" : surfaceRaised;
         let fill = base;
@@ -124,6 +129,7 @@ QtObject {
             hovered: hovered,
             down: down,
             enabled: active,
+            controlKind: controlKind || "button",
             accent: accentColor
         }) : fill;
     }

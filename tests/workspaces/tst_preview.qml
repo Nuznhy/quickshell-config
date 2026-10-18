@@ -79,7 +79,7 @@ Rectangle {
             scene.color = Theme.bg;
         }
         function test_workspace_appearance_keeps_icons_clickable_and_hides_spacing_data() {
-            return ["default", "windows7"].map(kit => ({
+            return ["default", "windows7", "windowsxp"].map(kit => ({
                         tag: kit,
                         kit: kit
                     }));
@@ -123,7 +123,7 @@ Rectangle {
         }
         function test_workspace_padding_preserves_bar_background_data() {
             const rows = [];
-            for (const kit of ["default", "windows7"]) {
+            for (const kit of ["default", "windows7", "windowsxp"]) {
                 for (const vertical of [false, true]) {
                     rows.push({
                         tag: kit + (vertical ? "-vertical" : "-horizontal"),

@@ -136,10 +136,9 @@ UI.GridLayout {
                 UI.RowLayout {
                     Layout.fillWidth: true
                     spacing: Design.space8
-                    UI.Text {
+                    UI.Icon {
                         text: "󰍹"
-                        font.family: Design.fontFamily
-                        font.pixelSize: Design.iconLarge
+                        size: Design.iconLarge
                         color: Design.accent
                     }
                     UI.Text {
@@ -188,12 +187,11 @@ UI.GridLayout {
                             width: parent.width - Design.panelPadding * 2
                             spacing: Design.space8
                             visible: dropArea.containsDrag || previewButton.hovered || preview.status !== Image.Ready || card.loading
-                            UI.Text {
+                            UI.Icon {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: dropArea.containsDrag ? "󰇚" : "󰥶"
                                 color: Design.accent
-                                font.family: Design.fontFamily
-                                font.pixelSize: Design.iconDisplay
+                                size: Design.iconDisplay
                             }
                             UI.Text {
                                 width: parent.width

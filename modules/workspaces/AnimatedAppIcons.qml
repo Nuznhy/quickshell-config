@@ -10,6 +10,7 @@ Grid {
     columns: Theme.verticalBar ? 1 : Math.max(1, iconModel.count)
     required property var icons
     required property bool activeWorkspace
+    property bool onBar: false
     property bool nerdFontIcons: false
     readonly property int count: iconModel.count
     property string hoveredAddress: ""
@@ -143,7 +144,7 @@ Grid {
                 text: root.nerdFontIcons ? ConfigScripts.AppGlyphs.resolve(appIcon.modelData.appId) : "󰏗"
                 font.family: Design.iconFontFamily
                 font.pixelSize: appIcon.height
-                color: root.activeWorkspace ? Design.danger : Design.text
+                color: root.activeWorkspace ? (root.onBar ? Design.barColor("danger") : Design.danger) : (root.onBar ? Design.barColor("text") : Design.text)
                 scale: appIcon.iconScale
             }
             TextMetrics {
@@ -160,8 +161,8 @@ Grid {
                 width: 9
                 height: 9
                 radius: width / 2
-                color: Design.danger
-                border.color: Design.background
+                color: root.onBar ? Design.barColor("danger") : Design.danger
+                border.color: root.onBar ? Design.barColor("background") : Design.background
                 border.width: 1
                 visible: appIcon.needsAttention
             }

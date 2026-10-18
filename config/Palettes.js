@@ -19,7 +19,11 @@ var presets = [
     // Aero colors with softened light surfaces; dark is a companion variant.
     { id: "windows7-aero", name: "Windows 7 Aero", kit: "windows7",
       dark: ["#242424", "#303030", "#3d3d3d", "#949494", "#c2c2c2", "#f2f2f2", "#ff9187", "#f4ce75", "#c9a5de", "#8dc9f0", "#8bd18b", "#7eb4ea", "#343434", "#515151", "#646464"],
-      light: ["#dedede", "#e8e8e8", "#d6d6d6", "#626262", "#494949", "#202020", "#c42b1c", "#946700", "#9b4f96", "#0066cc", "#228b22", "#3399ff", "#e3e3e3", "#c5c5c5", "#b5b5b5"] }
+      light: ["#dedede", "#e8e8e8", "#d6d6d6", "#626262", "#494949", "#202020", "#c42b1c", "#946700", "#9b4f96", "#0066cc", "#228b22", "#3399ff", "#e3e3e3", "#c5c5c5", "#b5b5b5"] },
+    // Blue Luna; dark is a companion interpretation of the same color roles.
+    { id: "windowsxp-luna", name: "Windows XP Luna", kit: "windowsxp",
+      dark: ["#202838", "#18202e", "#303d50", "#a0adbf", "#c0cbdb", "#f2f5fa", "#ffac98", "#f4d279", "#e7a4ca", "#91c9ff", "#9cd58a", "#225bc5", "#2a3547", "#53647c", "#657b98"],
+      light: ["#ece9d8", "#ffffff", "#f5f3eb", "#646359", "#48483f", "#000000", "#c33b22", "#916400", "#a34978", "#0054e3", "#278324", "#245edb", "#f7f5eb", "#aca899", "#919b9c"] }
 ];
 
 function forKit(kit, selected) {

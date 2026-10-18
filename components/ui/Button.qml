@@ -6,11 +6,12 @@ import qs.config
 T.Button {
     id: root
     property string variant: "neutral"
+    property string controlKind: "button"
     property string size: "default"
     property bool busy: false
     property bool capsule: false
     property color accentColor: Design.accent
-    readonly property color foreground: variant === "ghost" && !checked && !highlighted && !(enabled && (hovered || down)) ? Design.text : Design.readableText(Design.fill(variant, checked || highlighted, hovered, down, enabled, accentColor))
+    readonly property color foreground: variant === "ghost" && !checked && !highlighted && !(enabled && (hovered || down)) ? Design.text : Design.readableText(Design.fill(variant, checked || highlighted, hovered, down, enabled, accentColor, controlKind))
     implicitWidth: Math.max(implicitContentWidth + leftPadding + rightPadding, implicitHeight)
     implicitHeight: Math.max(size === "compact" ? Design.compactHeight : Design.controlHeight, implicitContentHeight + topPadding + bottomPadding)
     leftPadding: Design.space12
@@ -54,6 +55,7 @@ T.Button {
     }
     background: ControlSurface {
         control: root
+        controlKind: root.controlKind
         variant: root.variant
         selected: root.checked || root.highlighted
         accentColor: root.accentColor

@@ -34,8 +34,8 @@ DropdownWidget {
         width: 30
         height: parent.height
         text: "󰅀"
-        color: root.dropdownOpen ? Design.accent : Design.text
-        font.family: Design.fontFamily
+        color: root.dropdownOpen ? Design.barColor("accent") : Design.barColor("text")
+        font.family: Design.iconFontFamily
         font.pixelSize: Theme.fontSize + 2
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -125,14 +125,12 @@ DropdownWidget {
                         }
                     }
 
-                    UI.Text {
-                        role: "bar"
+                    UI.Icon {
                         anchors.centerIn: parent
                         visible: trayIcon.status !== Image.Ready
                         text: "󰏗"
                         color: Design.text
-                        font.family: Design.fontFamily
-                        font.pixelSize: Math.round(Theme.fontSize * 1.0)
+                        size: Math.round(Theme.fontSize * 1.0)
                     }
 
                     onClicked: event => {

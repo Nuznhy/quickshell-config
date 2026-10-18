@@ -28,6 +28,7 @@ Menu {
 
         background: UI.ControlSurface {
             control: itemDelegate
+            controlKind: "menuItem"
             variant: "ghost"
             selected: itemDelegate.highlighted
         }

@@ -47,13 +47,10 @@ UI.RowLayout {
         Accessible.name: (root.muted ? "Unmute " : "Mute ") + (root.microphone ? "microphone" : "output")
         onClicked: root.muteRequested()
 
-        contentItem: UI.Text {
+        contentItem: UI.Icon {
             text: root.microphone ? (root.muted ? "󰍭" : "󰍬") : (root.muted ? "󰖁" : "󰕾")
-            font.family: Design.fontFamily
-            font.pixelSize: Design.iconLarge
+            size: Design.iconLarge
             color: root.muted ? Design.textOnAccent : (root.enabled ? Design.text : Design.textMuted)
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
         }
     }
 }

@@ -7,7 +7,7 @@ import qs.config
 T.ComboBox {
     id: root
     property bool busy: false
-    readonly property color foreground: Design.readableText(Design.fill("neutral", popup.visible, hovered, down, enabled, Design.accent))
+    readonly property color foreground: Design.readableText(Design.fill("neutral", popup.visible, hovered, down, enabled, Design.accent, "select"))
     implicitWidth: 180
     implicitHeight: Design.controlHeight
     leftPadding: Design.space12
@@ -68,6 +68,7 @@ T.ComboBox {
         hoverEnabled: true
         background: ControlSurface {
             control: option
+            controlKind: "menuItem"
             selected: option.highlighted || root.currentIndex === option.index
             radius: 0
         }

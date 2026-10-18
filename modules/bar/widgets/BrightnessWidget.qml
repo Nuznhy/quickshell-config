@@ -18,13 +18,11 @@ DropdownWidget {
     Item {
         width: 24
         height: parent.height
-        UI.Text {
-            role: "bar"
+        UI.Icon {
             anchors.centerIn: parent
             text: "󰃠"
-            color: Design.text
-            font.family: Design.fontFamily
-            font.pixelSize: Math.round(Theme.fontSize * 0.9)
+            color: Design.barColor("text")
+            size: Math.round(Theme.fontSize * 0.9)
         }
     }
     popupContent: BrightnessCenter {

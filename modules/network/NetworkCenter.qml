@@ -171,10 +171,10 @@ FocusScope {
                             spacing: Design.space4
                             UI.RowLayout {
                                 Layout.fillWidth: true
-                                Label {
+                                UI.Icon {
                                     text: currentCard.modelData.vpn ? "󰦝" : currentCard.modelData.type === "802-11-wireless" ? "󰤨" : "󰈀"
                                     color: Design.accent
-                                    font.pixelSize: Design.iconLarge
+                                    size: Design.iconLarge
                                 }
                                 Label {
                                     Layout.fillWidth: true
@@ -361,10 +361,10 @@ FocusScope {
                             anchors.fill: parent
                             anchors.margins: Design.panelPadding
                             spacing: Design.space8
-                            Label {
+                            UI.Icon {
                                 text: wifiCard.modelData.signalStrength >= 0.7 ? "󰤨" : wifiCard.modelData.signalStrength >= 0.4 ? "󰤥" : "󰤟"
                                 color: wifiCard.modelData.connected ? Design.accent : Design.textSecondary
-                                font.pixelSize: Design.iconLarge
+                                size: Design.iconLarge
                             }
                             UI.ColumnLayout {
                                 Layout.fillWidth: true

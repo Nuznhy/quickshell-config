@@ -72,10 +72,10 @@ FocusScope {
             UI.RowLayout {
                 Layout.fillWidth: true
                 spacing: Design.space8
-                Label {
+                UI.Icon {
                     text: deviceCard.device.icon.indexOf("audio") >= 0 || deviceCard.device.icon.indexOf("head") >= 0 ? "󰋋" : deviceCard.device.icon.indexOf("keyboard") >= 0 ? "󰌌" : deviceCard.device.icon.indexOf("mouse") >= 0 ? "󰍽" : deviceCard.device.icon.indexOf("phone") >= 0 ? "󰏲" : "󰂯"
                     color: deviceCard.device.connected ? Design.accent : Design.textSecondary
-                    role: "panel"
+                    size: Design.panelHeadingSize
                 }
                 UI.ColumnLayout {
                     Layout.fillWidth: true

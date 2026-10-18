@@ -21,6 +21,8 @@ import QtQuick
 import qs.config as ConfigScripts
 QtObject {
     property string fontFamily: "JetBrainsMono Nerd Font"
+    property string barFontFamily: fontFamily
+    property int fontSize: 16
     property bool ready: true
     property bool verticalBar: false
     property int sideBarWidth: 64
@@ -51,7 +53,7 @@ QtObject {
     shutil.copyfile(root / 'config/Palettes.js', base / 'config/Palettes.js')
     shutil.copytree(root / 'tools/gallery', base / 'tools/gallery')
     for name in ['ControlSwitch.qml', 'AudioSlider.qml', 'MediaSeekSlider.qml', 'NotificationButton.qml',
-                 'BarHoverIndicator.qml', 'WidgetStyleSettings.qml', 'AppearanceSlider.qml', 'AudioLevelControl.qml', 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
+                 'BarHoverIndicator.qml', 'IconLabel.qml', 'WidgetStyleSettings.qml', 'AppearanceSlider.qml', 'AudioLevelControl.qml', 'CalendarPanel.qml', 'MediaDetails.qml', 'AudioDeviceDropdown.qml']:
         shutil.copyfile(component_path(root, name), component_path(base, name))
     for path in (root / 'tests/design_system').glob('tst_*.qml'):
         shutil.copyfile(path, base / path.name)

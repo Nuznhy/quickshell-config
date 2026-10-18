@@ -18,16 +18,12 @@ Item {
         hovered: hover.hovered
     }
 
-    UI.Text {
+    IconLabel {
         id: label
-        role: "bar"
         anchors.centerIn: parent
-        text: Theme.verticalBar ? "󰾆\n" + SystemStats.memUsage + "%" : SystemStats.memUsage + "% 󰾆"
-        color: Design.text
-        font.pixelSize: Theme.fontSize
-        font.family: Theme.barFontFamily
-        font.bold: true
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+        icon: "󰾆"
+        text: SystemStats.memUsage + "%"
+        iconAfterText: true
+        color: Design.barColor("text")
     }
 }

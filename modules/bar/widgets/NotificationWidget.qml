@@ -22,13 +22,11 @@ DropdownWidget {
     Item {
         width: 30
         height: parent.height
-        UI.Text {
-            role: "bar"
+        UI.Icon {
             anchors.centerIn: parent
             text: Notifications.doNotDisturb ? "󰂛" : "󰂚"
-            color: Notifications.doNotDisturb ? Design.accent : Design.text
-            font.family: Design.fontFamily
-            font.pixelSize: Math.round(Theme.fontSize * 1.05)
+            color: Notifications.doNotDisturb ? Design.barColor("accent") : Design.barColor("text")
+            size: Math.round(Theme.fontSize * 1.05)
         }
         Rectangle {
             visible: Notifications.unreadCount > 0
@@ -38,7 +36,7 @@ DropdownWidget {
             width: 6
             height: 6
             radius: Design.radiusSmall
-            color: Design.danger
+            color: Design.barColor("danger")
         }
     }
     popupContent: NotificationCenter {

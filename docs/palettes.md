@@ -28,3 +28,10 @@ colors to shell roles, following Microsoft's
 Panel backgrounds and borders remain neutral; blue is reserved for interaction
 accents. The charcoal dark variant is a companion interpretation, not an original
 Windows 7 theme.
+
+**Windows XP Luna** is offered with the Windows XP kit. Its native light palette
+uses cream panel backgrounds, white fields, dark text, blue selection colors,
+and green choice marks adapted from the supplied *Desktop*, *Window frames*,
+*Bars, Specials*, and *Menu, Lists* SVG reference sheets. The blue-gray dark
+palette is a companion interpretation. Bar-specific foreground colors are
+computed by the kit and do not replace the palette used by application themes.

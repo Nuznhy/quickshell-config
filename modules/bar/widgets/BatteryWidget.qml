@@ -31,19 +31,17 @@ DropdownWidget {
         columns: Theme.verticalBar ? 1 : 2
         rowSpacing: Design.space4
         columnSpacing: Design.space4
-        UI.Text {
-            role: "bar"
+        UI.Icon {
             Layout.alignment: Qt.AlignCenter
             text: BatteryState.icon
-            color: BatteryState.percent >= 0 && BatteryState.percent <= 15 && !BatteryState.charging ? Design.danger : Design.text
-            font.family: Design.fontFamily
-            font.pixelSize: Theme.fontSize
+            color: BatteryState.percent >= 0 && BatteryState.percent <= 15 && !BatteryState.charging ? Design.barColor("danger") : Design.barColor("text")
+            size: Theme.fontSize
         }
         UI.Text {
             role: "bar"
             Layout.alignment: Qt.AlignCenter
             text: BatteryState.percent < 0 ? "—" : Math.round(BatteryState.percent) + "%"
-            color: Design.text
+            color: Design.barColor("text")
             font.family: Theme.barFontFamily
             font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
         }

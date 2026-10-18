@@ -76,14 +76,12 @@ DropdownWidget {
                 fillMode: Image.PreserveAspectCrop
                 visible: status === Image.Ready
             }
-            UI.Text {
-                role: "bar"
+            UI.Icon {
                 anchors.centerIn: parent
                 visible: artwork.status !== Image.Ready
                 text: "󰎆"
                 color: Design.accent
-                font.family: Design.fontFamily
-                font.pixelSize: Math.round(Theme.fontSize * 1.0)
+                size: Math.round(Theme.fontSize * 1.0)
             }
         }
 
@@ -101,7 +99,7 @@ DropdownWidget {
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                color: Design.textSecondary
+                color: Design.barColor("textSecondary")
                 font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.5)
             }
@@ -113,7 +111,7 @@ DropdownWidget {
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                color: Design.text
+                color: Design.barColor("text")
                 font.family: Theme.barFontFamily
                 font.pixelSize: Math.round(Theme.fontSize * 0.6)
                 font.weight: Font.Medium

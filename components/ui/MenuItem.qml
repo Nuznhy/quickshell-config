@@ -4,9 +4,11 @@ import QtQuick
 Button {
     id: root
     variant: "ghost"
+    controlKind: "menuItem"
     highlighted: checked
     background: ControlSurface {
         control: root
+        controlKind: root.controlKind
         variant: root.variant
         selected: root.checked || root.highlighted
         accentColor: root.accentColor

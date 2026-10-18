@@ -19,7 +19,7 @@ DropdownWidget {
         height: Settings.barHeight
         size: Theme.fontSize
         text: ""
-        color: Design.danger
+        color: Design.barColor("danger")
     }
     popupContent: PowerMenu {
         active: root.dropdownOpen

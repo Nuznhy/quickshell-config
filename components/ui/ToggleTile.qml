@@ -6,6 +6,7 @@ import qs.config
 Button {
     id: root
     property string iconGlyph: ""
+    property string iconName: ""
     implicitHeight: Math.max(64, implicitContentHeight + topPadding + bottomPadding)
     Accessible.role: Accessible.CheckBox
     Accessible.checkable: true
@@ -13,6 +14,7 @@ Button {
     contentItem: ColumnLayout {
         spacing: Design.space4
         Icon {
+            name: root.iconName
             Layout.fillWidth: true
             text: root.iconGlyph
             size: Design.iconLarge

@@ -41,16 +41,13 @@ Item {
         active: volumeWidget.popupOpen
     }
 
-    UI.Text {
+    IconLabel {
         id: volumeText
-        role: "bar"
         anchors.centerIn: parent
-        text: (Audio.volumeMuted ? "󰖁" : "󰕾") + (Theme.verticalBar ? "\n" : " ") + Audio.volumeLevel
-        horizontalAlignment: Text.AlignHCenter
-        color: Audio.volumeMuted ? Design.textMuted : Design.text
-        font.pixelSize: Theme.fontSize
-        font.family: Theme.barFontFamily
-        font.bold: true
+        icon: Audio.volumeMuted ? "󰖁" : "󰕾"
+        text: String(Audio.volumeLevel)
+        iconAfterText: false
+        color: Audio.volumeMuted ? Design.barColor("textMuted") : Design.barColor("text")
     }
 
     MouseArea {

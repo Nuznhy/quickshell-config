@@ -81,6 +81,22 @@ UI.ScrollView {
             Layout.fillWidth: true
         }
         UI.Text {
+            text: "Icons"
+            role: "panel"
+        }
+        Flow {
+            Layout.fillWidth: true
+            spacing: Design.space16
+            Repeater {
+                model: ["settings", "keyboard", "display", "volume-high", "volume-muted", "network-wired", "bluetooth", "notifications", "media", "folder", "lock", "power"]
+                UI.Icon {
+                    required property string modelData
+                    name: modelData
+                    size: 32
+                }
+            }
+        }
+        UI.Text {
             text: "Typography"
             role: "panel"
         }
@@ -97,7 +113,7 @@ UI.ScrollView {
             }
         }
         UI.Text {
-            text: "Glass and bar surfaces"
+            text: "Bar and popup surfaces"
             role: "panel"
         }
         GlassPreview {

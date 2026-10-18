@@ -22,14 +22,12 @@ Item {
         hovered: mouse.containsMouse
         focused: root.activeFocus
     }
-    UI.Text {
+    UI.Icon {
         objectName: "display-status-icon"
-        role: "bar"
         anchors.centerIn: parent
         text: DesktopTv.mode === "tv" ? "󰟴" : "󰍹"
-        color: DesktopTv.errorMessage ? Design.danger : !DesktopTv.available ? Design.textSecondary : DesktopTv.mode === "tv" ? Design.accent : Design.text
-        font.family: Design.fontFamily
-        font.pixelSize: Theme.fontSize
+        color: DesktopTv.errorMessage ? Design.barColor("danger") : !DesktopTv.available ? Design.barColor("textSecondary") : DesktopTv.mode === "tv" ? Design.barColor("accent") : Design.barColor("text")
+        size: Theme.fontSize
     }
     MouseArea {
         id: mouse

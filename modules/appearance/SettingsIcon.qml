@@ -22,6 +22,7 @@ Item {
         anchors.fill: parent
         visible: customImage.status !== Image.Ready
         text: root.glyph
+        useKitIcons: root.glyph === Theme.defaultSettingsIcon
         size: root.iconSize
         color: root.color
     }

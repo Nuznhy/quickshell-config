@@ -55,6 +55,7 @@ Item {
             return item;
         }
         function init() {
+            failOnWarning(/.*/);
             mouseMove(scene, scene.width - 1, scene.height - 1);
         }
         function test_visibility_policy_data() {

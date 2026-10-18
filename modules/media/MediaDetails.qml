@@ -47,6 +47,11 @@ UI.ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: Design.controlHeight
         Accessible.name: actionName
+        contentItem: UI.Icon {
+            text: control.text
+            size: control.font.pixelSize
+            color: control.foreground
+        }
     }
     Label {
         text: root.player?.identity || "Media"
@@ -68,13 +73,12 @@ UI.ColumnLayout {
             fillMode: Image.PreserveAspectFit
             visible: status === Image.Ready
         }
-        UI.Text {
+        UI.Icon {
             anchors.centerIn: parent
             visible: cover.status !== Image.Ready
             text: "󰎆"
             color: Design.accent
-            font.family: Design.fontFamily
-            font.pixelSize: Design.artworkPlaceholderSize
+            size: Design.artworkPlaceholderSize
         }
     }
     Label {

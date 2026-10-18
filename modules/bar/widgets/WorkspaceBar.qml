@@ -168,7 +168,7 @@ Grid {
                     UI.Text {
                         role: "bar"
                         text: wsRect.wsId
-                        color: wsRect.isActive ? Design.danger : Design.text
+                        color: wsRect.isActive ? Design.barColor("danger") : Design.barColor("text")
                         font.pixelSize: Theme.fontSize
                         font.family: Theme.barFontFamily
                         Behavior on color {
@@ -195,7 +195,7 @@ Grid {
                             anchors.fill: parent
                             visible: parent.dot
                             radius: Design.radiusSmall
-                            color: wsRect.isActive ? Design.danger : Design.text
+                            color: wsRect.isActive ? Design.barColor("danger") : Design.barColor("text")
                         }
                         UI.Text {
                             id: separatorText
@@ -204,7 +204,7 @@ Grid {
                             visible: !parent.dot
                             text: WorkspaceAppearance.separator
                             textFormat: Text.PlainText
-                            color: wsRect.isActive ? Design.danger : Design.text
+                            color: wsRect.isActive ? Design.barColor("danger") : Design.barColor("text")
                             font.family: Design.iconFontFamily
                             font.pixelSize: Math.min(Theme.fontSize, Design.iconSize)
                             fontSizeMode: Text.Fit
@@ -228,6 +228,7 @@ Grid {
                         AnimatedAppIcons {
                             id: appIcons
                             anchors.centerIn: parent
+                            onBar: !WorkspaceAppearance.capsule
                             icons: wsRect.windowIcons
                             nerdFontIcons: WorkspaceAppearance.iconStyle === "nerd"
                             activeWorkspace: wsRect.isActive

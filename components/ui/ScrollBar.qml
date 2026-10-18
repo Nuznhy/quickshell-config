@@ -12,7 +12,18 @@ T.ScrollBar {
     // Templates do not implement a style's visibility policy for us.
     // A full-size thumb means there is no overflow to scroll.
     visible: policy !== T.ScrollBar.AlwaysOff && (policy === T.ScrollBar.AlwaysOn || size < 1)
-    contentItem: Rectangle {
+    // A paint-only child avoids feeding the track into a style's viewport sizing.
+    KitSurface {
+        anchors.fill: parent
+        z: -1
+        kitSlot: "scrollBarTrack"
+        control: root
+        radius: Design.radiusSmall
+        opacity: root.contentItem.opacity
+    }
+    contentItem: KitSurface {
+        kitSlot: "scrollBarThumb"
+        control: root
         implicitWidth: Design.space4
         implicitHeight: Design.space4
         radius: Design.radiusSmall

@@ -33,7 +33,8 @@ Item {
             spacing: Design.space16
             UI.Text {
                 height: parent.height
-                text: "Bar glass"
+                text: "Bar surface"
+                color: Design.barColor("text")
                 verticalAlignment: Text.AlignVCenter
             }
             Item {
@@ -47,6 +48,7 @@ Item {
                 UI.Text {
                     anchors.centerIn: parent
                     text: "Focused"
+                    color: Design.barColor("text")
                 }
             }
         }

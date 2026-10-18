@@ -1,6 +1,7 @@
 import QtQuick
 
 ControlSurface {
+    controlKind: "select"
     // Follow the popup transition in both directions, including interrupted opens.
     property real reveal: 0
     bottomLeftRadius: radius * (1 - reveal)

@@ -23,7 +23,7 @@ DropdownWidget {
         text: Theme.verticalBar ? Qt.formatDateTime(Time.date, "hh\nmm") : Time.time
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: root.dropdownOpen ? Design.accent : Design.text
+        color: root.dropdownOpen ? Design.barColor("accent") : Design.barColor("text")
         font.pixelSize: Theme.fontSize - 2
         font.family: Theme.barFontFamily
         font.bold: true

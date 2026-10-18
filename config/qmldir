@@ -9,6 +9,7 @@ singleton UiKit 1.0 UiKit.qml
 singleton WorkspaceAppearance 1.0 WorkspaceAppearance.qml
 AppGlyphs 1.0 AppGlyphs.js
 BarLayoutData 1.0 BarLayoutData.js
+IconNames 1.0 IconNames.js
 Palettes 1.0 Palettes.js
 WallpaperColors 1.0 WallpaperColors.js
 WidgetStyle 1.0 WidgetStyle.js

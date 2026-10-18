@@ -66,7 +66,7 @@ PanelWindow {
         id: background
         kitSlot: "barSurface"
         anchors.fill: parent
-        color: Design.background
+        color: Design.barColor("background")
         radius: Theme.barRadius
         opacity: Theme.barOpacity
         // Fade the completed bar once, including overlapping backgrounds and text.

@@ -20,13 +20,11 @@ DropdownWidget {
     Item {
         width: 24
         height: parent.height
-        UI.Text {
-            role: "bar"
+        UI.Icon {
             anchors.centerIn: parent
             text: !BluetoothState.enabled ? "󰂲" : BluetoothState.connectedDevices.length > 0 ? "󰂱" : "󰂯"
-            color: BluetoothState.connectedDevices.length > 0 ? Design.accent : BluetoothState.enabled ? Design.text : Design.textMuted
-            font.family: Design.fontFamily
-            font.pixelSize: Math.round(Theme.fontSize * 0.9)
+            color: BluetoothState.connectedDevices.length > 0 ? Design.barColor("accent") : BluetoothState.enabled ? Design.barColor("text") : Design.barColor("textMuted")
+            size: Math.round(Theme.fontSize * 0.9)
         }
     }
     popupContent: BluetoothCenter {

@@ -102,9 +102,11 @@ ShellRoot {
         snapshot = json.loads(lines[0])
         assert snapshot['id'] == snapshot['active'] == snapshot['selector'] == expected, snapshot
         assert snapshot['firstRadius'] == snapshot['secondRadius'] == snapshot['radius'], snapshot
-        assert snapshot['radius'] == dict(default=8, minimal=2, rounded=16, windows7=3)[expected], snapshot
+        assert snapshot['radius'] == dict(default=8, minimal=2, rounded=16, windows7=3, windowsxp=3)[expected], snapshot
         if expected == 'windows7':
             assert snapshot['uiFont'] in ['Segoe UI', 'sans-serif'], snapshot
+        elif expected == 'windowsxp':
+            assert snapshot['uiFont'] in ['Tahoma', 'DejaVu Sans', 'sans-serif'], snapshot
         else:
             assert snapshot['uiFont'] == 'JetBrainsMono Nerd Font', snapshot
         return snapshot
@@ -118,7 +120,7 @@ ShellRoot {
     previous = run('default')
     assert 'uiKit' not in json.loads(state.read_text())
     keys = ['preset', 'mode', 'font', 'position', 'opacity', 'margin', 'barRadius', 'widgetStyle']
-    for kit in ['minimal', 'rounded', 'windows7', 'default']:
+    for kit in ['minimal', 'rounded', 'windows7', 'windowsxp', 'default']:
         changed = run(kit, kit)
         assert not changed['error'], changed
         assert json.loads(state.read_text())['uiKit'] == kit
@@ -126,6 +128,7 @@ ShellRoot {
         for key in keys:
             assert changed[key] == restored[key] == previous[key], (key, changed, restored, previous)
         assert ('windows7-aero' in restored['presets']) == (kit == 'windows7'), restored
+        assert ('windowsxp-luna' in restored['presets']) == (kit == 'windowsxp'), restored
     native = run('windows7', 'windows7', 'windows7-aero')
     assert native['preset'] == 'windows7-aero', native
     assert native['palette']['bg'] == '#dedede' and native['palette']['iris'] == '#3399ff', native
@@ -135,6 +138,15 @@ ShellRoot {
     assert retained['preset'] == 'windows7-aero' and 'windows7-aero' in retained['presets'], retained
     assert retained['palette'] == native['palette'], retained
     assert 'windows7-aero' not in run('default', palette='catppuccin')['presets']
+    native = run('windowsxp', 'windowsxp', 'windowsxp-luna')
+    assert native['preset'] == 'windowsxp-luna', native
+    assert native['palette']['bg'] == '#ece9d8' and native['palette']['iris'] == '#245edb', native
+    assert native['swatches'] == native['palette'], native
+    assert run('windowsxp')['palette'] == native['palette']
+    retained = run('default', 'default')
+    assert retained['preset'] == 'windowsxp-luna' and 'windowsxp-luna' in retained['presets'], retained
+    assert retained['palette'] == native['palette'], retained
+    assert 'windowsxp-luna' not in run('default', palette='catppuccin')['presets']
     for invalid in ['removed-kit', None, 42, {}]:
         state.write_text(json.dumps(dict(legacy, uiKit=invalid)))
         assert not run('default')['error']

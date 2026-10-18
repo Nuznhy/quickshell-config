@@ -1,0 +1,17 @@
+module qs.kits.windowsxp
+BarSurface 1.0 BarSurface.qml
+BevelSurface 1.0 BevelSurface.qml
+ChoiceIndicator 1.0 ChoiceIndicator.qml
+ControlSurface 1.0 ControlSurface.qml
+DropdownSurface 1.0 DropdownSurface.qml
+Kit 1.0 Kit.qml
+MenuSurface 1.0 MenuSurface.qml
+ScrollBarThumb 1.0 ScrollBarThumb.qml
+ScrollBarTrack 1.0 ScrollBarTrack.qml
+SliderHandle 1.0 SliderHandle.qml
+SliderTrack 1.0 SliderTrack.qml
+SwitchIndicator 1.0 SwitchIndicator.qml
+TextFieldSurface 1.0 TextFieldSurface.qml
+WidgetIndicator 1.0 WidgetIndicator.qml
+Colors 1.0 Colors.js
+IconAssets 1.0 IconAssets.js

@@ -1,0 +1,303 @@
+{
+    "settings": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image38_2053_12957",
+            "32": "image39_2053_12957",
+            "16": "image40_2053_12957"
+        }
+    },
+    "volume-high": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image26_2053_12957",
+            "32": "image27_2053_12957",
+            "16": "image28_2053_12957"
+        }
+    },
+    "volume-muted": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image44_2053_12957",
+            "32": "image45_2053_12957",
+            "16": "image46_2053_12957"
+        }
+    },
+    "lock": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image6_2053_12957",
+            "32": "image7_2053_12957",
+            "24": "image8_2053_12957",
+            "16": "image9_2053_12957"
+        }
+    },
+    "equalizer": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image41_2053_12957",
+            "32": "image42_2053_12957",
+            "16": "image43_2053_12957"
+        }
+    },
+    "power-options": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image16_2053_12957",
+            "32": "image17_2053_12957",
+            "16": "image18_2053_12957"
+        }
+    },
+    "system-info": {
+        "sheet": "Settings.svg",
+        "images": {
+            "48": "image85_2053_12957",
+            "32": "image86_2053_12957",
+            "16": "image87_2053_12957"
+        }
+    },
+    "keyboard": {
+        "sheet": "Peripherals.svg",
+        "images": {
+            "48": "image21_2053_12957",
+            "32": "image22_2053_12957",
+            "16": "image23_2053_12957"
+        }
+    },
+    "mouse": {
+        "sheet": "Peripherals.svg",
+        "images": {
+            "48": "image24_2053_12957",
+            "32": "image25_2053_12957",
+            "16": "image26_2053_12957"
+        }
+    },
+    "display": {
+        "sheet": "Peripherals.svg",
+        "images": {
+            "48": "image15_2053_12957",
+            "32": "image16_2053_12957",
+            "16": "image17_2053_12957"
+        }
+    },
+    "phone": {
+        "sheet": "Peripherals.svg",
+        "images": {
+            "48": "image12_2053_12957",
+            "32": "image13_2053_12957",
+            "16": "image14_2053_12957"
+        }
+    },
+    "bluetooth": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image3_2053_12957",
+            "32": "image4_2053_12957",
+            "16": "image5_2053_12957"
+        }
+    },
+    "info": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image0_2053_12957",
+            "32": "image1_2053_12957",
+            "16": "image2_2053_12957"
+        }
+    },
+    "power": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image6_2053_12957",
+            "32": "image7_2053_12957",
+            "24": "image8_2053_12957",
+            "16": "image9_2053_12957"
+        }
+    },
+    "help": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image16_2053_12957",
+            "32": "image17_2053_12957",
+            "24": "image18_2053_12957",
+            "16": "image19_2053_12957"
+        }
+    },
+    "warning": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image13_2053_12957",
+            "32": "image14_2053_12957",
+            "16": "image15_2053_12957"
+        }
+    },
+    "error": {
+        "sheet": "Symbols & Overlays.svg",
+        "images": {
+            "48": "image10_2053_12957",
+            "32": "image11_2053_12957",
+            "16": "image12_2053_12957"
+        }
+    },
+    "notifications": {
+        "sheet": "Others.svg",
+        "images": {
+            "48": "image30_2053_12957",
+            "32": "image31_2053_12957",
+            "16": "image32_2053_12957"
+        }
+    },
+    "notifications-disabled": {
+        "sheet": "Others.svg",
+        "images": {
+            "48": "image27_2053_12957",
+            "32": "image28_2053_12957",
+            "16": "image29_2053_12957"
+        }
+    },
+    "media": {
+        "sheet": "Programs.svg",
+        "images": {
+            "48": "image72_2053_12957",
+            "32": "image73_2053_12957",
+            "16": "image74_2053_12957"
+        }
+    },
+    "calculator": {
+        "sheet": "Programs.svg",
+        "images": {
+            "48": "image3_2053_12957",
+            "32": "image4_2053_12957",
+            "16": "image5_2053_12957"
+        }
+    },
+    "mail": {
+        "sheet": "Programs.svg",
+        "images": {
+            "48": "image9_2053_12957",
+            "32": "image10_2053_12957",
+            "16": "image11_2053_12957"
+        }
+    },
+    "network-wired": {
+        "sheet": "Internet, Network & Connectivity.svg",
+        "images": {
+            "48": "image3_2053_12957",
+            "32": "image4_2053_12957",
+            "16": "image5_2053_12957"
+        }
+    },
+    "network-wireless": {
+        "sheet": "Internet, Network & Connectivity.svg",
+        "images": {
+            "48": "image39_2053_12957",
+            "32": "image40_2053_12957",
+            "16": "image41_2053_12957"
+        }
+    },
+    "display-mirror": {
+        "sheet": "Internet, Network & Connectivity.svg",
+        "images": {
+            "48": "image58_2053_12957",
+            "32": "image59_2053_12957",
+            "16": "image60_2053_12957"
+        }
+    },
+    "refresh": {
+        "sheet": "Internet, Network & Connectivity.svg",
+        "images": {
+            "48": "image9_2053_12957",
+            "32": "image10_2053_12957",
+            "16": "image11_2053_12957"
+        }
+    },
+    "appearance": {
+        "sheet": "Utilities.svg",
+        "images": {
+            "48": "image44_2053_12957",
+            "32": "image45_2053_12957",
+            "16": "image46_2053_12957"
+        }
+    },
+    "system-monitor": {
+        "sheet": "Utilities.svg",
+        "images": {
+            "48": "image47_2053_12957",
+            "32": "image48_2053_12957",
+            "16": "image49_2053_12957"
+        }
+    },
+    "terminal": {
+        "sheet": "Utilities.svg",
+        "images": {
+            "48": "image13_2053_12957",
+            "32": "image14_2053_12957",
+            "16": "image15_2053_12957"
+        }
+    },
+    "download": {
+        "sheet": "Peripherals.svg",
+        "images": {
+            "48": "image9_2053_12957",
+            "32": "image10_2053_12957",
+            "16": "image11_2053_12957"
+        }
+    },
+    "folder": {
+        "sheet": "Folders.svg",
+        "images": {
+            "48": "image9_2053_12957",
+            "32": "image10_2053_12957",
+            "24": "image11_2053_12957",
+            "16": "image12_2053_12957"
+        }
+    },
+    "folder-open": {
+        "sheet": "Folders.svg",
+        "images": {
+            "48": "image6_2053_12957",
+            "32": "image7_2053_12957",
+            "16": "image8_2053_12957"
+        }
+    },
+    "trash": {
+        "sheet": "Locations.svg",
+        "images": {
+            "48": "image0_2053_12957",
+            "32": "image1_2053_12957",
+            "16": "image2_2053_12957"
+        }
+    },
+    "search": {
+        "sheet": "Locations.svg",
+        "images": {
+            "48": "image17_2053_12957",
+            "32": "image18_2053_12957",
+            "24": "image19_2053_12957",
+            "16": "image20_2053_12957"
+        }
+    },
+    "computer": {
+        "sheet": "Locations.svg",
+        "images": {
+            "48": "image3_2053_12957",
+            "32": "image4_2053_12957",
+            "24": "image5_2053_12957",
+            "16": "image6_2053_12957"
+        }
+    },
+    "disk": {
+        "sheet": "Drives.svg",
+        "images": {
+            "48": "image24_2053_12957",
+            "32": "image25_2053_12957",
+            "16": "image26_2053_12957"
+        }
+    },
+    "wallpaper": {
+        "sheet": "Others.svg",
+        "images": {
+            "32": "image22_2053_12957",
+            "16": "image23_2053_12957"
+        }
+    }
+}

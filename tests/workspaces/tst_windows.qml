@@ -75,7 +75,7 @@ Item {
             compare(JSON.stringify(ServiceScripts.WorkspaceWindows.build(clients, icon)), JSON.stringify(result));
         }
         function test_nerd_icons_map_apps_and_unknown_apps_have_fallback_data() {
-            return ["default", "windows7"].map(kit => ({
+            return ["default", "windows7", "windowsxp"].map(kit => ({
                         tag: kit,
                         kit: kit
                     }));

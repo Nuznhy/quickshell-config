@@ -22,14 +22,12 @@ Item {
         hovered: mouse.containsMouse
         focused: root.activeFocus
     }
-    UI.Text {
+    UI.Icon {
         objectName: "display-status-icon"
-        role: "bar"
         anchors.centerIn: parent
         text: DisplayMode.mirrored ? "󰍺" : "󰍹"
-        color: DisplayMode.errorMessage ? Design.danger : !DisplayMode.available ? Design.textSecondary : DisplayMode.mirrored ? Design.accent : Design.text
-        font.family: Design.fontFamily
-        font.pixelSize: Theme.fontSize
+        color: DisplayMode.errorMessage ? Design.barColor("danger") : !DisplayMode.available ? Design.barColor("textSecondary") : DisplayMode.mirrored ? Design.barColor("accent") : Design.barColor("text")
+        size: Theme.fontSize
     }
     MouseArea {
         id: mouse

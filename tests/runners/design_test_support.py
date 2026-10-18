@@ -9,6 +9,7 @@ def install_design(target):
     prepare_component_dirs(target)
     shutil.copytree(root / 'kits', target / 'kits', dirs_exist_ok=True)
     shutil.copyfile(root / 'config/UiKit.qml', target / 'config/UiKit.qml')
+    shutil.copyfile(root / 'config/IconNames.js', target / 'config/IconNames.js')
     shutil.copyfile(root / 'config/Palettes.js', target / 'config/Palettes.js')
     shutil.copytree(root / 'components/ui', target / 'components/ui', dirs_exist_ok=True)
     shutil.copyfile(root / 'config/Design.qml', target / 'config/Design.qml')

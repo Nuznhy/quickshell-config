@@ -23,13 +23,11 @@ Item {
         hovered: mouse.containsMouse
         focused: root.activeFocus
     }
-    UI.Text {
-        role: "bar"
+    UI.Icon {
         anchors.centerIn: parent
         text: Theme.isDark ? "󰖔" : "󰖙"
-        color: Design.text
-        font.family: Design.fontFamily
-        font.pixelSize: Theme.fontSize
+        color: Design.barColor("text")
+        size: Theme.fontSize
     }
     MouseArea {
         id: mouse

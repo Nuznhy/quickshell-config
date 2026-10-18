@@ -51,14 +51,12 @@ DropdownWidget {
                     font.pixelSize: Theme.fontSize
                     text: cell.metric.unit === "B" ? ((cell.metric.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + "/" + ((cell.metric.total || 0) / 1073741824).toFixed(1).replace(/[0-9]/g, "8") + " GiB" : cell.metric.unit === "W" ? "888.8 W" : "100 °C"
                 }
-                UI.Text {
-                    role: "bar"
+                UI.Icon {
                     x: Theme.verticalBar ? (parent.width - width) / 2 : 0
                     y: Theme.verticalBar ? 0 : (parent.height - height) / 2 - 3
                     text: SystemStats.icon(cell.metric)
-                    color: Design.text
-                    font.family: Design.fontFamily
-                    font.pixelSize: Theme.fontSize
+                    color: Design.barColor("text")
+                    size: Theme.fontSize
                 }
                 UI.Text {
                     role: "bar"
@@ -68,7 +66,7 @@ DropdownWidget {
                     width: Theme.verticalBar ? parent.width : parent.width - 24
                     text: Theme.verticalBar && cell.metric.unit === "B" && cell.metric.available ? (cell.metric.value / 1073741824).toFixed(1) + "G\n/" + (cell.metric.total / 1073741824).toFixed(1) + "G" : SystemStats.format(cell.metric)
                     horizontalAlignment: Theme.verticalBar ? Text.AlignHCenter : Text.AlignLeft
-                    color: cell.metric.available ? Design.text : Design.textSecondary
+                    color: cell.metric.available ? Design.barColor("text") : Design.barColor("textSecondary")
                     font.family: Theme.barFontFamily
                     font.pixelSize: Theme.verticalBar ? Math.min(12, Theme.fontSize) : Theme.fontSize
                 }
@@ -78,12 +76,12 @@ DropdownWidget {
                     width: parent.width
                     height: 3
                     radius: Design.radiusSmall
-                    color: Design.border
+                    color: Design.barColor("border")
                     Rectangle {
                         width: parent.width * (cell.metric.available ? Math.max(0, Math.min(1, cell.metric.value / SystemStats.maximum(cell.metric))) : 0)
                         height: parent.height
                         radius: parent.radius
-                        color: Design.accent
+                        color: Design.barColor("accent")
                         Behavior on width {
                             NumberAnimation {
                                 duration: 180
@@ -95,15 +93,12 @@ DropdownWidget {
                 Accessible.description: cell.metric.available ? SystemStats.format(cell.metric) : cell.metric.reason
             }
         }
-        UI.Text {
-            role: "bar"
+        UI.Icon {
             visible: root.entries.length === 0
             text: "󰍹"
-            color: Design.text
-            font.family: Design.fontFamily
-            font.pixelSize: Theme.fontSize
+            color: Design.barColor("text")
+            size: Theme.fontSize
             Layout.preferredHeight: Settings.barHeight
-            verticalAlignment: Text.AlignVCenter
         }
     }
     popupContent: MonitoringCenter {

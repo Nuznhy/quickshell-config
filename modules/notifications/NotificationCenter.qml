@@ -99,12 +99,11 @@ FocusScope {
             Column {
                 anchors.centerIn: parent
                 spacing: Design.space8
-                UI.Text {
+                UI.Icon {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "󰂚"
                     color: Design.accent
-                    font.family: Design.fontFamily
-                    font.pixelSize: Design.iconDisplay
+                    size: Design.iconDisplay
                 }
                 UI.Text {
                     text: "You're all caught up"
