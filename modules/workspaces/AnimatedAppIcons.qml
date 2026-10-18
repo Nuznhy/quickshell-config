@@ -141,7 +141,7 @@ Grid {
                 y: (parent.height - glyphMetrics.tightBoundingRect.height) / 2 - glyphMetrics.tightBoundingRect.y - baselineOffset
                 visible: root.nerdFontIcons || systemIcon.status !== Image.Ready
                 text: root.nerdFontIcons ? ConfigScripts.AppGlyphs.resolve(appIcon.modelData.appId) : "󰏗"
-                font.family: Design.fontFamily
+                font.family: Design.iconFontFamily
                 font.pixelSize: appIcon.height
                 color: root.activeWorkspace ? Design.danger : Design.text
                 scale: appIcon.iconScale

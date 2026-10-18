@@ -3,11 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs.config
 import qs.components.ui as UI
 
 PanelWindow {
     id: barRoot
+    WlrLayershell.namespace: "quickshell-bar"
     required property var assignedScreen
     screen: assignedScreen
     signal closeAllPopups

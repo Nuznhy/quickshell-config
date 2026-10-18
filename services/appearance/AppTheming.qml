@@ -13,13 +13,25 @@ Singleton {
     property var pending: ({})
     property var request: ({})
     property string errorMessage: ""
+    // Saved appearance only: gallery previews must never regenerate app themes.
+    readonly property var palette: applicationPalette(Theme.palette)
+    readonly property var nvimPalette: applicationPalette(Theme.nvimPalette)
+    onPaletteChanged: {
+        if (ready)
+            scheduleSync();
+    }
+    onNvimPaletteChanged: {
+        if (ready)
+            scheduleSync();
+    }
+    readonly property var kitTokens: Object.assign({}, UiKit.defaultKit.baseTokens, (UiKit.definitions[Theme.uiKit] || UiKit.defaultKit).tokens)
     readonly property var hyprlandAppearance: ({
             radius: Theme.barRadius,
             opacity: Theme.barOpacity,
             verticalGap: Theme.verticalBar ? Theme.barSideMargin : Theme.barTopMargin,
             horizontalGap: Theme.verticalBar ? Theme.barTopMargin : Theme.barSideMargin,
-            innerGap: Design.space8,
-            borderWidth: Design.borderWidth
+            innerGap: root.kitTokens.space8,
+            borderWidth: root.kitTokens.borderWidth
         })
     onHyprlandAppearanceChanged: {
         if (root.ready)
@@ -27,6 +39,16 @@ Singleton {
     }
     readonly property bool busy: worker.running
     readonly property string helper: Quickshell.shellPath("scripts/appearance/app-themes.py")
+
+    function applicationPalette(base) {
+        const resolved = UiKit.resolvePalette(base, Theme.mode, Theme.uiKit);
+        const background = Qt.tint(base.bg, resolved.bg);
+        const result = {};
+        // Native app formats require opaque RGB even when a kit uses glass colors.
+        for (const role of Object.keys(resolved))
+            result[role] = Qt.tint(background, resolved[role]).toString();
+        return result;
+    }
 
     function refresh() {
         discoverPending = true;
@@ -81,8 +103,8 @@ Singleton {
         } else
             return;
         request = Object.assign({}, next, {
-            palette: Theme.palette,
-            nvimPalette: Theme.nvimPalette,
+            palette: root.palette,
+            nvimPalette: root.nvimPalette,
             mode: Theme.mode,
             lockScreen: Theme.lockScreen,
             hyprlandAppearance: root.hyprlandAppearance
@@ -97,11 +119,7 @@ Singleton {
             if (Theme.ready)
                 root.refresh();
         }
-        function onNvimPaletteChanged() {
-            if (root.ready)
-                root.scheduleSync();
-        }
-        function onPaletteChanged() {
+        function onUiKitChanged() {
             if (root.ready)
                 root.scheduleSync();
         }

@@ -7,7 +7,7 @@ QtObject {
     property var previewPalette: null
     property string previewMode: ""
     readonly property var palette: UiKit.resolvePalette(previewPalette || Theme, previewMode || Theme.mode || "dark")
-    readonly property string fontFamily: Theme.fontFamily
+    readonly property string fontFamily: UiKit.active.fontFamily || Theme.fontFamily
     readonly property string iconFontFamily: "JetBrainsMono Nerd Font"
 
     readonly property int space2: UiKit.tokens.space2
@@ -112,12 +112,19 @@ QtObject {
     function fill(variant, selected, hovered, down, active, accentColor) {
         const emphasized = selected || variant === "primary" || variant === "destructive";
         const base = emphasized ? (variant === "destructive" ? danger : accentColor) : variant === "ghost" ? "transparent" : surfaceRaised;
-        if (!active)
-            return base;
-        if (down)
-            return emphasized ? Qt.tint(base, Qt.rgba(0, 0, 0, 0.16)) : pressed;
-        if (hovered)
-            return emphasized ? Qt.tint(base, Qt.rgba(1, 1, 1, 0.12)) : hover;
-        return base;
+        let fill = base;
+        if (active && down)
+            fill = emphasized ? Qt.tint(base, Qt.rgba(0, 0, 0, 0.16)) : pressed;
+        else if (active && hovered)
+            fill = emphasized ? Qt.tint(base, Qt.rgba(1, 1, 1, 0.12)) : hover;
+        return UiKit.active.controlFill ? UiKit.active.controlFill({
+            fill: fill,
+            variant: variant,
+            selected: selected,
+            hovered: hovered,
+            down: down,
+            enabled: active,
+            accent: accentColor
+        }) : fill;
     }
 }

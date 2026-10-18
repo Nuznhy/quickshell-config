@@ -1,2 +1,3 @@
 module qs.tools.gallery
+GlassPreview 1.0 GlassPreview.qml
 Gallery 1.0 Gallery.qml

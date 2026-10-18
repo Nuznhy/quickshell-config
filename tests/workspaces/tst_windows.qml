@@ -53,7 +53,11 @@ Item {
             first.nerdFontIcons = false;
             Workspaces.lastFocused = "";
             Workspaces.urgent = [];
+            UiKit.previewKit = "";
             wait(250);
+        }
+        function cleanup() {
+            UiKit.previewKit = "";
         }
         function test_same_app_windows_and_icon_cache() {
             let calls = 0;
@@ -70,13 +74,22 @@ Item {
             clients[0].focusHistoryID = 10;
             compare(JSON.stringify(ServiceScripts.WorkspaceWindows.build(clients, icon)), JSON.stringify(result));
         }
-        function test_nerd_icons_map_apps_and_unknown_apps_have_fallback() {
+        function test_nerd_icons_map_apps_and_unknown_apps_have_fallback_data() {
+            return ["default", "windows7"].map(kit => ({
+                        tag: kit,
+                        kit: kit
+                    }));
+        }
+        function test_nerd_icons_map_apps_and_unknown_apps_have_fallback(data) {
+            UiKit.previewKit = data.kit;
             first.nerdFontIcons = true;
             first.icons = ServiceScripts.WorkspaceWindows.build([client("0xabc", 1, "org.telegram.desktop"), client("0xdef", 1, "unknown-app")], icon)[1];
             wait(250);
             compare(findChild(first, "workspace-app-glyph-0xabc").text, "");
             compare(findChild(first, "workspace-app-glyph-0xdef").text, "󰏗");
+            compare(findChild(first, "workspace-app-glyph-0xabc").font.family, Design.iconFontFamily);
             first.nerdFontIcons = false;
+            compare(findChild(first, "workspace-app-glyph-0xdef").font.family, Design.iconFontFamily);
             compare(first.count, 2);
         }
         function test_filtering_and_normalization() {

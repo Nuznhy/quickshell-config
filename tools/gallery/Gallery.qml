@@ -10,6 +10,7 @@ UI.ScrollView {
     property string kit: "default"
     property string preset: "rose-pine"
     property string mode: "dark"
+    readonly property var presets: ConfigScripts.Palettes.forKit(kit, preset)
     property alias content: body
     clip: true
     contentWidth: availableWidth
@@ -63,10 +64,10 @@ UI.ScrollView {
             Layout.fillWidth: true
             UI.ComboBox {
                 objectName: "gallery-palette"
-                model: ConfigScripts.Palettes.presets
+                model: root.presets
                 textRole: "name"
                 valueRole: "id"
-                currentIndex: ConfigScripts.Palettes.presets.findIndex(p => p.id === root.preset)
+                currentIndex: root.presets.findIndex(p => p.id === root.preset)
                 onActivated: root.preset = currentValue
                 Accessible.name: "Preview palette"
             }
@@ -94,6 +95,14 @@ UI.ScrollView {
                     text: modelData + " · " + Design.textSize(modelData)
                 }
             }
+        }
+        UI.Text {
+            text: "Glass and bar surfaces"
+            role: "panel"
+        }
+        GlassPreview {
+            objectName: "gallery-glass-preview"
+            Layout.fillWidth: true
         }
         UI.Text {
             text: "Buttons"

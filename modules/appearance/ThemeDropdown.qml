@@ -96,7 +96,7 @@ Item {
                             UI.Text {
                                 Layout.fillWidth: true
                                 text: choice.modelData.name
-                                color: choice.selectedTheme ? Design.textOnAccent : Design.text
+                                color: choice.foreground
                                 font.family: Design.fontFamily
                                 role: "body"
                                 font.bold: choice.selectedTheme

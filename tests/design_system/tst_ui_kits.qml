@@ -217,7 +217,7 @@ Item {
             const background = button.background;
             field.forceActiveFocus();
             field.cursorPosition = 3;
-            for (const id of ["minimal", "rounded", "default"]) {
+            for (const id of ["minimal", "rounded", "windows7", "default"]) {
                 UiKit.previewKit = id;
                 compare(button.background, background);
                 compare(button.background.radius, Design.radiusControl);
@@ -265,7 +265,7 @@ Item {
         function test_demo_renderers_and_vertical_indicator() {
             const button = make(buttonFactory);
             const hover = make(hoverFactory);
-            for (const id of ["minimal", "rounded", "default"]) {
+            for (const id of ["minimal", "rounded", "windows7", "default"]) {
                 UiKit.previewKit = id;
                 const loader = button.background.children[0];
                 verify(loader.item !== null);
@@ -284,7 +284,7 @@ Item {
             const spy = createTemporaryObject(signalSpyFactory, scene, {
                 signalName: "painted"
             });
-            for (const id of ["minimal", "rounded", "default"]) {
+            for (const id of ["minimal", "rounded", "windows7", "default"]) {
                 UiKit.previewKit = id;
                 const renderer = dropdown.renderer;
                 spy.target = renderer;

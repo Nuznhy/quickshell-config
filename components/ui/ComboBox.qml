@@ -73,7 +73,7 @@ T.ComboBox {
         }
         contentItem: UI.Text {
             text: option.text
-            color: option.highlighted || root.currentIndex === option.index ? Design.textOnAccent : Design.text
+            color: Design.readableText(option.background.color)
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
         }

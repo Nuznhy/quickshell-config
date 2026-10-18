@@ -101,7 +101,7 @@ class ThemeTests(unittest.TestCase):
             self.assertIn(p['bg'], formats.terminal(p, 'ghostty'))
             self.assertIn(p['iris'], formats.discord(p))
             self.assertIn(p['bg'], formats.btop(p))
-        self.assertEqual(count, 12)
+        self.assertEqual(count, 14)
 
     def test_discovery_is_read_only_all_off(self):
         before = list(self.home.rglob('*'))

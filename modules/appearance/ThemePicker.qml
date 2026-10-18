@@ -90,7 +90,7 @@ UI.ColumnLayout {
 
     Section {
         title: "Colors"
-        description: "Choose a palette and a light or dark look."
+        description: Theme.presets.some(preset => preset.kit === Theme.uiKit) ? "Choose a palette, including this kit's native colors, and a light or dark look." : "Choose a palette and a light or dark look."
         UI.GridLayout {
             Layout.fillWidth: true
             columns: width >= 560 ? 2 : 1

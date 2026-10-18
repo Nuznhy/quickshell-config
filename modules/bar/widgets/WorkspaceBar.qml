@@ -116,13 +116,12 @@ Grid {
                 onTriggered: workspaceBar.removeWorkspace(wsSlot.workspaceId)
             }
 
-            Rectangle {
+            Item {
                 id: wsRect
                 width: Theme.verticalBar ? wsSlot.width : wsSlot.contentWidth
                 height: parent.height
                 x: -12 * (1 - wsSlot.reveal)
                 opacity: wsSlot.reveal
-                color: Design.background
 
                 BarHoverIndicator {
                     anchors.fill: parent
@@ -151,12 +150,6 @@ Grid {
                     onClicked: {
                         preview.close();
                         Hyprland.dispatch("hl.dsp.focus({ workspace = " + wsRect.wsId + " })");
-                    }
-                }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 300
                     }
                 }
 
@@ -195,7 +188,7 @@ Grid {
                         TextMetrics {
                             id: separatorMetrics
                             text: WorkspaceAppearance.separator
-                            font.family: Design.fontFamily
+                            font.family: Design.iconFontFamily
                             font.pixelSize: Math.min(Theme.fontSize, Design.iconSize)
                         }
                         Rectangle {
@@ -212,7 +205,7 @@ Grid {
                             text: WorkspaceAppearance.separator
                             textFormat: Text.PlainText
                             color: wsRect.isActive ? Design.danger : Design.text
-                            font.family: Design.fontFamily
+                            font.family: Design.iconFontFamily
                             font.pixelSize: Math.min(Theme.fontSize, Design.iconSize)
                             fontSizeMode: Text.Fit
                             minimumPixelSize: 8

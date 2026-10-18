@@ -8,12 +8,12 @@ import qs.kits as KitScripts
 Singleton {
     id: root
 
-    readonly property var presets: generatedPalette ? ConfigScripts.Palettes.presets.concat([
+    readonly property var presets: generatedPalette ? ConfigScripts.Palettes.forKit(uiKit, preset).concat([
         {
             id: "wallpaper",
             name: "Wallpaper"
         }
-    ]) : ConfigScripts.Palettes.presets
+    ]) : ConfigScripts.Palettes.forKit(uiKit, preset)
     property var generatedPalette: null
     property var generatedVividPalette: null
     property bool wallpaperNvimVivid: false

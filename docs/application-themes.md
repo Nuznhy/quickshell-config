@@ -5,6 +5,10 @@
 In Settings → Appearance → Application themes, enable the applications that
 should follow the shell palette. Integrations start disabled. Disable a target
 to restore its previous theme; use its status details for setup errors and retry.
+Changing the UI kit regenerates enabled targets using the palette with that
+kit's color overrides. Optional kit palettes are selected under Colors; switching
+kits preserves your selection. Gallery previews do not apply app themes. Neovim's
+vivid wallpaper option remains specific to Neovim.
 
 ## Supported integrations
 

@@ -55,6 +55,12 @@ quickshell ipc -p ~/.config/quickshell call notifications clear
 
 ## Saved state
 
+The Desktop / TV widget uses Hyprland's `config.monitors` controller. The controller
+remembers the confirmed layout and desktop workspace placement across config
+reloads in the same Hyprland session. A new login starts on Desktop. TV switches
+still require confirmation; reloading before confirmation restores Desktop.
+Session state lives in `$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/desktop-tv-state`.
+
 Preferences are stored in Quickshell's per-shell XDG state directory, normally
 `~/.local/state/quickshell/by-shell/<shell-id>/`. This includes theme, bar layout,
 workspace appearance, monitoring, calendar preferences, and quick controls.

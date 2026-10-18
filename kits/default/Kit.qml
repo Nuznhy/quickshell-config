@@ -2,11 +2,14 @@ import QtQuick
 import qs.kits.default as DefaultKitScripts
 
 QtObject {
+    property string fontFamily: ""
     readonly property var baseTokens: DefaultKitScripts.Tokens.defaults()
     property var tokens: ({})
     // Partial semantic palettes; mode-specific roles override shared roles.
     property var palette: ({})
     property var palettes: ({})
+    // Optional state-dependent fill; shared controls also use it for text contrast.
+    property var controlFill: null
     property Component surface: Component {
         Surface {}
     }

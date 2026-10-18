@@ -15,8 +15,17 @@ var presets = [
     { id: "everforest", name: "Everforest", dark: ["#2d353b", "#343f44", "#3d484d", "#7a8478", "#9da9a0", "#d3c6aa", "#e67e80", "#dbbc7f", "#e69875", "#7fbbb3", "#83c092", "#d699b6", "#343f44", "#475258", "#4f585e"],
       light: ["#fdf6e3", "#f4f0d9", "#efebd4", "#a6b0a0", "#829181", "#5c6a72", "#f85552", "#dfa000", "#f57d26", "#3a94c5", "#35a77c", "#df69ba", "#f4f0d9", "#e6e2cc", "#e0dcc7"] },
     { id: "neutral", name: "Neutral", dark: ["#18181b", "#202024", "#2c2c32", "#71717a", "#a1a1aa", "#f4f4f5", "#a5b4fc", "#fcd34d", "#fda4af", "#60a5fa", "#5eead4", "#c4b5fd", "#27272a", "#3f3f46", "#52525b"],
-      light: ["#fafafa", "#ffffff", "#f0f0f2", "#71717a", "#52525b", "#27272a", "#4f46e5", "#946200", "#be123c", "#2563eb", "#0f766e", "#7c3aed", "#f4f4f5", "#e4e4e7", "#d4d4d8"] }
+      light: ["#fafafa", "#ffffff", "#f0f0f2", "#71717a", "#52525b", "#27272a", "#4f46e5", "#946200", "#be123c", "#2563eb", "#0f766e", "#7c3aed", "#f4f4f5", "#e4e4e7", "#d4d4d8"] },
+    // Aero colors with softened light surfaces; dark is a companion variant.
+    { id: "windows7-aero", name: "Windows 7 Aero", kit: "windows7",
+      dark: ["#242424", "#303030", "#3d3d3d", "#949494", "#c2c2c2", "#f2f2f2", "#ff9187", "#f4ce75", "#c9a5de", "#8dc9f0", "#8bd18b", "#7eb4ea", "#343434", "#515151", "#646464"],
+      light: ["#dedede", "#e8e8e8", "#d6d6d6", "#626262", "#494949", "#202020", "#c42b1c", "#946700", "#9b4f96", "#0066cc", "#228b22", "#3399ff", "#e3e3e3", "#c5c5c5", "#b5b5b5"] }
 ];
+
+function forKit(kit, selected) {
+    // A palette already in use remains available when switching to another kit.
+    return presets.filter(preset => !preset.kit || preset.kit === kit || preset.id === selected);
+}
 
 function hasPreset(id) {
     return presets.some(function(p) { return p.id === id; });

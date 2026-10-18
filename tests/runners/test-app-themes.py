@@ -121,15 +121,33 @@ import Quickshell
 import Quickshell.Io
 import qs.services.appearance
 import qs.config
+import qs.config as ConfigScripts
 ShellRoot {
+    property int syncs: 0
+    Connections {
+        target: AppTheming
+        function onRequestChanged() {
+            if (AppTheming.request.action === "sync") ++syncs;
+        }
+    }
     IpcHandler {
         target: "test"
         function status(): string { return JSON.stringify({ready: AppTheming.ready, busy: AppTheming.busy, pending: AppTheming.syncPending,
-            error: AppTheming.errorMessage, targets: AppTheming.targets}); }
+            error: AppTheming.errorMessage, targets: AppTheming.targets, syncs: syncs}); }
         function enable(): void { AppTheming.setEnabled("ghostty", true); }
         function disable(): void { AppTheming.setEnabled("ghostty", false); }
         function palette(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {bg: value}); }
         function accent(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {iris: value}); }
+        function kit(id: string): void { Theme.uiKit = id; }
+        function kitOverride(): void { UiKit.windows7Kit.palette = {bg: "#103050", surface: "#80123456", iris: "#2288cc"}; }
+        function clearKitOverride(): void { UiKit.windows7Kit.palette = {}; }
+        function preview(): void {
+            UiKit.previewKit = "minimal";
+            UiKit.minimalKit.tokens = {space8: 16, borderWidth: 3};
+            Design.previewPalette = {bg: "#ffffff"};
+        }
+        function clearPreview(): void { UiKit.previewKit = ""; UiKit.minimalKit.tokens = {}; Design.previewPalette = null; }
+        function nativePalette(mode: string): void { Theme.mode = mode; Theme.palette = ConfigScripts.Palettes.palette("windows7-aero", mode); }
         function widgetStyle(): void { Theme.widgetStyle = {lines: "off", background: "instant", duration: 400, strength: 20}; }
         function unrelated(): void { Theme.barRadius += 1; }
         function hyprEnable(): void { AppTheming.setEnabled("hyprland", true); }
@@ -182,6 +200,37 @@ ShellRoot {
             ipc('palette', '#334455')
             settled()
             assert 'background = #334455' in path.read_text()
+            # A kit switch regenerates enabled apps even when the base colors match.
+            previous_syncs = settled()['syncs']
+            ipc('kit', 'windows7')
+            settled(lambda r: r['syncs'] > previous_syncs)
+            assert 'background = #334455' in path.read_text()
+            ipc('kitOverride')
+            settled(lambda r: 'background = #103050' in path.read_text())
+            assert 'palette = 5=#2288cc' in path.read_text()
+            # Preview changes must not touch app themes, including geometry tokens.
+            previous_syncs = settled()['syncs']
+            modified = path.stat().st_mtime_ns
+            ipc('preview')
+            time.sleep(.4)
+            assert settled()['syncs'] == previous_syncs
+            assert path.stat().st_mtime_ns == modified
+            ipc('clearPreview')
+            time.sleep(.4)
+            assert settled()['syncs'] == previous_syncs
+            # Finish rapid changes with the colors of the final saved kit.
+            ipc('kit', 'minimal')
+            time.sleep(.3)
+            ipc('kit', 'rounded')
+            ipc('kit', 'windows7')
+            settled(lambda r: 'background = #103050' in path.read_text())
+            ipc('clearKitOverride')
+            ipc('nativePalette', 'light')
+            settled(lambda r: 'background = #dedede' in path.read_text())
+            assert 'palette = 5=#3399ff' in path.read_text()
+            ipc('nativePalette', 'dark')
+            settled(lambda r: 'background = #242424' in path.read_text())
+            assert 'palette = 5=#7eb4ea' in path.read_text()
             modified = path.stat().st_mtime_ns
             ipc('unrelated')
             time.sleep(.4)
@@ -191,6 +240,10 @@ ShellRoot {
             settled(lambda r: not next(t for t in r['targets'] if t['id'] == 'ghostty')['enabled'])
             assert (config / 'ghostty/config').read_text() == 'font-size=16\ntheme=before\n'
             assert not path.exists()
+            previous_syncs = settled()['syncs']
+            ipc('kit', 'default')
+            settled(lambda r: r['syncs'] > previous_syncs)
+            assert not path.exists(), 'Changing kits must not enable disabled applications'
             ipc('lockEnable')
             ipc('lockColor', '#445566')
             settled(lambda r: next(t for t in r['targets'] if t['id'] == 'hyprlock')['enabled'])

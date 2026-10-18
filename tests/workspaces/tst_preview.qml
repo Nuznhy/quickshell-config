@@ -7,6 +7,7 @@ import qs.modules.bar.widgets
 import qs.services.workspaces as ServiceScripts
 
 Rectangle {
+    id: scene
     width: 700
     height: 480
     color: Theme.bg
@@ -48,6 +49,8 @@ Rectangle {
             };
         }
         function init() {
+            UiKit.previewKit = "";
+            scene.color = Theme.bg;
             Theme.verticalBar = false;
             WorkspaceAppearance.reset();
             content.highlightedAddress = "";
@@ -71,7 +74,18 @@ Rectangle {
             mouseMove(content.parent, 650, 450);
             wait(300);
         }
-        function test_workspace_appearance_keeps_icons_clickable_and_hides_spacing() {
+        function cleanup() {
+            UiKit.previewKit = "";
+            scene.color = Theme.bg;
+        }
+        function test_workspace_appearance_keeps_icons_clickable_and_hides_spacing_data() {
+            return ["default", "windows7"].map(kit => ({
+                        tag: kit,
+                        kit: kit
+                    }));
+        }
+        function test_workspace_appearance_keeps_icons_clickable_and_hides_spacing(data) {
+            UiKit.previewKit = data.kit;
             const slot = findChild(bar, "workspace-slot-1");
             const group = findChild(bar, "workspace-icon-group-1");
             const separator = findChild(bar, "workspace-separator-1");
@@ -85,6 +99,7 @@ Rectangle {
             const glyph = findChild(bar, "workspace-app-glyph-0xdef");
             verify(glyph.visible);
             compare(glyph.text, "");
+            compare(glyph.font.family, Design.iconFontFamily);
             compare(findChild(bar, "workspace-app-image-0xdef").source.toString(), "");
             const second = findChild(bar, "workspace-window-0xdef");
             mouseClick(second, second.width / 2, second.height / 2);
@@ -105,6 +120,31 @@ Rectangle {
             verify(findChild(bar, "workspace-window-0xabc") !== null);
             wait(350);
             grabImage(content.parent).save("/tmp/quickshell-workspace-capsule.png");
+        }
+        function test_workspace_padding_preserves_bar_background_data() {
+            const rows = [];
+            for (const kit of ["default", "windows7"]) {
+                for (const vertical of [false, true]) {
+                    rows.push({
+                        tag: kit + (vertical ? "-vertical" : "-horizontal"),
+                        kit: kit,
+                        vertical: vertical
+                    });
+                }
+            }
+            return rows;
+        }
+        function test_workspace_padding_preserves_bar_background(data) {
+            UiKit.previewKit = data.kit;
+            Theme.verticalBar = data.vertical;
+            const slot = findChild(bar, "workspace-slot-1");
+            verify(slot !== null);
+            wait(400);
+            for (const backdrop of ["#346789", "#a58c64"]) {
+                scene.color = backdrop;
+                waitForRendering(scene);
+                compare(grabImage(slot).pixel(3, Math.floor(slot.height / 2)), scene.color, "Workspace padding must let the bar's glass show through");
+            }
         }
         function test_title_bursts_preserve_captures_and_labels() {
             const capture = findChild(content, "workspace-preview-capture-0xabc");
