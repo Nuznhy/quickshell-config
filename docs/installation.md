@@ -61,6 +61,14 @@ The user service needs the session's `WAYLAND_DISPLAY` and
 `HYPRLAND_INSTANCE_SIGNATURE`. Lock requests use `loginctl lock-session`;
 Hypridle launches Hyprlock and locks before suspend.
 
+To bind Meta+Ctrl+L to the same lock action as Quickshell's power menu, add this
+to your Hyprland Lua keybindings:
+
+```lua
+hl.bind("SUPER + CTRL + L",
+    hl.dsp.exec_cmd("python3 ~/.config/quickshell/scripts/power/power-action.py lock"))
+```
+
 For external brightness, enable DDC/CI in the monitor settings and check
 `ddcutil detect --brief` as your normal user. An initial setup may need
 `sudo modprobe i2c-dev`. Power and hardware writes follow system polkit permissions.

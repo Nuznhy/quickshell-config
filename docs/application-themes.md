@@ -24,6 +24,7 @@ vivid wallpaper option remains specific to Neovim.
 | Discord | Existing Vencord or Vesktop installation |
 | Zen Browser | Existing profile with `toolkit.legacyUserProfileCustomizations.stylesheets` enabled |
 | tmux | `tmux` and the bundled [theme integration](../integrations/tmux/theme.conf) |
+| Herdr | `herdr` and an existing `herdr/config.toml`; custom palette and live reload of local sessions |
 | Powerlevel10k | `zsh` and an existing `.p10k.zsh` loaded by the shell |
 | Neovim | `nvim` and a standard `nvim/init.lua`; generated colorscheme and reload helper |
 | Codex CLI | `codex` and an existing `$CODEX_HOME` (defaults to `~/.codex`); generated TextMate theme |
@@ -34,6 +35,11 @@ The shell does not install applications, client modifications, or plugins.
 
 For tmux, install the bundled file as `~/.config/tmux/theme.conf` and source it
 from `tmux.conf` after other theme settings. Integrated servers update live.
+Herdr reloads its default and named local sessions without restarting panes.
+The integration respects `HERDR_CONFIG_PATH` and temporarily disables Herdr's
+terminal-driven theme switching so colors follow the shell. Disabling it restores
+the previous theme, custom colors, and accent. See Herdr's
+[configuration reference](https://herdr.dev/tui/docs/configuration/#theme).
 For Neovim, restart once after enabling; later updates load on focus or
 `:QuickshellThemeReload`. Zen and Codex CLI need restarting to load changed colors.
 

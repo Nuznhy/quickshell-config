@@ -27,7 +27,7 @@ import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'), ('hyprland-colors', 'Hyprland colors'), ('hyprland', 'Hyprland appearance'),
-           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('p10k', 'Powerlevel10k / Zsh'), ('nvim', 'Neovim'), ('codex-cli', 'Codex CLI'), ('hyprlock', 'Hyprlock')]
+           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('herdr', 'Herdr'), ('p10k', 'Powerlevel10k / Zsh'), ('nvim', 'Neovim'), ('codex-cli', 'Codex CLI'), ('hyprlock', 'Hyprlock')]
 
 
 def read(path):
@@ -330,6 +330,45 @@ class Themes:
     def codex_home(self):
         return Path(os.environ.get('CODEX_HOME') or self.home / '.codex')
 
+    def herdr_config(self):
+        return Path(os.environ.get('HERDR_CONFIG_PATH') or self.config / 'herdr/config.toml')
+
+    def herdr_executable(self):
+        executable = self.which('herdr')
+        if executable:
+            return executable
+        for path in (self.home / '.local/bin/herdr', self.home / 'bin/herdr'):
+            if path.is_file() and os.access(path, os.X_OK):
+                return str(path)
+        return None
+
+    def reload_herdr(self):
+        executable = self.herdr_executable()
+        if not executable:
+            raise RuntimeError('Herdr executable not found; restore is waiting for a config reload.')
+        sessions = json.loads(self.run([executable, 'session', 'list', '--json']))['sessions']
+        errors = []
+        for session in sessions:
+            if session.get('connection_error'):
+                errors.append(f"{session['name']}: {session['connection_error']}")
+            if not session['running']:
+                continue
+            try:
+                response = json.loads(self.run([executable, '--session', session['name'], 'server', 'reload-config']))
+                report = response.get('result', {})
+                if report.get('status') != 'applied':
+                    raise RuntimeError('; '.join(report.get('diagnostics', [])) or 'Herdr config reload failed.')
+            except RuntimeError as error:
+                # A session can exit between discovery and reload. Do not launch it.
+                try:
+                    stopped = json.loads(str(error)).get('error', {}).get('code') == 'server_not_running'
+                except ValueError:
+                    stopped = False
+                if not stopped:
+                    errors.append(f"{session['name']}: {error}")
+        if errors:
+            raise RuntimeError('; '.join(errors))
+
     def codex_executable(self):
         executable = self.which('codex')
         if executable:
@@ -355,6 +394,12 @@ class Themes:
         return None
 
     def available(self, target):
+        if target == 'herdr':
+            if not self.herdr_config().is_file():
+                return False, f'Herdr configuration not found: {self.herdr_config()}'
+            if not self.herdr_executable():
+                return False, 'Herdr executable not found in the shell PATH, ~/.local/bin, or ~/bin.'
+            return True, ''
         if target == 'codex-cli':
             if not self.codex_home().is_dir():
                 return False, f'Codex home directory not found: {self.codex_home()}'
@@ -426,6 +471,32 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
+        if target == 'herdr':
+            path = self.herdr_config()
+            original = read(path)
+            sections = fmt.herdr(p, mode)
+            # Validate the entire edit first: inline/dotted tables and multiline
+            # values cannot safely be updated by the line-based recovery journal.
+            try:
+                expected = tomllib.loads(original)
+                proposed = original
+                for section, values in sections.items():
+                    table = expected
+                    for part in section.split('.'):
+                        table = table.setdefault(part, {})
+                    table.update(values)
+                    for key, value in values.items():
+                        proposed = edit_lines(proposed, r'^\s*' + re.escape(key) + r'\s*=',
+                                              [f'{key}={json.dumps(value)}\n'], section)
+                if tomllib.loads(proposed) != expected:
+                    raise ValueError('Unexpected configuration change')
+            except (ValueError, TypeError, AttributeError):
+                raise ValueError('Herdr config must be valid TOML with plain [theme], [theme.custom], and [ui] tables. Other settings were left unchanged.') from None
+            for section, values in sections.items():
+                for key, value in values.items():
+                    self.field(path, key, json.dumps(value), section)
+            self.reload(target, remember=True)
+            return 'applied', 'Colors follow the shell palette. Running local Herdr sessions reload automatically; disable to restore your previous theme.'
         if target == 'codex-cli':
             home = self.codex_home()
             config = home / 'config.toml'
@@ -640,6 +711,8 @@ class Themes:
             self.run(['spicetify', '-q', 'apply', '--no-restart'])
         elif target == 'tmux':
             self.reload_tmux()
+        elif target == 'herdr':
+            self.reload_herdr()
         elif target in ('hyprland', 'hyprland-colors') and os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
             self.run(['hyprctl', 'reload'])
             errors = self.run(['hyprctl', 'configerrors'])

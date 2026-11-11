@@ -36,11 +36,13 @@ class ThemeTests(unittest.TestCase):
         self.data = self.home / '.local/share'
         self.state = self.home / 'state'
         self.commands = []
+        self.herdr_sessions = [{'name': 'default', 'running': True}, {'name': 'work', 'running': True},
+                               {'name': 'stopped', 'running': False}]
         self.settings = {'color-scheme': "'default'", 'gtk-theme': "'Adwaita'"}
         self.engine = module.Themes(self.state, self.home, self.config, self.data, self.run_command, lambda cmd: '/bin/' + cmd)
         self.engine.available = lambda target: (True, '')
         self.palette = next(palettes())
-        self.env = patch.dict(os.environ, {'QT_QPA_PLATFORMTHEME': 'kde', 'VENCORD_USER_DATA_DIR': ''}, clear=False)
+        self.env = patch.dict(os.environ, {'QT_QPA_PLATFORMTHEME': 'kde', 'VENCORD_USER_DATA_DIR': '', 'HERDR_CONFIG_PATH': ''}, clear=False)
         self.env.start()
         self.addCleanup(self.env.stop)
 
@@ -50,6 +52,10 @@ class ThemeTests(unittest.TestCase):
             return self.settings[args[3]]
         if args[:2] == ['gsettings', 'set']:
             self.settings[args[3]] = args[4]
+        if args[1:] == ['session', 'list', '--json']:
+            return json.dumps({'sessions': self.herdr_sessions})
+        if args[-2:] == ['server', 'reload-config']:
+            return json.dumps({'result': {'status': 'applied', 'diagnostics': []}})
         return ''
 
     def put(self, relative, text):
@@ -888,6 +894,125 @@ class ThemeTests(unittest.TestCase):
             result = subprocess.run(['zsh', '-dfc', code, 'test', str(generated)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip(), palette['iris'] + ' ' + palette['text'])
+
+    def test_herdr_discovery_outside_desktop_path(self):
+        self.assertFalse(module.Themes.available(self.engine, 'herdr')[0])
+        config = self.put('herdr/config.toml', '[theme]\nname="nord"\n')
+        self.engine.which = lambda command: None
+        self.assertIn('executable', module.Themes.available(self.engine, 'herdr')[1])
+        binary = self.home / '.local/bin/herdr'
+        binary.parent.mkdir(parents=True)
+        binary.write_text('#!/bin/sh\nexit 0\n')
+        binary.chmod(0o600)
+        self.assertFalse(module.Themes.available(self.engine, 'herdr')[0])
+        binary.chmod(0o700)
+        self.assertEqual(self.engine.herdr_executable(), str(binary))
+        self.assertTrue(module.Themes.available(self.engine, 'herdr')[0])
+        self.engine.which = lambda command: '/custom/herdr'
+        self.assertEqual(self.engine.herdr_executable(), '/custom/herdr')
+        config.unlink()
+        self.assertIn('configuration not found', module.Themes.available(self.engine, 'herdr')[1])
+
+    def test_herdr_palette_sync_reload_and_restore(self):
+        original = ('onboarding=false\n[theme]\nname = "nord"\nauto_switch = true\n'
+                    'light_name="one-light"\n[theme.custom]\naccent = "cyan"\npanel_bg="reset"\n'
+                    '[theme.custom.light]\ntext="#123456"\n[ui]\naccent = "blue"\nmouse_capture=false\n'
+                    '[keys]\nprefix="ctrl+b"\n[[keys.command]]\nkey="prefix+t"\ncommand="zsh"\n')
+        config = self.put('herdr/config.toml', original)
+        real = self.home / 'herdr-dotfile.toml'
+        config.rename(real)
+        config.symlink_to(real)
+        self.assertEqual(self.status(self.apply('herdr'), 'herdr')['state'], 'applied')
+        for palette in palettes():
+            for mode in ('dark', 'light'):
+                result = self.engine.handle(dict(action='sync', palette=palette, mode=mode))
+                self.assertEqual(self.status(result, 'herdr')['state'], 'applied')
+                expected = tomllib.loads(original)
+                expected['theme']['name'] = 'rose-pine-dawn' if mode == 'light' else 'rose-pine'
+                expected['theme']['auto_switch'] = False
+                expected['theme']['custom'].update(formats.herdr(palette, mode)['theme.custom'])
+                expected['ui']['accent'] = palette['iris']
+                self.assertEqual(tomllib.loads(real.read_text()), expected)
+                self.assertEqual(expected['theme']['custom']['panel_bg'], palette['bg'])
+                self.assertEqual(expected['theme']['custom']['text'], palette['text'])
+        self.assertTrue(config.is_symlink())
+        self.commands.clear()
+        result = self.apply('herdr', False)
+        self.assertEqual(self.status(result, 'herdr')['state'], 'off')
+        self.assertEqual(real.read_text(), original)
+        self.assertEqual(self.commands, [
+            ['/bin/herdr', 'session', 'list', '--json'],
+            ['/bin/herdr', '--session', 'default', 'server', 'reload-config'],
+            ['/bin/herdr', '--session', 'work', 'server', 'reload-config'],
+        ])
+
+    def test_herdr_custom_config_and_no_running_sessions(self):
+        config = self.home / 'custom herdr.toml'
+        config.write_text('onboarding=false\n')
+        self.herdr_sessions = [{'name': 'default', 'running': False}]
+        with patch.dict(os.environ, {'HERDR_CONFIG_PATH': str(config)}):
+            self.assertTrue(module.Themes.available(self.engine, 'herdr')[0])
+            self.assertEqual(self.status(self.apply('herdr'), 'herdr')['state'], 'applied')
+            self.assertEqual(tomllib.loads(config.read_text())['theme']['custom']['accent'], self.palette['iris'])
+            self.assertFalse((self.config / 'herdr').exists())
+            modified = config.stat().st_mtime_ns
+            self.apply('herdr', action='sync')
+            self.assertEqual(config.stat().st_mtime_ns, modified)
+            self.assertEqual(self.status(self.apply('herdr', False), 'herdr')['state'], 'off')
+            restored = tomllib.loads(config.read_text())
+            self.assertEqual(restored, {'onboarding': False, 'theme': {'custom': {}}, 'ui': {}})
+            self.assertTrue(all(args[1:] == ['session', 'list', '--json'] for args in self.commands))
+
+    def test_herdr_unsupported_toml_is_not_modified(self):
+        for original in ['theme={name="nord"}\n', 'theme.name="nord"\n', '[theme] # comment\nname="nord"\n',
+                         '[theme]\nname="""\nnord\n"""\n', 'theme=1\n', 'invalid[']:
+            with self.subTest(original=original):
+                config = self.put('herdr/config.toml', original)
+                self.assertEqual(self.status(self.apply('herdr'), 'herdr')['state'], 'error')
+                self.assertEqual(config.read_text(), original)
+                self.assertEqual(self.commands, [])
+                self.assertFalse(self.engine.state['journals'])
+
+    def test_herdr_restore_preserves_manual_edits(self):
+        config = self.put('herdr/config.toml', '[theme]\nname="nord"\n[ui]\nmouse_capture=true\n')
+        self.apply('herdr')
+        config.write_text(config.read_text().replace('mouse_capture=true', 'mouse_capture=false')
+                          .replace('panel_bg=' + json.dumps(self.palette['bg']), 'panel_bg="#123456"'))
+        self.commands.clear()
+        self.assertEqual(self.status(self.apply('herdr', False), 'herdr')['state'], 'error')
+        restored = tomllib.loads(config.read_text())
+        self.assertEqual(restored['theme']['custom']['panel_bg'], '#123456')
+        self.assertFalse(restored['ui']['mouse_capture'])
+        self.assertEqual(self.commands, [])
+
+    def test_herdr_reload_failure_and_restore_retry(self):
+        original = '[theme]\nname="nord"\n[theme.custom]\naccent="cyan"\n[ui]\naccent="blue"\n'
+        config = self.put('herdr/config.toml', original)
+        def partial(args):
+            if args[-2:] == ['server', 'reload-config']:
+                self.commands.append(args)
+                return json.dumps({'result': {'status': 'partial', 'diagnostics': ['invalid theme']}})
+            return self.run_command(args)
+        self.engine.run = partial
+        self.assertEqual(self.status(self.apply('herdr'), 'herdr')['state'], 'error')
+        self.assertIn('herdr', self.engine.state['reload_restore'])
+        self.assertIn(['/bin/herdr', '--session', 'work', 'server', 'reload-config'], self.commands)
+        self.assertEqual(self.status(self.apply('herdr', False), 'herdr')['state'], 'error')
+        self.assertEqual(config.read_text(), original)
+        self.engine = module.Themes(self.state, self.home, self.config, self.data, self.run_command, lambda cmd: '/bin/' + cmd)
+        self.assertEqual(self.status(self.apply('herdr', action='retry'), 'herdr')['state'], 'off')
+        self.assertEqual(self.engine.state['reload_restore'], [])
+        self.assertEqual(self.engine.state['pending_restore'], [])
+
+    def test_herdr_session_exit_during_reload(self):
+        self.put('herdr/config.toml', '[theme]\nname="nord"\n')
+        def stopped(args):
+            if args[-2:] == ['server', 'reload-config']:
+                raise RuntimeError(json.dumps({'error': {'code': 'server_not_running', 'message': 'no server'}}))
+            return self.run_command(args)
+        self.engine.run = stopped
+        self.assertEqual(self.status(self.apply('herdr'), 'herdr')['state'], 'applied')
+        self.assertEqual(self.status(self.apply('herdr', False), 'herdr')['state'], 'off')
 
     def test_tmux_target_discovery_and_config_preservation(self):
         self.assertFalse(module.Themes.available(self.engine, 'tmux')[0])

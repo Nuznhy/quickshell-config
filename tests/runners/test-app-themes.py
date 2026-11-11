@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
 subprocess.run(['python3', '-m', 'unittest', 'discover', '-s', str(ROOT / 'tests/app_themes'), '-v'], check=True)
@@ -100,7 +101,7 @@ QtObject {
     env = dict(os.environ, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software', XDG_RUNTIME_DIR=str(app / 'runtime'))
     subprocess.run([os.environ.get('QMLTESTRUNNER', '/usr/lib/qt6/bin/qmltestrunner'), '-import', str(qml_import_path(app)), '-input', str(app)], env=env, check=True)
 
-    # Native service + helper, with only a fake Ghostty and a fake reload hook.
+    # Native service + helper, with fake applications and reload hooks.
     shutil.copyfile(ROOT / 'services/appearance/AppTheming.qml', app / 'services/appearance/AppTheming.qml')
     for name in ['app-themes.py', 'app_theme_formats.py', 'hyprlock-status.py', 'nvim-theme-loader.lua']:
         shutil.copyfile(script_path(ROOT, name), script_path(app, name))
@@ -108,14 +109,34 @@ QtObject {
         path = app / 'bin' / name
         path.write_text('#!/bin/sh\nsleep 0.15\nexit 0\n')
         path.chmod(0o700)
+    herdr = app / 'bin/herdr'
+    herdr.write_text('''#!/usr/bin/env python3
+import json
+import os
+from pathlib import Path
+import sys
+if sys.argv[1:] == ['session', 'list', '--json']:
+    print(json.dumps({'sessions': [{'name': 'default', 'running': True}]}))
+elif sys.argv[1:] == ['--session', 'default', 'server', 'reload-config']:
+    with (Path(os.environ['XDG_CONFIG_HOME']) / 'herdr/reloads.log').open('a') as stream:
+        stream.write('reload\\n')
+    print(json.dumps({'result': {'status': 'applied', 'diagnostics': []}}))
+else:
+    sys.exit(2)
+''')
+    herdr.chmod(0o700)
     config = base / 'userconfig'
     (config / 'hypr').mkdir(parents=True)
     (config / 'hypr/hyprland.lua').write_text('-- user styling\n')
     (config / 'ghostty').mkdir(parents=True)
     (config / 'ghostty/config').write_text('font-size=16\ntheme=before\n')
+    (config / 'herdr').mkdir()
+    herdr_config = config / 'herdr/config.toml'
+    herdr_original = '[theme]\nname="nord"\n[theme.custom]\naccent="cyan"\n[ui]\naccent="blue"\n'
+    herdr_config.write_text(herdr_original)
     env.update(HOME=str(base / 'home'), XDG_CONFIG_HOME=str(config), XDG_DATA_HOME=str(base / 'data'),
                XDG_STATE_HOME=str(base / 'state'), XDG_CACHE_HOME=str(base / 'cache'),
-               PATH=str(app / 'bin') + ':' + os.environ['PATH'], VENCORD_USER_DATA_DIR='')
+               PATH=str(app / 'bin') + ':' + os.environ['PATH'], VENCORD_USER_DATA_DIR='', HERDR_CONFIG_PATH='')
     (app / 'shell.qml').write_text('''import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -136,6 +157,8 @@ ShellRoot {
             error: AppTheming.errorMessage, targets: AppTheming.targets, syncs: syncs}); }
         function enable(): void { AppTheming.setEnabled("ghostty", true); }
         function disable(): void { AppTheming.setEnabled("ghostty", false); }
+        function herdrEnable(): void { AppTheming.setEnabled("herdr", true); }
+        function herdrDisable(): void { AppTheming.setEnabled("herdr", false); }
         function palette(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {bg: value}); }
         function accent(value: string): void { Theme.palette = Object.assign({}, Theme.palette, {iris: value}); }
         function kit(id: string): void { Theme.uiKit = id; }
@@ -312,10 +335,23 @@ ShellRoot {
             settled(lambda r: not next(t for t in r['targets'] if t['id'] == 'hyprland-colors')['enabled'])
             assert not colors.exists()
             assert (config / 'hypr/hyprland.lua').read_text() == '-- user styling\n'
+            ipc('herdrEnable')
+            settled(lambda r: next(t for t in r['targets'] if t['id'] == 'herdr')['state'] == 'applied')
+            ipc('palette', '#123456')
+            ipc('palette', '#345678')
+            settled(lambda r: tomllib.loads(herdr_config.read_text())['theme']['custom']['panel_bg'] == '#345678')
+            assert tomllib.loads(herdr_config.read_text())['theme']['custom']['accent'] == '#556677'
+            reload_log = config / 'herdr/reloads.log'
+            assert len(reload_log.read_text().splitlines()) >= 2
+            before_restore = len(reload_log.read_text().splitlines())
+            ipc('herdrDisable')
+            settled(lambda r: next(t for t in r['targets'] if t['id'] == 'herdr')['state'] == 'off')
+            assert herdr_config.read_text() == herdr_original
+            assert len(reload_log.read_text().splitlines()) == before_restore + 1
             log.flush(); log.seek(0)
             output = log.read()
             assert not any(message in output for message in ['TypeError', 'ReferenceError', 'Binding loop']), output
-            print('PASS: native worker startup, opt-in, latest palette wins, unrelated settings, and restore', flush=True)
+            print('PASS: native worker startup, opt-in, latest palette wins, Herdr reload, unrelated settings, and restore', flush=True)
         finally:
             process.terminate()
             process.wait(timeout=5)
