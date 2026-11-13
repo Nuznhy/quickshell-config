@@ -17,6 +17,8 @@ UI.ColumnLayout {
     readonly property string activeMonitor: Theme.connectedScreens.some(screen => screen.name === selectedMonitor) ? selectedMonitor : (Theme.connectedScreens[0]?.name || "")
     readonly property int imageCount: folderLoader.item?.files.count || 0
     readonly property bool folderLoading: folderLoader.item?.files.status === FolderListModel.Loading
+    property string gallerySource: "local"
+    readonly property var activeScreen: Theme.connectedScreens.find(screen => screen.name === activeMonitor) || null
     signal dismissed
     Keys.onEscapePressed: dismissed()
 
@@ -27,7 +29,7 @@ UI.ColumnLayout {
     }
     Loader {
         id: folderLoader
-        active: root.visible && Theme.ready && Theme.wallpaperFolder.length > 0
+        active: root.visible && Theme.ready && Theme.wallpaperFolder.length > 0 && root.gallerySource === "local"
         visible: false
         sourceComponent: Item {
             property alias files: files
@@ -141,11 +143,20 @@ UI.ColumnLayout {
         spacing: Design.space8
         UI.Text {
             Layout.fillWidth: true
-            text: "Images" + (Theme.wallpaperFolder ? " · " + root.imageCount : "")
+            Layout.minimumWidth: 0
+            text: root.gallerySource === "wallhaven" ? "Wallhaven" : "Images" + (Theme.wallpaperFolder ? " · " + root.imageCount : "")
+            elide: Text.ElideRight
             color: Design.text
             font.family: Design.fontFamily
             role: "section"
             font.bold: true
+        }
+        UI.SegmentedControl {
+            objectName: "wallpaper-source"
+            Layout.preferredWidth: Math.min(220, root.width * 0.35)
+            model: ["Local", "Wallhaven"]
+            currentIndex: root.gallerySource === "wallhaven" ? 1 : 0
+            onSelected: index => root.gallerySource = index === 1 ? "wallhaven" : "local"
         }
         UI.Text {
             text: "Apply to"
@@ -167,7 +178,7 @@ UI.ColumnLayout {
     }
     UI.Text {
         Layout.fillWidth: true
-        visible: !root.imageCount || root.folderLoading
+        visible: root.gallerySource === "local" && (!root.imageCount || root.folderLoading)
         text: !Theme.wallpaperFolder ? "Choose a folder to browse its images here." : root.folderLoading ? "Loading images…" : "No supported images found. The folder may be empty or unavailable."
         color: Design.textSecondary
         font.family: Design.fontFamily
@@ -184,7 +195,7 @@ UI.ColumnLayout {
         cellHeight: cellWidth * 9 / 16 + 38
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        visible: count > 0
+        visible: count > 0 && root.gallerySource === "local"
         model: folderLoader.item?.files || null
         ScrollBar.vertical: UI.ScrollBar {}
         delegate: UI.Button {
@@ -232,6 +243,20 @@ UI.ColumnLayout {
                     role: "caption"
                 }
             }
+        }
+    }
+    Loader {
+        id: wallhavenLoader
+        objectName: "wallhaven-loader"
+        Layout.fillWidth: true
+        // Only contact Wallhaven once its tab is opened.
+        active: root.gallerySource === "wallhaven"
+        visible: active
+        sourceComponent: WallhavenBrowser {
+            activeMonitor: root.activeMonitor
+            wallpaperMode: root.wallpaperMode
+            monitorSize: root.activeScreen ? Qt.size((root.activeScreen.width || 0) * (root.activeScreen.devicePixelRatio || 1), (root.activeScreen.height || 0) * (root.activeScreen.devicePixelRatio || 1)) : Qt.size(0, 0)
+            onChosen: (monitorName, fileUrl) => monitors.choose(monitorName, fileUrl)
         }
     }
 }

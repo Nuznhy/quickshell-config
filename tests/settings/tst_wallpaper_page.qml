@@ -2,6 +2,7 @@ import QtQuick
 import QtTest
 import qs.modules.wallpaper
 import qs.config
+import qs.services.wallpaper
 
 Rectangle {
     width: 800
@@ -33,7 +34,50 @@ Rectangle {
                 }
             ];
             page.selectedMonitor = "";
+            page.gallerySource = "local";
+            Wallhaven.searches = [];
+            Wallhaven.searched = false;
+            Wallhaven.items = [];
+            Wallhaven.lastDownload = null;
             wait(30);
+        }
+        function test_wallhaven_is_lazy_and_applies_downloads_per_mode() {
+            compare(findChild(page, "wallhaven-gallery"), null);
+            compare(Wallhaven.searches.length, 0);
+            page.gallerySource = "wallhaven";
+            tryVerify(() => findChild(page, "wallhaven-gallery") !== null);
+            compare(Wallhaven.searches.length, 1);
+            compare(findChild(page, "wallpaper-gallery").visible, false);
+            Wallhaven.items = [
+                {
+                    id: "abc123",
+                    thumb: Qt.resolvedUrl("test wallpaper.svg").toString(),
+                    full: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+                    resolution: "800x450",
+                    purity: "sfw"
+                }
+            ];
+            page.selectedMonitor = "HDMI-A-1";
+            const tile = findChild(page, "wallhaven-image-abc123");
+            verify(tile !== null);
+            tryCompare(tile, "enabled", true);
+            // The results grid sits below the fixed test window; activate it directly.
+            tile.clicked();
+            compare(Wallhaven.lastDownload.item.id, "abc123");
+            compare(Wallhaven.lastDownload.context.monitor, "HDMI-A-1");
+            const file = Qt.resolvedUrl("gallery/first image.svg").toString();
+            // A download started for another mode must not be applied here.
+            Wallhaven.downloaded("abc123", file, {
+                monitor: "HDMI-A-1",
+                mode: "light"
+            });
+            wait(100);
+            compare(Theme.wallpaperFor("HDMI-A-1"), "");
+            Wallhaven.downloaded("abc123", file, Wallhaven.lastDownload.context);
+            tryVerify(() => Theme.wallpaperFor("HDMI-A-1") === file);
+            compare(Theme.wallpaperFor("DP-1"), "");
+            wait(100);
+            grabImage(page.parent).save("/tmp/quickshell-wallpaper-wallhaven.png");
         }
         function test_folder_filters_and_switches() {
             Theme.setWallpaperFolder(Qt.resolvedUrl("gallery").toString());
