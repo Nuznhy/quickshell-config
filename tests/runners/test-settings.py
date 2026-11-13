@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Test the layout model, drag/drop UI, and section geometry in isolation."""
 from pathlib import Path
-from design_test_support import prepare_script_dirs, qml_import_path, prepare_component_dirs, install_design, component_path
+from design_test_support import (prepare_script_dirs, qml_import_path, prepare_component_dirs, install_design,
+                                 component_path, prepare_service_dirs, service_path, write_service_registry)
 import os
 import shutil
 import subprocess
@@ -17,8 +18,49 @@ with tempfile.TemporaryDirectory(prefix='qs-settings-test-') as directory:
     for subdir in ['config', 'components', 'modules/settings', 'modules/bar/widgets', 'runtime']:
         (target / subdir).mkdir(parents=True, exist_ok=True, mode=0o700)
     for name in ['ControlSwitch.qml', 'NotificationButton.qml', 'WallpaperSelector.qml',
-                 'WallpaperPage.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml', 'BarFontPicker.qml', 'WorkspaceSettingsPanel.qml']:
+                 'WallpaperPage.qml', 'WallhavenBrowser.qml', 'SettingsIcon.qml', 'SettingsIconEditor.qml', 'BarFontPicker.qml', 'WorkspaceSettingsPanel.qml']:
         shutil.copyfile(component_path(root, name), component_path(target, name))
+    # Offline Wallhaven service: records requests; tests emit downloads directly.
+    prepare_service_dirs(target)
+    service_path(target, 'Wallhaven.qml').write_text('''pragma Singleton
+import QtQuick
+QtObject {
+    id: root
+    property bool ready: true
+    readonly property var sortings: ["toplist", "date_added", "relevance", "random", "views", "favorites"]
+    readonly property var topRanges: ["1d", "3d", "1w", "1M", "3M", "6M", "1y"]
+    property string apiKey: ""
+    property string username: ""
+    property string query: ""
+    property string categories: "111"
+    property string purity: "100"
+    property string sorting: "toplist"
+    property string topRange: "1M"
+    property bool matchResolution: false
+    property int collection: 0
+    readonly property bool hasKey: apiKey.length > 0
+    property var items: []
+    property int page: 1
+    property int lastPage: 1
+    property int total: 0
+    property bool searched: false
+    property string errorMessage: ""
+    property var collections: []
+    property string collectionsError: ""
+    property string downloadingId: ""
+    property string downloadError: ""
+    property bool loading: false
+    property bool downloading: false
+    property var searches: []
+    property var lastDownload: null
+    signal downloaded(string id, string fileUrl, var context)
+    function setOption(name, value) { root[name] = value; return true; }
+    function setAccount(key, name) { apiKey = key; username = name; }
+    function search(pageNumber, atleast) { searches = searches.concat([{page: pageNumber, atleast: atleast}]); searched = true; }
+    function download(item, context) { lastDownload = {item: item, context: context}; }
+}
+''')
+    write_service_registry(target, 'singleton Wallhaven 1.0 Wallhaven.qml')
     for path in ['config/BarLayoutData.js', 'modules/settings/BarLayoutEditor.qml', 'modules/bar/BarSection.qml']:
         shutil.copyfile(root / path, target / path)
     (target / 'config/qmldir').write_text('singleton Theme 1.0 Theme.qml\nsingleton BarLayout 1.0 BarLayout.qml\nsingleton Settings 1.0 Settings.qml\n')
