@@ -703,6 +703,84 @@ class ThemeTests(unittest.TestCase):
             binary.unlink()
             self.assertFalse(module.Themes.available(self.engine, 'codex-cli')[0])
 
+
+    def test_claude_cli_discovery(self):
+        home = self.home / 'custom claude'
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': str(home)}):
+            self.engine.which = lambda command: None
+            self.assertIn('directory', module.Themes.available(self.engine, 'claude-cli')[1])
+            home.mkdir()
+            self.assertIn('executable', module.Themes.available(self.engine, 'claude-cli')[1])
+            binary = self.home / '.local/bin/claude'
+            binary.parent.mkdir(parents=True)
+            binary.write_text('#!/bin/sh\nexit 0\n')
+            binary.chmod(0o600)
+            self.assertFalse(module.Themes.available(self.engine, 'claude-cli')[0])
+            binary.chmod(0o700)
+            self.assertTrue(module.Themes.available(self.engine, 'claude-cli')[0])
+            self.assertEqual(self.engine.claude_executable(), str(binary))
+
+    def test_claude_cli_sync_and_restore(self):
+        home = self.home / 'custom claude'
+        home.mkdir()
+        settings = home / 'settings.json'
+        real = self.home / 'claude-settings.json'
+        real.write_text(json.dumps({'theme': 'light', 'permissions': {'allow': ['Read']}}))
+        settings.symlink_to(real)
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': str(home)}):
+            self.assertEqual(self.status(self.apply('claude-cli'), 'claude-cli')['state'], 'restart')
+            theme = home / 'themes/quickshell-config.json'
+            for palette in palettes():
+                for mode in ('dark', 'light'):
+                    self.engine.handle(dict(action='sync', palette=palette, mode=mode))
+                    rendered = json.loads(theme.read_text())
+                    self.assertEqual(rendered['base'], mode)
+                    self.assertEqual(rendered['overrides']['claude'], palette['iris'])
+                    self.assertEqual(rendered['overrides']['text'], palette['text'])
+                    self.assertNotEqual(rendered['overrides']['diffAdded'], rendered['overrides']['diffRemoved'])
+            value = json.loads(real.read_text())
+            self.assertEqual(value['theme'], 'custom:quickshell-config')
+            value['model'] = 'user-choice'
+            real.write_text(json.dumps(value))
+            self.engine = module.Themes(self.state, self.home, self.config, self.data, self.run_command)
+            self.assertEqual(self.status(self.apply('claude-cli', False), 'claude-cli')['state'], 'off')
+            self.assertEqual(json.loads(real.read_text()), {
+                'theme': 'light', 'permissions': {'allow': ['Read']}, 'model': 'user-choice'})
+            self.assertTrue(settings.is_symlink())
+            self.assertFalse(theme.exists())
+            self.assertEqual(self.commands, [])
+
+    def test_claude_cli_missing_settings_and_conflicts(self):
+        home = self.home / '.claude'
+        home.mkdir()
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': str(home)}):
+            settings = home / 'settings.json'
+            theme = home / 'themes/quickshell-config.json'
+            self.apply('claude-cli')
+            self.assertEqual(self.status(self.apply('claude-cli', False), 'claude-cli')['state'], 'off')
+            self.assertFalse(settings.exists())
+            self.apply('claude-cli')
+            settings.write_text('{"theme":"user-choice","model":"keep"}')
+            self.assertEqual(self.status(self.apply('claude-cli', False), 'claude-cli')['state'], 'error')
+            self.assertEqual(json.loads(settings.read_text())['theme'], 'user-choice')
+            self.assertTrue(theme.exists())
+            settings.write_text('{"theme":"custom:quickshell-config","model":"keep"}')
+            theme.write_text('{"name":"Manual edits"}')
+            self.assertEqual(self.status(self.apply('claude-cli', False), 'claude-cli')['state'], 'error')
+            self.assertEqual(json.loads(settings.read_text()), {'model': 'keep'})
+            self.assertEqual(json.loads(theme.read_text()), {'name': 'Manual edits'})
+
+    def test_claude_cli_invalid_settings_are_untouched(self):
+        home = self.home / '.claude'
+        home.mkdir()
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': str(home)}):
+            for original in ('invalid[', '[]', 'null', ''):
+                settings = home / 'settings.json'
+                settings.write_text(original)
+                self.assertEqual(self.status(self.apply('claude-cli'), 'claude-cli')['state'], 'error')
+                self.assertEqual(settings.read_text(), original)
+                self.assertFalse((home / 'themes/quickshell-config.json').exists())
+
     def test_codex_cli_theme_sync_and_restore(self):
         home = self.home / 'custom codex'
         home.mkdir()

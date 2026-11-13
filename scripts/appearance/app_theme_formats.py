@@ -38,6 +38,30 @@ def on_color(background):
     return '#000000' if luminance > .179 else '#ffffff'
 
 
+def claude_cli(p, mode):
+    overrides = {
+        'claude': p['iris'], 'text': p['text'], 'inverseText': on_color(p['iris']),
+        'inactive': p['muted'], 'subtle': p['subtle'], 'suggestion': p['foam'],
+        'permission': p['iris'], 'remember': p['rose'], 'success': p['pine'],
+        'error': p['love'], 'warning': p['gold'], 'merged': p['iris'],
+        'promptBorder': p['highlightHigh'], 'planMode': p['foam'],
+        'autoAccept': p['pine'], 'bashBorder': p['gold'], 'ide': p['foam'],
+        'fastMode': p['gold'], 'effortUltra': p['iris'],
+        'userMessageBackground': p['surface'], 'userMessageBackgroundHover': p['overlay'],
+        'bashMessageBackgroundColor': p['surface'], 'memoryBackgroundColor': p['surface'],
+        'selectionBg': p['highlightMed'], 'composerSidebarBackground': p['surface'],
+        'rate_limit_fill': p['iris'], 'rate_limit_empty': p['highlightLow'],
+        'briefLabelYou': p['foam'], 'briefLabelClaude': p['iris'],
+    }
+    for token, role in [('diffAdded', 'pine'), ('diffRemoved', 'love')]:
+        overrides[token] = mix(p['bg'], p[role], 0.18)
+        overrides[token + 'Dimmed'] = mix(p['bg'], p[role], 0.09)
+        overrides[token + 'Word'] = mix(p['bg'], p[role], 0.32)
+    for token in ('claude', 'warning', 'permission', 'promptBorder', 'inactive', 'fastMode'):
+        overrides[token + 'Shimmer'] = mix(overrides[token], p['text'], 0.3)
+    return json.dumps({'name': 'Quickshell', 'base': mode, 'overrides': overrides}, indent=2) + '\n'
+
+
 def herdr(p, mode):
     return {
         'theme': {'name': 'rose-pine-dawn' if mode == 'light' else 'rose-pine', 'auto_switch': False},

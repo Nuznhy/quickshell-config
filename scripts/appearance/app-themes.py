@@ -27,7 +27,7 @@ import app_theme_formats as fmt
 
 TARGETS = [('gtk', 'GTK 3 / 4'), ('qt', 'Qt / KDE'), ('rofi', 'Rofi'), ('ghostty', 'Ghostty'), ('foot', 'Foot'),
            ('yazi', 'Yazi'), ('btop', 'btop'), ('hyprtoolkit', 'Hyprtoolkit'), ('hyprland-colors', 'Hyprland colors'), ('hyprland', 'Hyprland appearance'),
-           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('herdr', 'Herdr'), ('p10k', 'Powerlevel10k / Zsh'), ('nvim', 'Neovim'), ('codex-cli', 'Codex CLI'), ('hyprlock', 'Hyprlock')]
+           ('spotify', 'Spotify'), ('discord', 'Discord'), ('zen', 'Zen Browser'), ('tmux', 'tmux'), ('herdr', 'Herdr'), ('p10k', 'Powerlevel10k / Zsh'), ('nvim', 'Neovim'), ('codex-cli', 'Codex CLI'), ('claude-cli', 'Claude Code CLI'), ('hyprlock', 'Hyprlock')]
 
 
 def read(path):
@@ -218,6 +218,21 @@ class Themes:
             self.save()
             atomic(path, json.dumps(value, indent=2) + '\n')
 
+    def json_field(self, path, key, value):
+        document = json.loads(read(path)) if path.exists() else {}
+        if not isinstance(document, dict):
+            raise ValueError(f'Expected a JSON object: {path}')
+        before = {'present': key in document, 'value': document.get(key)}
+        record = self.record('json-field:' + str(path) + ':' + key, path, kind='json_field',
+                             key=key, before=before, after=before, existed=path.exists())
+        if before not in (record['before'], record['after']):
+            raise RuntimeError(f'Theme setting changed manually: {path}')
+        record['after'] = {'present': True, 'value': value}
+        self.save()
+        if before != record['after']:
+            document[key] = value
+            atomic(path, json.dumps(document, indent=2) + '\n')
+
     def discord_roots(self):
         roots = [self.config / 'Vencord', self.config / 'vesktop' / 'settings']
         if os.environ.get('VENCORD_USER_DATA_DIR'):
@@ -330,6 +345,18 @@ class Themes:
     def codex_home(self):
         return Path(os.environ.get('CODEX_HOME') or self.home / '.codex')
 
+    def claude_home(self):
+        return Path(os.environ.get('CLAUDE_CONFIG_DIR') or self.home / '.claude')
+
+    def claude_executable(self):
+        executable = self.which('claude')
+        if executable:
+            return executable
+        for path in (self.home / '.local/bin/claude', self.home / 'bin/claude'):
+            if path.is_file() and os.access(path, os.X_OK):
+                return str(path)
+        return None
+
     def herdr_config(self):
         return Path(os.environ.get('HERDR_CONFIG_PATH') or self.config / 'herdr/config.toml')
 
@@ -394,6 +421,12 @@ class Themes:
         return None
 
     def available(self, target):
+        if target == 'claude-cli':
+            if not self.claude_home().is_dir():
+                return False, f'Claude Code configuration directory not found: {self.claude_home()}'
+            if not self.claude_executable():
+                return False, 'Claude Code executable not found in the shell PATH, ~/.local/bin, or ~/bin.'
+            return True, ''
         if target == 'herdr':
             if not self.herdr_config().is_file():
                 return False, f'Herdr configuration not found: {self.herdr_config()}'
@@ -471,6 +504,16 @@ class Themes:
 
     def apply(self, target, p, mode):
         c, d, name = self.config, self.data, fmt.NAME
+        if target == 'claude-cli':
+            home = self.claude_home()
+            # Validate settings before generating a theme or recording changes.
+            settings = home / 'settings.json'
+            document = json.loads(read(settings)) if settings.exists() else {}
+            if not isinstance(document, dict):
+                raise ValueError(f'Expected a JSON object: {settings}')
+            self.generated(home / 'themes/quickshell-config.json', fmt.claude_cli(p, mode))
+            self.json_field(settings, 'theme', 'custom:quickshell-config')
+            return 'restart', 'Colors follow the shell palette. Restart Claude Code once to activate; later theme file changes reload live. Project theme settings can override this selection.'
         if target == 'herdr':
             path = self.herdr_config()
             original = read(path)
@@ -757,6 +800,23 @@ class Themes:
                         updated = edit_lines(text, record['pattern'], record['before'], record['section'], record['prepend'])
                         if updated != text:
                             atomic(path, updated)
+                    elif kind == 'json_field':
+                        value = json.loads(read(path)) if path.exists() else {}
+                        if not isinstance(value, dict):
+                            raise ValueError(f'Expected a JSON object: {path}')
+                        key = record['key']
+                        current = {'present': key in value, 'value': value.get(key)}
+                        if current not in (record['before'], record['after']):
+                            raise RuntimeError(f'Theme setting changed manually: {path}')
+                        if record['before']['present']:
+                            value[key] = record['before']['value']
+                        else:
+                            value.pop(key, None)
+                        if not value and not record['existed']:
+                            if path.exists():
+                                path.resolve().unlink()
+                        elif path.exists() or value:
+                            atomic(path, json.dumps(value, indent=2) + '\n')
                     elif kind == 'json_theme':
                         value = json.loads(read(path) or '{}')
                         if not record['before']:

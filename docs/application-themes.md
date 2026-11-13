@@ -28,6 +28,7 @@ vivid wallpaper option remains specific to Neovim.
 | Powerlevel10k | `zsh` and an existing `.p10k.zsh` loaded by the shell |
 | Neovim | `nvim` and a standard `nvim/init.lua`; generated colorscheme and reload helper |
 | Codex CLI | `codex` and an existing `$CODEX_HOME` (defaults to `~/.codex`); generated TextMate theme |
+| Claude Code CLI | `claude` and an existing `$CLAUDE_CONFIG_DIR` (defaults to `~/.claude`); generated custom theme |
 
 Applications may need reopening after a theme change. Toolkit integrations can
 adjust session theme settings; log out and back in after initial setup if needed.
@@ -42,6 +43,10 @@ the previous theme, custom colors, and accent. See Herdr's
 [configuration reference](https://herdr.dev/tui/docs/configuration/#theme).
 For Neovim, restart once after enabling; later updates load on focus or
 `:QuickshellThemeReload`. Zen and Codex CLI need restarting to load changed colors.
+Claude Code uses a generated `themes/quickshell-config.json` and sets only the
+`theme` preference in its user `settings.json`. Restart once after enabling;
+later palette changes reload live. Project or managed theme settings can override
+the user preference. See Claude Code's [custom theme reference](https://code.claude.com/docs/en/terminal-config#create-a-custom-theme).
 
 ## Restoration
 
