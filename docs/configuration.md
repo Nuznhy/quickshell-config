@@ -15,7 +15,8 @@ The same IPC target accepts `close` and `toggle`.
 - **Bar layout:** reorder widgets, enable or hide them, and open feature settings.
 - **Appearance:** choose a palette, light/dark mode, font, UI kit, bar geometry,
   monitor visibility, and application themes.
-- **Wallpapers:** choose images per monitor, with shared or separate light/dark images.
+- **Wallpapers:** choose images per monitor, with shared or separate light/dark images,
+  from a local folder or [Wallhaven](#wallhaven).
 - **Lock screen:** configure Hyprlock theme syncing, background, and optional ASCII art.
 
 Changes apply across screens and save automatically. Device names, command
@@ -26,6 +27,19 @@ The quick settings panel includes Night Shift, theme mode, DND, and system
 information. Hardware features depend on the device and its drivers. Battery
 charge limits and firmware power profiles may require polkit authorization;
 limits can reset after reboot.
+
+## Wallhaven
+
+In Settings → Wallpapers, switch the gallery to **Wallhaven** to search
+wallhaven.cc by keyword, category, purity, and sorting, optionally limited to
+at least the target monitor's resolution. Nothing is requested until the tab is
+opened. Choosing a result downloads it to `~/Pictures/Wallhaven/` and applies it
+like a local image.
+
+An API key (wallhaven.cc → Settings → Account) and username, entered under the
+account button, unlock NSFW results and your collections. Filters, username, and
+the key are saved in `wallhaven.json` in the shell state folder; the key is sent
+only in a request header. Clear both fields and save to remove it.
 
 ## Calendar
 
